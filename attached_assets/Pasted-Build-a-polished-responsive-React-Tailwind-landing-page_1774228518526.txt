@@ -1,0 +1,352 @@
+Build a polished, responsive React + Tailwind landing page for the podcast brand:
+
+Fishbowl Roulette
+Domain: www.fishbowlroulette.com
+
+IMPORTANT GUARDRAILS:
+- Do NOT break existing routes, navigation, or working functionality
+- Do NOT rename existing components unless necessary
+- Reuse the current structure where possible
+- Only update or add components/styles needed for this landing page
+- Keep code clean, modular, and easy to edit later
+
+TECH STACK:
+- React
+- Tailwind CSS
+- Responsive/mobile-first
+- Clean component structure
+- Accessible buttons, headings, forms, and image alt text
+
+MAIN GOAL:
+Create a landing page that combines:
+1. the soft, warm, editorial/parchment feel of the lighter mockup
+2. the darker textured “cards + platform links” feel from the darker mockup
+3. a REAL host image loaded from assets instead of an AI woman image
+4. a wine glass instead of any whiskey/bourbon glass in the hero visual
+5. a premium, emotional, conversation-driven aesthetic
+
+ASSET REQUIREMENT:
+Use this real host image from project assets:
+ /assets/sandra.jpg
+
+Do not stylize the host photo into AI art.
+Preserve the real photo naturally.
+Use it in the hero and/or about section as appropriate.
+
+BRAND FEEL:
+- Honest
+- Slightly edgy
+- Warm
+- Intimate
+- Real
+- Premium but not corporate
+
+COLOR PALETTE:
+Use Tailwind approximations or custom values close to:
+- background dark: #1a1210
+- dark brown: #241816
+- textured deep burgundy: #3a1f1c
+- warm cream: #f1e3d3
+- parchment: #e7d5c3
+- muted tan: #d9c2ad
+- burgundy accent: #8f2f2a
+- soft red accent: #a63a34
+- gold accent: #c49a6c
+- espresso text: #2a1a16
+
+TYPOGRAPHY:
+- Elegant serif headings
+- Clean readable body text
+- Large dramatic hero headline
+- Good spacing and hierarchy
+- Slight editorial style
+
+SEO / PAGE META:
+Set page title to:
+Fishbowl Roulette | Real conversations. No script. No warning.
+
+Set meta description to:
+Fishbowl Roulette is a podcast where real conversations start with one random question. Beliefs, relationships, wildcards, and whatever comes next.
+
+LANDING PAGE SECTIONS:
+
+==================================================
+1. HEADER / NAV
+==================================================
+Create a clean top navigation.
+
+Left:
+- Fishbowl Roulette logo or text logo
+
+Right:
+- Listen Now
+- About
+- Episodes
+- Contact or Follow
+
+Behavior:
+- Sticky header optional
+- Transparent or soft dark header over hero
+- Mobile menu required if needed
+- Keep navigation minimal and elegant
+
+==================================================
+2. HERO SECTION
+==================================================
+Two-column responsive layout on desktop.
+Stacked layout on mobile.
+
+LEFT SIDE COPY:
+Headline:
+“You don’t get to prepare for this.”
+
+Body copy:
+“We reach into the bowl...
+and whatever comes out—comes out of us too.”
+
+Supporting line:
+“No script. No warning. No hiding.”
+
+Buttons:
+Primary CTA:
+“Drop into the conversation”
+
+Secondary CTA:
+“Don’t miss the next question”
+
+CTA style:
+- Rounded-xl or similar
+- Soft shadow
+- Primary in burgundy/red
+- Secondary in warm cream or outline
+- Subtle hover states
+- Good spacing on mobile
+
+RIGHT SIDE VISUAL:
+Create a hero scene that includes:
+- the real host image from /assets/sandra.jpg
+- a fishbowl with slips labeled:
+  “Beliefs”
+  “Relationships”
+  “Wildcards”
+- a tabletop scene
+- a WINE GLASS with red wine
+- NO bourbon / whiskey glass
+
+IMPORTANT:
+- If creating a composite hero layout, do it with layered HTML/CSS rather than AI-generated imagery
+- Use the host photo in a framed or softly blended way
+- Make the scene feel cinematic, warm, and inviting
+- Add a subtle dark overlay or glow so text remains readable
+
+Background:
+- warm moody lounge/bar aesthetic
+- subtle bokeh / lighting feel
+- textured gradient rather than heavy clutter
+
+==================================================
+3. “THIS GETS REAL... FAST.” SECTION
+==================================================
+Use a light parchment/editorial section.
+
+Desktop layout:
+- 2 columns
+Mobile:
+- stacked
+
+LEFT COLUMN:
+Headline:
+“This gets real... fast.”
+
+Bullets:
+- We don’t overthink it.
+- We don’t clean it up.
+- We just answer.
+
+Then body copy:
+“Sometimes it’s funny.
+Sometimes it’s uncomfortable.
+Sometimes it hits something you didn’t expect.
+
+Good. That’s the point.”
+
+RIGHT COLUMN:
+Headline:
+“I’m Sandra.”
+
+Body:
+“I like real conversations—the kind that don’t stay on the surface for long.
+
+Somewhere along the way, I realized the right question can change everything.
+
+So I built this.
+
+A space where people stop performing, start telling the truth, and sometimes surprise themselves in the process.
+
+I’ll be right there with them.
+
+No script. No pretending.
+Just seeing what comes up.”
+
+CTA button:
+“Listen to my first episode”
+
+Optional:
+- Include the real host image again in a framed card if it helps visually
+- Decorative border or editorial-style panel treatment is welcome
+- Keep it classy, not busy
+
+==================================================
+4. DARK FEATURE SECTION
+==================================================
+Create a darker textured section inspired by the darker mockup.
+
+Headline:
+“We pulled the first question... and it went there.”
+
+Below that, create 3 feature cards in a responsive grid.
+
+CARD 1:
+Title: Beliefs
+Text: “What do you believe when no one’s listening?”
+
+CARD 2:
+Title: Relationships
+Text: “The stuff we think... but don’t always say out loud.”
+
+CARD 3:
+Title: Wildcards
+Text: “No rules. No warning.”
+
+Style:
+- Soft parchment cards on dark textured background
+- Gentle shadows
+- Rounded corners
+- Optional small icons:
+  brain, heart, dice
+- Balanced spacing and alignment
+
+Below cards add centered text:
+“The truth is usually one question away.”
+
+==================================================
+5. PLATFORM LINKS SECTION
+==================================================
+Create a row of platform buttons/icons for:
+- Spotify
+- Apple Podcasts
+- YouTube
+- Instagram
+- TikTok optional
+
+Requirements:
+- Clean pill buttons or icon buttons
+- Easy to tap on mobile
+- Consistent styling
+- Real href placeholders allowed if URLs are not yet known
+- Keep them visually polished
+
+==================================================
+6. EMAIL CAPTURE SECTION
+==================================================
+Create an email capture module.
+
+Headline:
+“Get the next question before anyone else.”
+
+Field placeholder:
+“Enter your email”
+
+Button:
+“Join the List”
+
+Supporting text optional:
+“No spam. Just the good stuff.”
+
+Requirements:
+- Accessible form
+- Styled to match the brand
+- Can be static UI for now if backend is not connected
+- Make it easy to connect later
+
+==================================================
+7. FINAL CTA / FOOTER
+==================================================
+Closing copy:
+“Pull up a chair.
+You never know what question is coming next.”
+
+Optional final line:
+“Careful... you might get asked next.”
+
+Footer can include:
+- Fishbowl Roulette
+- copyright
+- social links
+- contact email placeholder
+
+==================================================
+8. DESIGN DETAILS
+==================================================
+Use:
+- subtle texture overlays
+- warm gradients
+- elegant borders/dividers where appropriate
+- premium spacing
+- tasteful animation only (fade/hover, no excessive motion)
+
+Avoid:
+- cheesy podcast tropes
+- loud neon effects
+- overdesigned clutter
+- generic startup style
+
+==================================================
+9. RESPONSIVENESS
+==================================================
+Must look great on:
+- desktop
+- tablet
+- mobile
+
+Ensure:
+- Hero stacks well
+- Buttons remain large and tappable
+- Cards stack cleanly
+- Text does not wrap awkwardly
+- Host image scales nicely
+- Platform buttons wrap gracefully
+
+==================================================
+10. PERFORMANCE / ACCESSIBILITY
+==================================================
+- Add alt text for all images
+- Optimize image usage
+- Use lazy loading where helpful
+- Maintain good color contrast
+- Use semantic HTML structure
+- Keep CSS/Tailwind classes organized
+
+==================================================
+11. FINAL VERIFICATION
+==================================================
+Before finishing, confirm:
+- The real host image /assets/sandra.jpg is used
+- Any bourbon/whiskey glass has been replaced with a wine glass
+- The page is branded for Fishbowl Roulette
+- Domain reference is www.fishbowlroulette.com
+- The feel matches the lighter editorial page + darker feature section combined
+- Nothing existing was unnecessarily broken or renamed
+
+OUTPUT:
+- Return the finished React/Tailwind components
+- Keep components modular
+- If needed, create sections like:
+  Header
+  HeroSection
+  AboutSection
+  FeatureCardsSection
+  PlatformLinks
+  EmailSignup
+  Footer
+- Include concise comments only where helpful
