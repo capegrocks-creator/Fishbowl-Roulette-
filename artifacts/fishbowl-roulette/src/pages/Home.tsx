@@ -94,7 +94,7 @@ const Home = () => {
           Mobile:  [photo block] stacked above [copy + fishbowl]
           Desktop: [copy + fishbowl left] | [Sandra photo right, full height]
       ═══════════════════════════════════════════ */}
-      <section className="relative bg-dark-bg-1 flex flex-col md:block overflow-hidden" style={{ minHeight: '100svh' }}>
+      <section className="relative bg-dark-bg-1 flex flex-col md:block" style={{ minHeight: '100svh' }}>
 
         {/* ── MOBILE: Sandra photo stacked at top ── */}
         <div className="md:hidden relative w-full" style={{ height: '62vw', minHeight: '240px', maxHeight: '380px' }}>
@@ -211,15 +211,14 @@ const Home = () => {
             </div>
           </motion.div>
 
-          {/* Fishbowl + wine glass — part of the same visual scene */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.7 }}
-            className="mt-8 max-w-xs"
-          >
-            <FishbowlScene />
-          </motion.div>
+        </div>
+
+        {/* ── Fishbowl + wine glass — absolutely anchored bottom-left of hero ── */}
+        <div
+          className="hidden md:block absolute bottom-0 z-20"
+          style={{ left: 'clamp(40px, 5vw, 80px)', width: 'clamp(280px, 28vw, 420px)' }}
+        >
+          <FishbowlScene />
         </div>
 
       </section>
