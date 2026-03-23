@@ -25,7 +25,7 @@ const Home = () => {
 
   const navLinks = [
     { label: 'Listen Now', href: '#listen' },
-    { label: 'About', href: '#about' },
+    { label: 'About', href: '#cards' },
     { label: 'Episodes', href: '#listen' },
     { label: 'Follow', href: '#join' },
   ];
@@ -37,7 +37,7 @@ const Home = () => {
       <header
         className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
           isScrolled
-            ? 'bg-dark-bg-1/92 backdrop-blur-sm py-3 shadow-xl shadow-black/60 border-b border-white/5'
+            ? 'bg-dark-bg-1/95 backdrop-blur-sm py-3 shadow-xl shadow-black/60 border-b border-white/5'
             : 'bg-transparent py-5'
         }`}
       >
@@ -53,7 +53,7 @@ const Home = () => {
               <a
                 key={l.label}
                 href={l.href}
-                className="font-sans text-sm tracking-widest uppercase text-light-bg-3 hover:text-accent transition-colors"
+                className="font-sans text-sm tracking-widest uppercase text-light-bg-3 hover:text-accent transition-colors duration-200"
               >
                 {l.label}
               </a>
@@ -62,7 +62,7 @@ const Home = () => {
 
           {/* Mobile hamburger */}
           <button
-            className="md:hidden flex flex-col gap-1.5 p-2 z-60"
+            className="md:hidden flex flex-col gap-1.5 p-2"
             onClick={() => setMenuOpen(v => !v)}
             aria-label="Toggle menu"
           >
@@ -74,7 +74,7 @@ const Home = () => {
 
         {/* Mobile drawer */}
         {menuOpen && (
-          <div className="md:hidden bg-dark-bg-1/97 backdrop-blur-md border-t border-white/5 px-6 py-6 flex flex-col gap-5">
+          <div className="md:hidden bg-dark-bg-1/98 backdrop-blur-md border-t border-white/5 px-6 py-6 flex flex-col gap-5">
             {navLinks.map(l => (
               <a
                 key={l.label}
@@ -89,42 +89,86 @@ const Home = () => {
         )}
       </header>
 
-      {/* ─── HERO ─── */}
-      {/* Mobile: stacked (photo above, copy below). Desktop: side-by-side split. */}
+      {/* ═══════════════════════════════════════════
+          HERO
+          Mobile:  [photo block] stacked above [copy + fishbowl]
+          Desktop: [copy + fishbowl left] | [Sandra photo right, full height]
+      ═══════════════════════════════════════════ */}
       <section className="relative bg-dark-bg-1 flex flex-col md:block overflow-hidden" style={{ minHeight: '100svh' }}>
 
-        {/* ── MOBILE: photo block stacked above copy ── */}
-        <div className="md:hidden relative w-full" style={{ height: '55vw', minHeight: '220px', maxHeight: '360px' }}>
+        {/* ── MOBILE: Sandra photo stacked at top ── */}
+        <div className="md:hidden relative w-full" style={{ height: '62vw', minHeight: '240px', maxHeight: '380px' }}>
           <img
             src={sandraImg}
             alt="Sandra, host of Fishbowl Roulette"
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: '45% 18%' }}
+            style={{ objectPosition: '48% 22%' }}
           />
-          {/* Bottom gradient fades photo into the dark copy block */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-dark-bg-1" />
-          {/* Warm tone overlay */}
-          <div className="absolute inset-0" style={{ background: 'rgba(42,16,8,0.22)', mixBlendMode: 'multiply' }} />
+          {/* Top vignette — darkens the bridge ceiling */}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(21,17,15,0.55) 0%, rgba(21,17,15,0.1) 40%, rgba(21,17,15,0.0) 60%, rgba(21,17,15,0.92) 100%)' }} />
+          {/* Warm tone */}
+          <div className="absolute inset-0" style={{ background: 'rgba(42,16,8,0.28)', mixBlendMode: 'multiply' }} />
+
+          {/* Mobile bio overlay — bottom of photo block */}
+          <div className="absolute bottom-0 inset-x-0 px-5 pb-4 pt-10">
+            <p className="font-serif font-bold italic text-light-bg-1 text-lg leading-tight mb-1">I'm Sandra.</p>
+            <p className="font-sans text-light-bg-2 text-xs leading-relaxed opacity-90">
+              I like real conversations—the kind that don't stay on the surface for long.<br />
+              <span className="italic">No script. No pretending. Just seeing what comes up.</span>
+            </p>
+          </div>
         </div>
 
-        {/* ── DESKTOP: photo fills right half, absolutely positioned ── */}
-        <div className="hidden md:block absolute inset-y-0 right-0 w-[55%] pointer-events-none">
+        {/* ── DESKTOP: Sandra photo fills the right half ── */}
+        <div className="hidden md:block absolute inset-y-0 right-0 w-[55%]">
           <img
             src={sandraImg}
             alt="Sandra, host of Fishbowl Roulette"
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: '45% 18%' }}
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            style={{ objectPosition: '48% 22%' }}
           />
-          {/* Left-edge gradient blends photo into dark left column */}
-          <div className="absolute inset-0 bg-gradient-to-r from-dark-bg-1 via-dark-bg-1/55 to-transparent" />
-          {/* Bottom-edge gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-dark-bg-1/75 via-transparent to-transparent" />
-          {/* Warm tone overlay */}
-          <div className="absolute inset-0" style={{ background: 'rgba(42,16,8,0.22)', mixBlendMode: 'multiply' }} />
+          {/* Left-edge fade — photo dissolves into the dark left column */}
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to right, #15110f 0%, rgba(21,17,15,0.78) 26%, rgba(21,17,15,0.15) 55%, rgba(21,17,15,0.0) 80%)' }} />
+          {/* Top vignette — heavily darkens the bright bridge rafters and green trees */}
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(21,17,15,0.92) 0%, rgba(21,17,15,0.55) 22%, rgba(21,17,15,0.08) 45%, rgba(21,17,15,0.0) 60%)' }} />
+          {/* Bottom vignette — grounds the photo and frames the bio overlay */}
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(21,17,15,0.97) 0%, rgba(21,17,15,0.6) 20%, rgba(21,17,15,0.0) 45%)' }} />
+          {/* Warm colour-grade overlay */}
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(40,14,6,0.28)', mixBlendMode: 'multiply' }} />
+
+          {/* Desktop bio overlay — sits at bottom of the photo column */}
+          <div className="absolute bottom-0 right-0 w-full" style={{ paddingLeft: '28%' }}>
+            <div className="px-8 pb-10 pt-20">
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.8 }}
+                className="space-y-3 max-w-xs"
+              >
+                <h3 className="font-serif font-bold italic text-light-bg-1 text-2xl leading-tight">
+                  I'm Sandra.
+                </h3>
+                <p className="font-sans text-light-bg-3 text-sm leading-relaxed">
+                  I like real conversations—the kind that don't stay on the surface for long.
+                </p>
+                <p className="font-sans text-light-bg-3 text-sm leading-relaxed">
+                  Somewhere along the way, I realized the right question can change everything.
+                  <span className="block mt-1 italic text-light-bg-2">No script. No pretending. Just seeing what comes up.</span>
+                </p>
+                <a
+                  href="#listen"
+                  className="inline-flex items-center gap-1.5 text-accent font-sans font-semibold text-sm hover:text-light-bg-1 transition-colors group"
+                >
+                  Listen to my first episode
+                  <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
+                </a>
+              </motion.div>
+            </div>
+          </div>
         </div>
 
-        {/* ── Copy column (left on desktop, below photo on mobile) ── */}
-        <div className="relative z-10 flex flex-col justify-center px-6 sm:px-10 md:px-14 lg:px-20 pt-6 md:pt-24 pb-12 md:pb-16 md:w-[50%] md:min-h-screen">
+        {/* ── Copy column — left on desktop, below photo on mobile ── */}
+        <div className="relative z-10 flex flex-col justify-center px-6 sm:px-10 md:px-14 lg:px-20 pt-6 md:pt-24 pb-10 md:pb-16 md:w-[50%] md:min-h-screen">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -149,18 +193,18 @@ const Home = () => {
                 href="#listen"
                 className="inline-flex justify-center items-center gap-2 px-6 py-3.5 rounded-xl bg-primary hover:bg-primary-hover text-white font-sans font-semibold tracking-wide transition-all duration-300 shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-0.5 text-sm"
               >
-                Drop into the conversation
+                🎧 Drop into the conversation
               </a>
               <a
                 href="#join"
                 className="inline-flex justify-center items-center gap-2 px-6 py-3.5 rounded-xl bg-transparent border border-light-bg-3/25 hover:border-accent hover:text-accent text-light-bg-1 font-sans font-medium tracking-wide transition-all duration-300 text-sm"
               >
-                Don't miss the next question
+                🔔 Don't miss the next question
               </a>
             </div>
           </motion.div>
 
-          {/* Fishbowl + wine glass scene */}
+          {/* Fishbowl + wine glass — part of the same visual scene */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -173,85 +217,11 @@ const Home = () => {
 
       </section>
 
-      {/* ─── ABOUT (This gets real + I'm Sandra) ─── */}
-      <section id="about" className="py-20 md:py-28 bg-light-bg-1 text-text-dark relative">
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-14 md:gap-20 items-start">
-
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.7 }}
-            className="space-y-7"
-          >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
-              This gets <span className="text-primary italic">real...</span> fast.
-            </h2>
-            <ul className="space-y-3 font-sans text-lg text-text-dark/80">
-              {['We don\'t overthink it.', 'We don\'t clean it up.', 'We just answer.'].map((item, i) => (
-                <li key={i} className="flex items-center gap-4">
-                  <span className={`w-7 h-px ${i === 2 ? 'bg-primary' : 'bg-accent'} shrink-0`} />
-                  <span className={i === 2 ? 'font-bold text-primary' : ''}>{item}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="font-sans text-lg text-text-dark/70 leading-relaxed">
-              Sometimes it's funny.<br />
-              Sometimes it's uncomfortable.<br />
-              Sometimes it hits something you didn't expect.<br /><br />
-              <span className="font-semibold text-text-dark">Good. That's the point.</span>
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.7, delay: 0.15 }}
-            className="space-y-7"
-          >
-            {/* Sandra photo card — editorial framed */}
-            <div className="relative inline-block">
-              <div className="w-full max-w-[280px] aspect-[3/4] overflow-hidden rounded-2xl shadow-2xl shadow-black/20 border border-accent/20 rotate-1">
-                <img
-                  src={sandraImg}
-                  alt="Sandra, host of Fishbowl Roulette"
-                  className="w-full h-full object-cover"
-                  style={{ objectPosition: '50% 15%' }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-dark-bg-1/60 via-transparent to-transparent" />
-              </div>
-              <div className="absolute -bottom-3 -left-3 bg-dark-bg-1 border border-accent/30 rounded-xl px-4 py-2 shadow-lg">
-                <p className="font-serif italic text-accent text-sm">Host</p>
-              </div>
-            </div>
-
-            <div className="space-y-5">
-              <h2 className="text-3xl md:text-4xl font-serif font-bold italic">I'm Sandra.</h2>
-              <p className="font-sans text-lg text-text-dark/80 leading-relaxed">
-                I like real conversations—the kind that don't stay on the surface for long.
-              </p>
-              <p className="font-sans text-lg text-text-dark/80 leading-relaxed">
-                Somewhere along the way, I realized the right question can change everything. So I built this. A space where people stop performing, start telling the truth, and sometimes surprise themselves in the process.
-              </p>
-              <p className="font-sans text-lg text-text-dark/80 leading-relaxed">
-                I'll be right there with them.<br />
-                <span className="italic">No script. No pretending. Just seeing what comes up.</span>
-              </p>
-              <a
-                href="#listen"
-                className="inline-flex items-center gap-2 text-primary font-sans font-bold tracking-wide uppercase text-sm hover:text-primary-hover transition-colors group"
-              >
-                Listen to my first episode
-                <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
-              </a>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ─── DARK FEATURE SECTION ─── */}
-      <section className="py-16 md:py-24 bg-dark-bg-2 texture-overlay-dark">
+      {/* ═══════════════════════════════════════════
+          CATEGORY CARDS SECTION
+          Dark, textured — flows continuously from hero
+      ═══════════════════════════════════════════ */}
+      <section id="cards" className="py-16 md:py-24 bg-dark-bg-2 texture-overlay-dark">
         <div className="max-w-5xl mx-auto px-6">
 
           <motion.h2
@@ -265,11 +235,12 @@ const Home = () => {
             <span className="italic text-accent">and it went there.</span>
           </motion.h2>
 
+          {/* Cards — warm parchment, echoing the paper slips in the fishbowl */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-12">
             {[
               { title: 'Beliefs', icon: '🧠', text: "What do you believe when no one's listening?" },
               { title: 'Relationships', icon: '❤️', text: "The stuff we think... but don't always say out loud." },
-              { title: 'Wildcards', icon: '🎲', text: 'No rules. No warning. Total honesty.' },
+              { title: 'Wildcards', icon: '🎲', text: 'No rules. No warning.' },
             ].map((card, i) => (
               <motion.div
                 key={card.title}
@@ -277,11 +248,18 @@ const Home = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: i * 0.12 }}
-                className="bg-card text-card-foreground p-7 rounded-2xl shadow-xl shadow-black/40 texture-overlay-light hover:-translate-y-1 transition-transform duration-400 border border-black/5"
+                className="relative overflow-hidden rounded-2xl shadow-xl shadow-black/50 hover:-translate-y-1 transition-transform duration-300"
+                style={{ background: 'linear-gradient(135deg, #e7d5c3 0%, #d9c2ad 60%, #cdb49a 100%)' }}
               >
-                <div className="text-3xl mb-4">{card.icon}</div>
-                <h3 className="text-xl font-serif font-bold mb-2">{card.title}</h3>
-                <p className="font-sans text-sm text-text-dark/80 leading-relaxed">{card.text}</p>
+                {/* Subtle paper texture overlay */}
+                <div className="absolute inset-0 texture-overlay-light opacity-60" />
+                {/* Warm inner shadow at bottom for depth */}
+                <div className="absolute inset-x-0 bottom-0 h-16" style={{ background: 'linear-gradient(to top, rgba(42,20,10,0.18), transparent)' }} />
+                <div className="relative p-7">
+                  <div className="text-3xl mb-4">{card.icon}</div>
+                  <h3 className="text-xl font-serif font-bold mb-2 text-text-dark">{card.title}</h3>
+                  <p className="font-sans text-sm leading-relaxed" style={{ color: 'rgba(45,26,16,0.78)' }}>{card.text}</p>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -298,21 +276,35 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ─── PLATFORMS ─── */}
+      {/* ═══════════════════════════════════════════
+          PLATFORM LINKS
+      ═══════════════════════════════════════════ */}
       <section id="listen" className="py-10 md:py-14 bg-dark-bg-2 border-t border-white/5">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <div className="flex flex-wrap justify-center gap-3 md:gap-4">
             <PlatformBtn name="Spotify" icon={<SpotifyIcon />} href="#" />
             <PlatformBtn name="Apple Podcasts" icon={<AppleIcon />} href="#" />
             <PlatformBtn name="YouTube" icon={<YoutubeIcon />} href="#" />
+            <PlatformBtn name="Instagram" icon={<InstagramIcon />} href="#" />
             <PlatformBtn name="TikTok" icon={<TikTokIcon />} href="#" />
           </div>
         </div>
       </section>
 
-      {/* ─── EMAIL CAPTURE ─── */}
+      {/* ═══════════════════════════════════════════
+          EMAIL CAPTURE
+      ═══════════════════════════════════════════ */}
       <section id="join" className="py-12 md:py-16 bg-dark-bg-2 border-t border-white/5">
-        <div className="max-w-xl mx-auto px-6">
+        <div className="max-w-xl mx-auto px-6 text-center">
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="font-serif text-light-bg-2 text-lg md:text-xl mb-5"
+          >
+            Get the next question before anyone else.
+          </motion.p>
           <form
             onSubmit={handleJoinList}
             className="flex flex-col sm:flex-row gap-3 items-stretch"
@@ -321,21 +313,23 @@ const Home = () => {
               type="email"
               required
               placeholder="Enter your email"
-              className="flex-1 bg-light-bg-2/10 border border-light-bg-3/20 focus:border-accent/60 outline-none rounded-xl px-5 py-3.5 font-sans text-light-bg-1 placeholder:text-light-bg-3/50 transition-all text-sm"
+              className="flex-1 bg-light-bg-2/10 border border-light-bg-3/20 focus:border-accent/60 outline-none rounded-xl px-5 py-3.5 font-sans text-light-bg-1 placeholder:text-light-bg-3/45 transition-all text-sm"
             />
             <button
               type="submit"
               disabled={emailSubmitted}
               className="bg-primary hover:bg-primary-hover text-white rounded-xl px-7 py-3.5 font-sans font-semibold tracking-wide transition-colors duration-300 whitespace-nowrap text-sm disabled:opacity-70"
             >
-              {emailSubmitted ? 'You\'re on the list!' : 'Join the List'}
+              {emailSubmitted ? "You're on the list!" : 'Join the List'}
             </button>
           </form>
-          <p className="text-center font-sans text-xs text-light-bg-3/40 mt-3">No spam. Just real conversations.</p>
+          <p className="font-sans text-xs text-light-bg-3/40 mt-3">No spam. Just the good stuff.</p>
         </div>
       </section>
 
-      {/* ─── FOOTER ─── */}
+      {/* ═══════════════════════════════════════════
+          FOOTER
+      ═══════════════════════════════════════════ */}
       <footer className="py-16 md:py-20 bg-dark-bg-1 border-t border-white/5 texture-overlay-dark">
         <div className="max-w-2xl mx-auto px-6 text-center space-y-3">
           <h2 className="text-3xl md:text-5xl font-serif font-bold italic text-light-bg-1">
@@ -388,6 +382,12 @@ const AppleIcon = () => (
 const YoutubeIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
     <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+  </svg>
+);
+
+const InstagramIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
   </svg>
 );
 
