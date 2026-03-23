@@ -95,47 +95,22 @@ const Home = () => {
           Left side: darker tunnel/bridge area → text lives here.
           Right side: Sandra's face → kept clear and bright.
       ═══════════════════════════════════════════ */}
-      <section className="relative overflow-hidden" style={{ minHeight: '100svh' }}>
+      <section className="relative bg-dark-bg-1" style={{ minHeight: '100svh' }}>
 
-        {/* ── Full-bleed background photo ── */}
-        <img
-          src={sandraImg}
-          alt="Sandra, host of Fishbowl Roulette"
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-          style={{ objectPosition: '62% 22%' }}
-        />
+        {/* ── Sandra photo on right side only (48% width on desktop) ── */}
+        <div className="hidden md:block absolute right-0 inset-y-0 w-[48%]">
+          <img
+            src={sandraImg}
+            alt="Sandra, host of Fishbowl Roulette"
+            className="w-full h-full object-cover"
+            style={{ objectPosition: '22% 28%' }}
+          />
+          {/* Top vignette */}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(15,10,8,0.35) 0%, transparent 40%)' }} />
+        </div>
 
-        {/* ── Left-leaning gradient: darkens left side for text legibility, fades before Sandra's face ── */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'linear-gradient(to right, rgba(15,10,8,0.95) 0%, rgba(15,10,8,0.88) 30%, rgba(15,10,8,0.65) 48%, rgba(15,10,8,0.22) 65%, rgba(15,10,8,0.0) 80%)',
-          }}
-        />
-
-        {/* ── Top vignette — darkens the bright bridge rafters/sky ── */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: 'linear-gradient(to bottom, rgba(15,10,8,0.75) 0%, rgba(15,10,8,0.3) 18%, rgba(15,10,8,0.0) 40%)' }}
-        />
-
-        {/* ── Bottom vignette — anchors the section ── */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: 'linear-gradient(to top, rgba(15,10,8,0.85) 0%, rgba(15,10,8,0.3) 18%, rgba(15,10,8,0.0) 40%)' }}
-        />
-
-        {/* ── Warm colour grade ── */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: 'rgba(40,14,6,0.22)', mixBlendMode: 'multiply' }}
-        />
-
-        {/* ── Mobile: bottom gradient so text below is readable over any photo crop ── */}
-        <div
-          className="md:hidden absolute inset-0 pointer-events-none"
-          style={{ background: 'linear-gradient(to bottom, rgba(15,10,8,0.0) 35%, rgba(15,10,8,0.85) 75%, rgba(15,10,8,0.97) 100%)' }}
-        />
+        {/* ── Desktop dark overlay on left text area ── */}
+        <div className="hidden md:block absolute inset-y-0 left-0 w-[52%] bg-gradient-to-r from-dark-bg-1 via-dark-bg-1/85 to-transparent pointer-events-none" />
 
         {/* ── Copy column — left ~52% on desktop, full-width on mobile ── */}
         <div className="relative z-10 flex flex-col justify-start min-h-screen px-6 sm:px-10 md:px-14 lg:px-20 pt-24 pb-16 md:pt-[20vh] md:w-[52%]">
