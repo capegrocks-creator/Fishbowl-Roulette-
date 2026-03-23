@@ -1,0 +1,328 @@
+Refine the existing Fishbowl Roulette landing page in React + Tailwind for www.fishbowlroulette.com.
+
+IMPORTANT GUARDRAILS
+- Do NOT rebuild from scratch unless necessary
+- Do NOT break existing navigation, links, routes, responsiveness, or working functionality
+- Do NOT rename components unless necessary
+- Reuse and refine the current build
+- Prioritize visual cohesion, realism, and premium design
+- The result should feel launch-ready, cinematic, warm, and emotionally engaging
+
+PRIMARY GOAL
+Create one cohesive landing page that feels like a premium, moody, editorial podcast brand experience.
+
+The page should:
+- use ONLY ONE Sandra photo on the entire page
+- remove the large disconnected cream/white biography section
+- keep the strong hero structure
+- keep the lower dark section with the 3 category cards
+- integrate Sandra’s bio directly into the hero as an overlay
+- make the fishbowl, wine glass, Sandra image, and cards feel like one blended visual system
+- avoid placeholders, generic UI cards, or anything that feels pasted in
+
+BRAND
+- Podcast: Fishbowl Roulette
+- Domain: www.fishbowlroulette.com
+- Tone: honest, warm, intimate, slightly edgy, premium, cinematic
+- Theme: real conversations sparked by random questions pulled from a fishbowl
+- Categories: Beliefs, Relationships, Wildcards
+
+REAL IMAGE REQUIREMENT
+Use the real uploaded Sandra image from:
+  /assets/sandra.jpg
+
+IMPORTANT IMAGE RULES
+- Sandra should appear only once on the full page
+- Preserve her real likeness
+- Do NOT stylize her into AI art
+- Crop tighter so Sandra is the focus
+- Reduce or mask the bridge background so it does not dominate
+- Blend Sandra naturally into the hero scene using soft masking, shadow, warmth, vignette, and tone matching
+- Sandra should not look like a pasted rectangular photo
+
+COLOR / STYLE DIRECTION
+Use a warm, moody editorial palette:
+- deep black-brown: #15110f
+- espresso: #241816
+- burgundy: #8f2f2a
+- soft red: #a63a34
+- gold accent: #c49a6c
+- warm cream: #f1e3d3
+- parchment: #e7d5c3
+- aged tan: #d9c2ad
+
+STYLE FEEL
+- warm cinematic lounge feel
+- subtle texture
+- elegant serif headlines
+- readable body copy
+- soft bokeh / glow where appropriate
+- premium spacing
+- no harsh white sections
+- no placeholder look
+- no generic startup/app style
+
+PAGE STRUCTURE
+
+1. HEADER / NAV
+Keep or refine the current top navigation.
+
+Left:
+- Fishbowl Roulette wordmark / logo text
+
+Right:
+- Listen Now
+- About
+- Episodes
+- Follow
+
+Requirements:
+- clean and elegant
+- readable over dark background
+- responsive on mobile
+- do not oversize the nav
+
+2. HERO SECTION
+This is the main focus.
+
+Layout:
+- left side = headline, supporting copy, CTA buttons
+- right side = Sandra integrated into the hero scene
+- fishbowl + wine glass grounded in a realistic tabletop scene
+- Sandra bio overlaid near the bottom of her hero image area
+
+LEFT SIDE COPY
+Headline:
+“You don’t get to prepare for this.”
+
+Body:
+“We reach into the bowl...
+and whatever comes out—comes out of us too.”
+
+Supporting line:
+“No script. No warning. No hiding.”
+
+Buttons:
+Primary:
+“Drop into the conversation”
+
+Secondary:
+“Don’t miss the next question”
+
+Button styling:
+- rounded corners
+- subtle premium shadow
+- primary in burgundy/red
+- secondary in dark outline or warm neutral
+- subtle hover effects only
+
+RIGHT SIDE HERO VISUAL
+Build a cohesive hero composition that includes:
+- Sandra integrated naturally into the hero
+- a fishbowl on a table with labeled slips:
+  “Beliefs”
+  “Relationships”
+  “Wildcards”
+- a wine glass with red wine
+- realistic shadows and grounding
+- warm moody lounge/bar-style lighting
+- subtle cinematic gradient background
+
+HERO VISUAL RULES
+- Sandra must not look pasted in
+- minimize the visible bridge background from the original photo
+- do not leave hard photo edges
+- fishbowl and wine glass must feel grounded on a real surface
+- avoid vector/placeholder illustration look
+- make the whole hero feel like one intentional composition
+
+3. HERO BIO OVERLAY
+Move Sandra’s bio into the hero only.
+
+Do NOT create a separate Sandra section below.
+
+Place the bio:
+- near the lower-right or lower-center of Sandra’s hero image area
+- over a subtle dark transparent gradient for readability
+- without covering her face
+
+Use this copy:
+
+Headline:
+“I’m Sandra.”
+
+Body:
+“I like real conversations—the kind that don’t stay on the surface for long.
+
+Somewhere along the way, I realized the right question can change everything.
+
+So I built this.
+
+No script. No pretending.
+Just seeing what comes up.”
+
+CTA:
+“Listen to my first episode”
+
+BIO OVERLAY STYLE
+- elegant serif heading
+- warm cream text
+- compact layout
+- premium feel
+- should feel embedded into the hero, not like a floating box
+
+4. REMOVE THE CURRENT LARGE CREAM / WHITE BIO SECTION
+Remove the current section that includes:
+- “This gets real... fast.”
+- second Sandra image
+- separate biography block
+
+Preferred solution:
+- remove it entirely
+- do not keep any second Sandra image
+- do not keep a large cream editorial section in the middle of the page
+
+If a transition is needed, use only a subtle divider or spacing transition, not a full separate section.
+
+The page should flow visually from hero into the lower dark section.
+
+5. LOWER DARK SECTION WITH 3 CARDS
+Keep the bottom dark section, but refine it so it feels more premium and more connected to the hero.
+
+Headline:
+“We pulled the first question...
+and it went there.”
+
+Cards:
+
+Card 1
+Title: Beliefs
+Text: “What do you believe when no one’s listening?”
+
+Card 2
+Title: Relationships
+Text: “The stuff we think... but don’t always say out loud.”
+
+Card 3
+Title: Wildcards
+Text: “No rules. No warning.”
+
+CARD STYLE RULES
+- do NOT use bright white generic cards
+- use warm parchment / aged cream cards
+- add subtle texture
+- rounded corners
+- premium shadow
+- elegant typography
+- optional tasteful icons only if they elevate the design
+- make the cards feel part of the same visual world as the hero
+
+SECTION STYLE
+- dark textured background
+- warm subtle gradients
+- premium editorial spacing
+
+Below the cards, keep:
+“The truth is usually one question away.”
+
+6. PLATFORM LINKS
+Below the lower section or integrated beneath the cards, include:
+- Spotify
+- Apple Podcasts
+- YouTube
+- Instagram
+- TikTok optional
+
+Requirements:
+- polished and easy to tap
+- consistent spacing
+- warm branded style
+- not overly app-like
+- can use placeholder hrefs if real links are not connected yet
+
+7. EMAIL SIGNUP
+Add or refine an email capture area after the platform links or integrated near them.
+
+Headline:
+“Get the next question before anyone else.”
+
+Field placeholder:
+“Enter your email”
+
+Button:
+“Join the List”
+
+Optional supporting text:
+“No spam. Just the good stuff.”
+
+Requirements:
+- simple
+- elegant
+- easy to connect later
+- visually consistent with the rest of the page
+
+8. FINAL CTA / FOOTER
+Add final closing copy:
+
+“Pull up a chair.
+You never know what question is coming next.”
+
+Optional final line:
+“Careful... you might get asked next.”
+
+Footer may include:
+- Fishbowl Roulette
+- copyright
+- social links
+- contact placeholder if needed
+
+RESPONSIVENESS
+The page must work beautifully on:
+- desktop
+- tablet
+- mobile
+
+Mobile requirements:
+- Sandra still appears only once
+- hero remains readable
+- bio overlay still works cleanly
+- buttons stack nicely
+- cards stack cleanly
+- fishbowl and wine glass scale gracefully
+- no awkward gaps from removing the cream section
+
+VISUAL COHESION RULES
+Across the full page:
+- unify lighting
+- unify warmth / color grading
+- avoid harsh section breaks
+- avoid giant blank areas
+- avoid generic UI card styling
+- avoid obvious placeholder elements
+- make the page feel like one designed brand experience
+
+SEO / META
+Set page title:
+Fishbowl Roulette | Real conversations. No script. No warning.
+
+Set meta description:
+Fishbowl Roulette is a podcast where real conversations start with one random question. Beliefs, relationships, wildcards, and whatever comes next.
+
+FINAL VERIFICATION
+Before finishing, confirm all of the following:
+- Sandra appears only once on the page
+- Sandra is integrated naturally into the hero
+- the bridge background is minimized or masked
+- Sandra’s bio is overlaid in the hero near the bottom of her image area
+- the large cream/white bio section is removed
+- fishbowl and wine glass feel realistic and grounded
+- the lower dark section remains with 3 refined cards
+- cards are warmer and more premium, not bright generic white
+- the whole page feels cohesive, cinematic, warm, and launch-ready
+- no working navigation or existing functionality was broken
+
+OUTPUT
+- refine the current React + Tailwind implementation
+- keep code modular and clean
+- preserve working structure where possible
+- prioritize polished visual execution over adding more content
