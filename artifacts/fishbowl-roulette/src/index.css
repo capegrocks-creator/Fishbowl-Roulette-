@@ -24,6 +24,9 @@
   --color-light-bg-1: hsl(var(--light-bg-1));
   --color-light-bg-2: hsl(var(--light-bg-2));
   --color-light-bg-3: hsl(var(--light-bg-3));
+
+  --color-text-dark: hsl(var(--text-dark));
+  --color-text-light: hsl(var(--text-light));
 }
 
 :root {
