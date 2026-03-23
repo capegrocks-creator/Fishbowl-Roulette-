@@ -90,92 +90,55 @@ const Home = () => {
       </header>
 
       {/* ═══════════════════════════════════════════
-          HERO
-          Mobile:  [photo block] stacked above [copy + fishbowl]
-          Desktop: [copy + fishbowl left] | [Sandra photo right, full height]
+          HERO — full-bleed photo background
+          Sandra's photo spans the entire hero.
+          Left side: darker tunnel/bridge area → text lives here.
+          Right side: Sandra's face → kept clear and bright.
       ═══════════════════════════════════════════ */}
-      <section className="relative bg-dark-bg-1 flex flex-col md:block" style={{ minHeight: '100svh' }}>
+      <section className="relative overflow-hidden" style={{ minHeight: '100svh' }}>
 
-        {/* ── MOBILE: Sandra photo stacked at top ── */}
-        <div className="md:hidden relative w-full" style={{ height: '62vw', minHeight: '240px', maxHeight: '380px' }}>
-          <img
-            src={sandraImg}
-            alt="Sandra, host of Fishbowl Roulette"
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: '48% 22%' }}
-          />
-          {/* Top vignette — darkens the bridge ceiling */}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(21,17,15,0.55) 0%, rgba(21,17,15,0.1) 40%, rgba(21,17,15,0.0) 60%, rgba(21,17,15,0.92) 100%)' }} />
-          {/* Warm tone */}
-          <div className="absolute inset-0" style={{ background: 'rgba(42,16,8,0.28)', mixBlendMode: 'multiply' }} />
+        {/* ── Full-bleed background photo ── */}
+        <img
+          src={sandraImg}
+          alt="Sandra, host of Fishbowl Roulette"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          style={{ objectPosition: '62% 22%' }}
+        />
 
-          {/* Mobile bio overlay — bottom of photo block */}
-          <div className="absolute bottom-0 inset-x-0 px-5 pb-4 pt-10">
-            <p className="font-serif font-bold italic text-light-bg-1 text-lg leading-tight mb-1">I'm Sandra.</p>
-            <p className="font-sans text-light-bg-2 text-xs leading-relaxed opacity-90 mb-2">
-              I like real conversations—the kind that don't stay on the surface for long.<br />
-              <span className="italic">No script. No pretending. Just seeing what comes up.</span>
-            </p>
-            <a
-              href="#listen"
-              className="inline-flex items-center gap-1 text-accent font-sans font-semibold text-xs hover:text-light-bg-1 transition-colors group"
-            >
-              Listen to my first episode
-              <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>
-            </a>
-          </div>
-        </div>
+        {/* ── Left-leaning gradient: darkens left side for text legibility, fades before Sandra's face ── */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to right, rgba(15,10,8,0.95) 0%, rgba(15,10,8,0.88) 30%, rgba(15,10,8,0.65) 48%, rgba(15,10,8,0.22) 65%, rgba(15,10,8,0.0) 80%)',
+          }}
+        />
 
-        {/* ── DESKTOP: Sandra photo fills the right half ── */}
-        <div className="hidden md:block absolute inset-y-0 right-0 w-[55%]">
-          <img
-            src={sandraImg}
-            alt="Sandra, host of Fishbowl Roulette"
-            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-            style={{ objectPosition: '48% 22%' }}
-          />
-          {/* Left-edge fade — photo dissolves into the dark left column */}
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to right, #15110f 0%, rgba(21,17,15,0.78) 26%, rgba(21,17,15,0.15) 55%, rgba(21,17,15,0.0) 80%)' }} />
-          {/* Top vignette — heavily darkens the bright bridge rafters and green trees */}
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(21,17,15,0.92) 0%, rgba(21,17,15,0.55) 22%, rgba(21,17,15,0.08) 45%, rgba(21,17,15,0.0) 60%)' }} />
-          {/* Bottom vignette — grounds the photo and frames the bio overlay */}
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(21,17,15,0.97) 0%, rgba(21,17,15,0.6) 20%, rgba(21,17,15,0.0) 45%)' }} />
-          {/* Warm colour-grade overlay */}
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(40,14,6,0.28)', mixBlendMode: 'multiply' }} />
+        {/* ── Top vignette — darkens the bright bridge rafters/sky ── */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'linear-gradient(to bottom, rgba(15,10,8,0.75) 0%, rgba(15,10,8,0.3) 18%, rgba(15,10,8,0.0) 40%)' }}
+        />
 
-          {/* Desktop bio overlay — sits at bottom of the photo column */}
-          <div className="absolute bottom-0 right-0 w-full" style={{ paddingLeft: '28%' }}>
-            <div className="px-8 pb-10 pt-20">
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.8 }}
-                className="space-y-3 max-w-xs"
-              >
-                <h3 className="font-serif font-bold italic text-light-bg-1 text-2xl leading-tight">
-                  I'm Sandra.
-                </h3>
-                <p className="font-sans text-light-bg-3 text-sm leading-relaxed">
-                  I like real conversations—the kind that don't stay on the surface for long.
-                </p>
-                <p className="font-sans text-light-bg-3 text-sm leading-relaxed">
-                  Somewhere along the way, I realized the right question can change everything.
-                  <span className="block mt-1 italic text-light-bg-2">No script. No pretending. Just seeing what comes up.</span>
-                </p>
-                <a
-                  href="#listen"
-                  className="inline-flex items-center gap-1.5 text-accent font-sans font-semibold text-sm hover:text-light-bg-1 transition-colors group"
-                >
-                  Listen to my first episode
-                  <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
-                </a>
-              </motion.div>
-            </div>
-          </div>
-        </div>
+        {/* ── Bottom vignette — anchors the section ── */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'linear-gradient(to top, rgba(15,10,8,0.85) 0%, rgba(15,10,8,0.3) 18%, rgba(15,10,8,0.0) 40%)' }}
+        />
 
-        {/* ── Copy column — left on desktop, below photo on mobile ── */}
-        <div className="relative z-10 flex flex-col justify-center px-6 sm:px-10 md:px-14 lg:px-20 pt-6 md:pt-24 pb-10 md:pb-16 md:w-[50%] md:min-h-screen">
+        {/* ── Warm colour grade ── */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'rgba(40,14,6,0.22)', mixBlendMode: 'multiply' }}
+        />
+
+        {/* ── Mobile: bottom gradient so text below is readable over any photo crop ── */}
+        <div
+          className="md:hidden absolute inset-0 pointer-events-none"
+          style={{ background: 'linear-gradient(to bottom, rgba(15,10,8,0.0) 35%, rgba(15,10,8,0.85) 75%, rgba(15,10,8,0.97) 100%)' }}
+        />
+
+        {/* ── Copy column — left ~52% on desktop, full-width on mobile ── */}
+        <div className="relative z-10 flex flex-col justify-start min-h-screen px-6 sm:px-10 md:px-14 lg:px-20 pt-24 pb-16 md:pt-[20vh] md:w-[52%]">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -210,7 +173,6 @@ const Home = () => {
               </a>
             </div>
           </motion.div>
-
         </div>
 
         {/* ── Fishbowl + wine glass — absolutely anchored bottom-left of hero ── */}
