@@ -90,38 +90,41 @@ const Home = () => {
       </header>
 
       {/* ─── HERO ─── */}
-      <section className="relative overflow-hidden bg-dark-bg-1" style={{ minHeight: '100svh' }}>
+      {/* Mobile: stacked (photo above, copy below). Desktop: side-by-side split. */}
+      <section className="relative bg-dark-bg-1 flex flex-col md:block overflow-hidden" style={{ minHeight: '100svh' }}>
 
-        {/* RIGHT — Sandra's photo, absolute-positioned to fill right half */}
-        <div className="absolute inset-y-0 right-0 w-full md:w-[55%] pointer-events-none">
+        {/* ── MOBILE: photo block stacked above copy ── */}
+        <div className="md:hidden relative w-full" style={{ height: '55vw', minHeight: '220px', maxHeight: '360px' }}>
           <img
             src={sandraImg}
             alt="Sandra, host of Fishbowl Roulette"
             className="absolute inset-0 w-full h-full object-cover"
             style={{ objectPosition: '45% 18%' }}
           />
-          {/* Left-edge gradient — photo bleeds into dark left column */}
-          <div className="absolute inset-0 bg-gradient-to-r from-dark-bg-1 via-dark-bg-1/60 to-transparent" />
-          {/* Bottom-edge gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-dark-bg-1/80 via-transparent to-transparent" />
+          {/* Bottom gradient fades photo into the dark copy block */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-dark-bg-1" />
           {/* Warm tone overlay */}
           <div className="absolute inset-0" style={{ background: 'rgba(42,16,8,0.22)', mixBlendMode: 'multiply' }} />
         </div>
 
-        {/* On mobile: faint photo visible at top through gradient */}
-        <div className="md:hidden absolute inset-x-0 top-0 h-60 pointer-events-none">
+        {/* ── DESKTOP: photo fills right half, absolutely positioned ── */}
+        <div className="hidden md:block absolute inset-y-0 right-0 w-[55%] pointer-events-none">
           <img
             src={sandraImg}
-            alt=""
-            aria-hidden="true"
-            className="w-full h-full object-cover"
-            style={{ objectPosition: '45% 15%' }}
+            alt="Sandra, host of Fishbowl Roulette"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: '45% 18%' }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-dark-bg-1/50 to-dark-bg-1" />
+          {/* Left-edge gradient blends photo into dark left column */}
+          <div className="absolute inset-0 bg-gradient-to-r from-dark-bg-1 via-dark-bg-1/55 to-transparent" />
+          {/* Bottom-edge gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-dark-bg-1/75 via-transparent to-transparent" />
+          {/* Warm tone overlay */}
+          <div className="absolute inset-0" style={{ background: 'rgba(42,16,8,0.22)', mixBlendMode: 'multiply' }} />
         </div>
 
-        {/* LEFT — copy, above the photo layer */}
-        <div className="relative z-10 flex flex-col justify-center px-6 sm:px-10 md:px-14 lg:px-20 pt-24 pb-16 md:w-[50%]" style={{ minHeight: '100svh' }}>
+        {/* ── Copy column (left on desktop, below photo on mobile) ── */}
+        <div className="relative z-10 flex flex-col justify-center px-6 sm:px-10 md:px-14 lg:px-20 pt-6 md:pt-24 pb-12 md:pb-16 md:w-[50%] md:min-h-screen">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -146,13 +149,13 @@ const Home = () => {
                 href="#listen"
                 className="inline-flex justify-center items-center gap-2 px-6 py-3.5 rounded-xl bg-primary hover:bg-primary-hover text-white font-sans font-semibold tracking-wide transition-all duration-300 shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-0.5 text-sm"
               >
-                🎧 Drop into the conversation
+                Drop into the conversation
               </a>
               <a
                 href="#join"
                 className="inline-flex justify-center items-center gap-2 px-6 py-3.5 rounded-xl bg-transparent border border-light-bg-3/25 hover:border-accent hover:text-accent text-light-bg-1 font-sans font-medium tracking-wide transition-all duration-300 text-sm"
               >
-                🔔 Don't miss the next question
+                Don't miss the next question
               </a>
             </div>
           </motion.div>
@@ -167,6 +170,7 @@ const Home = () => {
             <FishbowlScene />
           </motion.div>
         </div>
+
       </section>
 
       {/* ─── ABOUT (This gets real + I'm Sandra) ─── */}
@@ -265,7 +269,7 @@ const Home = () => {
             {[
               { title: 'Beliefs', icon: '🧠', text: "What do you believe when no one's listening?" },
               { title: 'Relationships', icon: '❤️', text: "The stuff we think... but don't always say out loud." },
-              { title: 'Wildcards', icon: '🎲', text: 'No rules. No warning.' },
+              { title: 'Wildcards', icon: '🎲', text: 'No rules. No warning. Total honesty.' },
             ].map((card, i) => (
               <motion.div
                 key={card.title}
