@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: 'Lato', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  
+  --color-primary: hsl(var(--primary));
+  --color-primary-hover: hsl(var(--primary-hover));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-dark-bg-1: hsl(var(--dark-bg-1));
+  --color-dark-bg-2: hsl(var(--dark-bg-2));
+  --color-dark-bg-3: hsl(var(--dark-bg-3));
+  
+  --color-light-bg-1: hsl(var(--light-bg-1));
+  --color-light-bg-2: hsl(var(--light-bg-2));
+  --color-light-bg-3: hsl(var(--light-bg-3));
+}
+
+:root {
+  /* Core brand palette mapped to requested colors */
+  /* Dark backgrounds: #1a1210, #241816, #2d1d1a */
+  --dark-bg-1: 12 23% 8%;   /* #1a1210 */
+  --dark-bg-2: 9 24% 11%;   /* #241816 */
+  --dark-bg-3: 9 27% 14%;   /* #2d1d1a */
+  
+  /* Warm neutrals: #f1e3d3, #e7d5c3, #d9c2ad */
+  --light-bg-1: 32 49% 89%; /* #f1e3d3 (Warm Cream) */
+  --light-bg-2: 30 40% 84%; /* #e7d5c3 (Light Parchment) */
+  --light-bg-3: 30 35% 76%; /* #d9c2ad */
+  
+  /* Accent red/burgundy: #8f2f2a, #a63a34 */
+  --primary: 3 54% 36%;       /* #8f2f2a */
+  --primary-hover: 3 53% 43%; /* #a63a34 */
+  --primary-foreground: 32 49% 89%; /* Cream text on primary */
+  
+  /* Gold accent: #c49a6c */
+  --accent: 31 42% 60%;       /* #c49a6c */
+  --accent-foreground: 12 23% 8%; /* Dark text on gold */
+  
+  /* Text colors */
+  --text-dark: 21 47% 12%;    /* ~#2d1a10 Deep espresso for light bg */
+  --text-light: 32 49% 89%;   /* #f1e3d3 Warm cream for dark bg */
+
+  /* System mappings */
+  --background: var(--dark-bg-1);
+  --foreground: var(--text-light);
+  --card: var(--light-bg-2);
+  --card-foreground: var(--text-dark);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground font-sans antialiased selection:bg-primary/30 selection:text-white;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif tracking-tight text-balance;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .glass-dark {
+    @apply bg-black/20 backdrop-blur-md border border-white/5 shadow-2xl;
+  }
+  
+  .texture-overlay-dark {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  .texture-overlay-light {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+}

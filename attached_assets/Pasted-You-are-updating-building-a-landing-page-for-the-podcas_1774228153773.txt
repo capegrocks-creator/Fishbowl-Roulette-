@@ -1,0 +1,231 @@
+You are updating/building a landing page for the podcast brand "Fishbowl Roulette" using the domain:
+
+www.fishbowlroulette.com
+
+IMPORTANT:
+- Do NOT break any existing layout structure or functionality
+- Do NOT rename existing components unless necessary
+- Only enhance and replace specific visual elements
+- Keep the design clean, moody, premium, and easy to navigate
+- Build it so it feels polished enough to publish on a real domain
+
+GOAL:
+Create or update a landing page for Fishbowl Roulette that combines:
+1. the soft, warm, editorial look of the lighter mockup
+2. the darker textured lower section from the second mockup
+3. a REAL host photo instead of an AI woman image
+4. a wine glass instead of a bourbon/whiskey glass
+
+BRAND:
+- Podcast name: Fishbowl Roulette
+- Domain: www.fishbowlroulette.com
+- Tone: honest, bold, intimate, curious, slightly edgy
+- Theme: real conversations pulled at random from a fishbowl
+- Categories: Beliefs, Relationships, Wildcards
+
+STYLE DIRECTION:
+- Warm cinematic lounge/bar feel
+- Cream, parchment, dark espresso, soft black, muted burgundy, and warm gold
+- Slight vintage/editorial texture
+- High readability
+- Premium but human, not corporate
+
+COLOR DIRECTION:
+- Background darks: #1a1210, #241816, #2d1d1a
+- Warm neutrals: #f1e3d3, #e7d5c3, #d9c2ad
+- Accent red/burgundy: #8f2f2a, #a63a34
+- Gold accent: #c49a6c
+- Text on light background: deep brown/espresso
+- Text on dark background: warm cream
+
+TYPOGRAPHY:
+- Headings: elegant serif style
+- Body: clean readable serif or sans-serif
+- Emphasize quotes and headline lines with tasteful scale and spacing
+
+PAGE STRUCTURE:
+
+1. HERO SECTION
+Create a visually rich hero section.
+
+LEFT SIDE COPY:
+Headline:
+“You don’t get to prepare for this.”
+
+Body:
+“We reach into the bowl...
+and whatever comes out—comes out of us too.”
+
+Supporting line:
+“No script. No warning. No hiding.”
+
+Buttons:
+Primary CTA:
+“Drop into the conversation”
+
+Secondary CTA:
+“Don’t miss the next question”
+
+BUTTON STYLE:
+- Rounded corners
+- Soft shadow
+- Premium feel
+- Hover states with subtle animation
+- Primary button in burgundy/red
+- Secondary button in cream/light neutral
+
+RIGHT SIDE VISUAL:
+- Replace the AI woman image with a REAL uploaded host image
+- The real image should be loaded from project assets, something like:
+  /assets/sandra.jpg
+- Blend the real image naturally into the hero section
+- Use subtle warmth, soft vignette, and gentle shadow so it feels cohesive
+- Preserve the host’s likeness; do not stylize it into AI art
+- Keep it flattering, crisp, and authentic
+
+TABLETOP SCENE:
+- Include a fishbowl on a table with paper slips inside
+- Paper slips should visibly reference:
+  “Beliefs”
+  “Relationships”
+  “Wildcards”
+- Replace any bourbon/whiskey glass with a wine glass
+- Wine glass should contain red wine
+- Scene should feel intimate and conversational, not cluttered
+
+2. MID CONTENT SECTION
+Use the lighter, editorial, parchment-inspired layout feel.
+
+LEFT COLUMN:
+Headline:
+“This gets real... fast.”
+
+Bullets:
+- We don’t overthink it.
+- We don’t clean it up.
+- We just answer.
+
+Then:
+“Sometimes it’s funny.
+Sometimes it’s uncomfortable.
+Sometimes it hits something you didn’t expect.
+
+Good. That’s the point.”
+
+RIGHT COLUMN:
+Headline:
+“I’m Sandra.”
+
+Body:
+“I like real conversations—the kind that don’t stay on the surface for long.
+
+Somewhere along the way, I realized the right question can change everything.
+
+So I built this.
+
+A space where people stop performing, start telling the truth, and sometimes surprise themselves in the process.
+
+I’ll be right there with them.
+
+No script. No pretending.
+Just seeing what comes up.”
+
+CTA button:
+“Listen to my first episode”
+
+In this section, use the REAL uploaded image in place of the old AI woman photo if an image card/profile image is shown.
+
+3. DARK LOWER SECTION
+Use the darker textured section style inspired by the second image.
+
+Headline:
+“We pulled the first question... and it went there.”
+
+Create 3 feature cards:
+
+CARD 1
+Title: Beliefs
+Text: “What do you believe when no one’s listening?”
+
+CARD 2
+Title: Relationships
+Text: “The stuff we think... but don’t always say out loud.”
+
+CARD 3
+Title: Wildcards
+Text: “No rules. No warning.”
+
+STYLE:
+- Textured card backgrounds with soft paper/parchment look
+- Clean spacing
+- Slight shadow or border
+- Optional icons: brain, heart, dice
+- Keep the section visually dramatic but readable
+
+Below cards add:
+“The truth is usually one question away.”
+
+4. PLATFORM / LISTEN SECTION
+Add recognizable buttons or icon links for:
+- Spotify
+- Apple Podcasts
+- YouTube
+- Instagram
+
+If TikTok is available, include it as optional.
+
+These should look polished and branded, and should be easy to tap on mobile.
+
+5. EMAIL CAPTURE
+Add an email sign-up row or box.
+
+Text:
+“Enter your email”
+
+Button:
+“Join the List”
+
+Optional supporting text:
+“Get the next question before anyone else.”
+
+6. FINAL CTA / FOOTER CLOSE
+Closing copy:
+“Pull up a chair.
+You never know what question is coming next.”
+
+Optional final line:
+“Careful... you might get asked next.”
+
+7. SITE / DOMAIN DETAILS
+Make sure the page is ready for fishbowlroulette.com
+
+Include:
+- Proper page title:
+  Fishbowl Roulette | Real conversations. No script. No warning.
+- Meta description:
+  Fishbowl Roulette is a podcast where real conversations start with one random question. Beliefs, relationships, wildcards, and whatever comes next.
+- Favicon/logo support if available
+- Social preview image support if available
+
+8. RESPONSIVENESS
+Ensure:
+- Mobile-first friendly
+- Hero stacks cleanly on smaller screens
+- Buttons remain easy to tap
+- Photo and fishbowl scale well
+- Cards stack neatly
+- Text stays readable without awkward wrapping
+
+9. PERFORMANCE
+- Optimize image loading
+- Use lazy loading where appropriate
+- Compress large assets
+- Keep animations subtle and lightweight
+
+10. FINAL CHECK
+Before finishing:
+- Confirm the real image is being used instead of the AI placeholder
+- Confirm wine glass has replaced bourbon glass
+- Confirm the brand/domain is Fishbowl Roulette / www.fishbowlroulette.com
+- Do not remove any working navigation or links
+- Keep the experience polished, emotional, and easy to launch

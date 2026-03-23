@@ -48,6 +48,20 @@ Every package extends `tsconfig.base.json` which sets `composite: true`. The roo
 - `pnpm run build` — runs `typecheck` first, then recursively runs `build` in all packages that define it
 - `pnpm run typecheck` — runs `tsc --build --emitDeclarationOnly` using project references
 
+## Artifacts
+
+### `artifacts/fishbowl-roulette` (`@workspace/fishbowl-roulette`)
+
+Landing page for the Fishbowl Roulette podcast at fishbowlroulette.com. Pure React + Vite frontend, no backend.
+
+- Warm cinematic brand: Playfair Display (serif headings), Lato (body)
+- Brand palette: dark espresso backgrounds (#1a1210, #241816), warm parchment neutrals (#f1e3d3), burgundy (#8f2f2a), gold (#c49a6c)
+- Sections: Hero, Mid-content (Sandra bio), Dark feature cards (Beliefs/Relationships/Wildcards), Platform links, Email capture, Footer
+- Inline SVG illustrations: fishbowl with paper slips + red wine glass
+- Host photo at `public/images/sandra-portrait.png` (AI generated placeholder; replace with real photo)
+- Framer Motion animations, responsive mobile-first design
+- `previewPath: "/"`
+
 ## Packages
 
 ### `artifacts/api-server` (`@workspace/api-server`)

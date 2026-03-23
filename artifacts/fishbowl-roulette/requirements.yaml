@@ -1,0 +1,19 @@
+packages:
+  "framer-motion": "For elegant, cinematic scroll animations and entry reveals"
+  "lucide-react": "For subtle icons in the UI (if needed as fallbacks)"
+
+images:
+  - path: "artifacts/fishbowl-roulette/public/images/sandra-portrait.png"
+    description: "Moody, cinematic portrait of a female podcast host in a warm, dimly lit lounge environment. Editorial style, vintage lens feel. Subtle gold and deep burgundy lighting."
+    aspect_ratio: "3:4"
+  - path: "artifacts/fishbowl-roulette/public/images/dark-texture.png"
+    description: "Subtle dark cinematic background texture, deep espresso and black tones with very faint warm film grain and vignette."
+    aspect_ratio: "16:9"
+  - path: "artifacts/fishbowl-roulette/public/images/light-texture.png"
+    description: "Elegant vintage parchment paper texture, warm cream and light beige tones, smooth but tactile."
+    aspect_ratio: "16:9"
+
+notes:
+  - Frontend only static landing page.
+  - No backend API calls required.
+  - Emphasizing typography and color palette for a premium editorial feel.
