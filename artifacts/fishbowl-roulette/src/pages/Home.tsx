@@ -112,10 +112,17 @@ const Home = () => {
           {/* Mobile bio overlay — bottom of photo block */}
           <div className="absolute bottom-0 inset-x-0 px-5 pb-4 pt-10">
             <p className="font-serif font-bold italic text-light-bg-1 text-lg leading-tight mb-1">I'm Sandra.</p>
-            <p className="font-sans text-light-bg-2 text-xs leading-relaxed opacity-90">
+            <p className="font-sans text-light-bg-2 text-xs leading-relaxed opacity-90 mb-2">
               I like real conversations—the kind that don't stay on the surface for long.<br />
               <span className="italic">No script. No pretending. Just seeing what comes up.</span>
             </p>
+            <a
+              href="#listen"
+              className="inline-flex items-center gap-1 text-accent font-sans font-semibold text-xs hover:text-light-bg-1 transition-colors group"
+            >
+              Listen to my first episode
+              <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>
+            </a>
           </div>
         </div>
 
