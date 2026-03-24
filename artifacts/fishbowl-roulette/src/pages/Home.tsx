@@ -563,7 +563,14 @@ const PlatformBtn = ({ name, icon, href, color }: { name: string; icon: React.Re
 const BrainIcon = () => (
   <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
     <circle cx="19" cy="19" r="17" fill="rgba(143,47,42,0.2)" stroke="rgba(143,47,42,0.4)" strokeWidth="1" />
-    <text x="19" y="26" textAnchor="middle" fontSize="18">🧠</text>
+    {/* Stylized brain - two hemispheres with folds */}
+    <path d="M19 10 C14 10 11 13 11 16.5 C11 18 12 19.5 13.5 20 C12 20.5 11 22 11 23.5 C11 26.5 13.5 28.5 17 28.5 L19 28.5" stroke="#8f2f2a" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+    <path d="M19 10 C24 10 27 13 27 16.5 C27 18 26 19.5 24.5 20 C26 20.5 27 22 27 23.5 C27 26.5 24.5 28.5 21 28.5 L19 28.5" stroke="#8f2f2a" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+    <line x1="19" y1="10" x2="19" y2="28.5" stroke="#8f2f2a" strokeWidth="1" strokeLinecap="round"/>
+    <path d="M13.5 16 C15 15.5 17 16 18 17" stroke="#8f2f2a" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.7"/>
+    <path d="M24.5 16 C23 15.5 21 16 20 17" stroke="#8f2f2a" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.7"/>
+    <path d="M13 23 C14.5 22 16.5 22.5 18 23.5" stroke="#8f2f2a" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.7"/>
+    <path d="M25 23 C23.5 22 21.5 22.5 20 23.5" stroke="#8f2f2a" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.7"/>
   </svg>
 );
 
