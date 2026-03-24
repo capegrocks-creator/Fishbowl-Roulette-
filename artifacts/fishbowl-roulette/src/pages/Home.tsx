@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 const BASE = import.meta.env.BASE_URL;
 const sandraImg = `${BASE}images/sandra.jpg`;
 const fishbowlImg = `${BASE}images/fishbowl.png`;
-const whiskeyImg = `${BASE}images/whiskey-glass.png`;
+const wineImg = `${BASE}images/wine-glass.png`;
 const textureBg = `${BASE}images/dark-texture.png`;
 
 const Home = () => {
@@ -12,7 +12,7 @@ const Home = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [fishbowlErr, setFishbowlErr] = useState(false);
-  const [whiskeyErr, setWhiskeyErr] = useState(false);
+  const [wineErr, setWineErr] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 40);
@@ -95,7 +95,7 @@ const Home = () => {
           HERO
           - Full dark warm bar atmosphere background
           - Sandra upper-right, masked to show face only
-          - Fishbowl + whiskey glass at bottom-center-left on table
+          - Fishbowl + wine glass at bottom-center-left on table
       ═══════════════════════════════════════════ */}
       <section className="relative overflow-hidden" style={{ minHeight: '100svh' }}>
 
@@ -243,26 +243,36 @@ const Home = () => {
           </motion.div>
         </div>
 
-        {/* ── Table surface across bottom of hero ── */}
+        {/* ── Table surface: dark mahogany English estate library ── */}
         <div className="absolute inset-x-0 bottom-0" style={{
           height: 'clamp(55px, 8vw, 100px)',
           zIndex: 5,
-          background: 'linear-gradient(to bottom, #3a2510 0%, #4a3218 25%, #3d2a12 60%, #2a1a0a 100%)',
-          boxShadow: 'inset 0 8px 28px rgba(0,0,0,0.65)',
+          background: 'linear-gradient(to bottom, #1e0f07 0%, #2a1208 18%, #261007 55%, #1a0b05 100%)',
+          boxShadow: 'inset 0 10px 32px rgba(0,0,0,0.8)',
         }}>
-          {/* Table top edge highlight */}
+          {/* Polished top edge — mahogany highlight */}
           <div style={{
             position: 'absolute', inset: 0, top: 0, height: '2px',
-            background: 'linear-gradient(to right, transparent 0%, rgba(196,154,108,0.45) 25%, rgba(196,154,108,0.55) 50%, rgba(196,154,108,0.45) 75%, transparent 100%)',
+            background: 'linear-gradient(to right, transparent 0%, rgba(160,80,30,0.6) 20%, rgba(200,120,60,0.75) 50%, rgba(160,80,30,0.6) 80%, transparent 100%)',
           }} />
-          {/* Subtle wood grain */}
+          {/* Inlay band — decorative gilt/brass-toned stripe below top edge */}
+          <div style={{
+            position: 'absolute', left: 0, right: 0, top: '5px', height: '1px',
+            background: 'linear-gradient(to right, transparent 0%, rgba(196,154,108,0.3) 15%, rgba(196,154,108,0.5) 50%, rgba(196,154,108,0.3) 85%, transparent 100%)',
+          }} />
+          {/* Deep mahogany grain lines */}
           <div style={{
             position: 'absolute', inset: 0,
             background: `repeating-linear-gradient(90deg,
-              transparent 0px, transparent 60px,
-              rgba(255,200,120,0.025) 60px, rgba(255,200,120,0.025) 61px,
-              transparent 61px, transparent 130px
+              transparent 0px, transparent 80px,
+              rgba(80,20,5,0.18) 80px, rgba(80,20,5,0.18) 82px,
+              transparent 82px, transparent 180px
             )`,
+          }} />
+          {/* Warm gloss sheen */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(to bottom, rgba(180,80,20,0.06) 0%, transparent 50%)',
           }} />
         </div>
 
@@ -289,25 +299,25 @@ const Home = () => {
           )}
         </div>
 
-        {/* ── Whiskey glass — bottom, right of fishbowl ── */}
+        {/* ── Wine glass — bottom, right of fishbowl ── */}
         <div
           className="absolute"
           style={{
             bottom: 'clamp(40px, 5.5vw, 80px)',
             left: 'clamp(200px, 28vw, 410px)',
-            width: 'clamp(90px, 11vw, 158px)',
+            width: 'clamp(70px, 8.5vw, 120px)',
             zIndex: 10,
             filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.7))',
           }}
         >
-          {whiskeyErr ? (
-            <WhiskeySVG />
+          {wineErr ? (
+            <WineGlassSVG />
           ) : (
             <img
-              src={whiskeyImg}
-              alt="Whiskey on the rocks"
+              src={wineImg}
+              alt="White wine glass"
               style={{ width: '100%', display: 'block' }}
-              onError={() => setWhiskeyErr(true)}
+              onError={() => setWineErr(true)}
             />
           )}
         </div>
@@ -547,24 +557,36 @@ const FishbowlSVG = () => (
   </svg>
 );
 
-/* ─── Fallback SVG whiskey glass (if AI image fails) ─── */
-const WhiskeySVG = () => (
-  <svg viewBox="0 0 110 160" fill="none" style={{ width: '100%', display: 'block' }}>
+/* ─── Fallback SVG wine glass (if AI image fails) ─── */
+const WineGlassSVG = () => (
+  <svg viewBox="0 0 80 200" fill="none" style={{ width: '100%', display: 'block' }}>
     <defs>
-      <linearGradient id="wl" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#c87d30" />
-        <stop offset="60%" stopColor="#a0561a" />
-        <stop offset="100%" stopColor="#6b3510" />
+      <linearGradient id="wine" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#e8d88a" stopOpacity="0.85" />
+        <stop offset="100%" stopColor="#c8b850" stopOpacity="0.75" />
+      </linearGradient>
+      <linearGradient id="wglass" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#fff" stopOpacity="0.22" />
+        <stop offset="40%" stopColor="#fff" stopOpacity="0.06" />
+        <stop offset="100%" stopColor="#fff" stopOpacity="0.12" />
       </linearGradient>
     </defs>
-    <path d="M 18,18 L 10,140 Q 10,148 55,148 Q 100,148 100,140 L 92,18 Z"
-      fill="rgba(255,255,255,0.1)" stroke="#c9a87e" strokeWidth="2" strokeOpacity="0.5" />
-    <path d="M 20,68 L 14,140 Q 14,146 55,146 Q 96,146 96,140 L 90,68 Z" fill="url(#wl)" opacity="0.92" />
-    <ellipse cx="55" cy="68" rx="35" ry="7" fill="#c87d30" opacity="0.9" />
-    <rect x="35" y="73" width="28" height="20" rx="3" fill="rgba(200,220,255,0.4)" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
-    <path d="M 20,22 L 13,100" stroke="#fff" strokeWidth="5" strokeOpacity="0.2" strokeLinecap="round" fill="none" />
-    <ellipse cx="55" cy="18" rx="38" ry="8" fill="none" stroke="#d4bfa8" strokeWidth="2" strokeOpacity="0.75" />
-    <ellipse cx="55" cy="147" rx="44" ry="8" fill="#3d2510" stroke="#c9a87e" strokeWidth="1.5" strokeOpacity="0.5" />
+    {/* Bowl */}
+    <path d="M 14,14 Q 8,55 8,75 Q 8,110 40,118 Q 72,110 72,75 Q 72,55 66,14 Z"
+      fill="url(#wglass)" stroke="#d4c8a0" strokeWidth="1.5" strokeOpacity="0.55" />
+    {/* Wine fill */}
+    <path d="M 13,72 Q 11,105 40,114 Q 69,105 67,72 Z" fill="url(#wine)" opacity="0.9" />
+    {/* Wine surface shimmer */}
+    <ellipse cx="40" cy="72" rx="27" ry="5.5" fill="#e8d88a" opacity="0.55" />
+    {/* Rim highlight */}
+    <ellipse cx="40" cy="14" rx="26" ry="5" fill="none" stroke="#e0d4b0" strokeWidth="1.5" strokeOpacity="0.6" />
+    {/* Glass highlight */}
+    <path d="M 18,20 Q 14,60 14,80" stroke="#fff" strokeWidth="4" strokeOpacity="0.18" strokeLinecap="round" fill="none" />
+    {/* Stem */}
+    <line x1="40" y1="118" x2="40" y2="178" stroke="#c9b898" strokeWidth="2.5" strokeOpacity="0.7" />
+    {/* Base */}
+    <ellipse cx="40" cy="180" rx="28" ry="6" fill="none" stroke="#c9b898" strokeWidth="2" strokeOpacity="0.6" />
+    <ellipse cx="40" cy="180" rx="28" ry="4" fill="rgba(196,154,108,0.1)" />
   </svg>
 );
 
