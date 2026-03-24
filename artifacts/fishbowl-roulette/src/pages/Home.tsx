@@ -169,11 +169,17 @@ const Home = () => {
             mixBlendMode: 'multiply',
             pointerEvents: 'none',
           }} />
-          {/* Top cover — hides bright bridge tunnel exit entirely */}
+          {/* Top cover — fully hides bright bridge tunnel exit. Solid dark block at very top, then gradient fade. */}
           <div style={{
             position: 'absolute', inset: '0 0 auto 0',
-            height: '38%',
-            background: 'linear-gradient(to bottom, rgba(8,4,2,0.97) 0%, rgba(8,4,2,0.88) 30%, rgba(8,4,2,0.5) 65%, transparent 100%)',
+            height: '22%',
+            background: 'rgba(8,4,2,1)',
+            pointerEvents: 'none',
+          }} />
+          <div style={{
+            position: 'absolute', top: '22%', left: 0, right: 0,
+            height: '22%',
+            background: 'linear-gradient(to bottom, rgba(8,4,2,1) 0%, rgba(8,4,2,0.7) 50%, transparent 100%)',
             pointerEvents: 'none',
           }} />
           {/* Bottom fade */}
