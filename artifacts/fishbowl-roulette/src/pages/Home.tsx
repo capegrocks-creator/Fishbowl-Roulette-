@@ -57,14 +57,7 @@ const Home = () => {
 
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map(l => (
-              <a
-                key={l.label}
-                href={l.href}
-                className="font-sans text-sm tracking-widest uppercase transition-colors duration-200"
-                style={{ color: '#d9c2ad' }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#c49a6c')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#d9c2ad')}
-              >
+              <a key={l.label} href={l.href} className="fr-nav-link">
                 {l.label}
               </a>
             ))}
@@ -240,46 +233,10 @@ const Home = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-1">
-              <a
-                href="#listen"
-                className="inline-flex justify-center items-center gap-2 font-sans font-semibold tracking-wide"
-                style={{
-                  padding: '12px 22px',
-                  borderRadius: '7px',
-                  background: '#8f2f2a',
-                  color: '#fff',
-                  fontSize: '0.88rem',
-                  boxShadow: '0 4px 18px rgba(143,47,42,0.5)',
-                  textDecoration: 'none',
-                  transition: 'background 0.2s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#a63a34')}
-                onMouseLeave={e => (e.currentTarget.style.background = '#8f2f2a')}
-              >
+              <a href="#listen" className="fr-cta-primary">
                 🎧 Drop into the conversation
               </a>
-              <a
-                href="#join"
-                className="inline-flex justify-center items-center gap-2 font-sans font-medium tracking-wide"
-                style={{
-                  padding: '12px 22px',
-                  borderRadius: '7px',
-                  background: 'transparent',
-                  border: '1.5px solid rgba(217,194,173,0.35)',
-                  color: '#f1e3d3',
-                  fontSize: '0.88rem',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = 'rgba(196,154,108,0.7)';
-                  e.currentTarget.style.color = '#c49a6c';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.borderColor = 'rgba(217,194,173,0.35)';
-                  e.currentTarget.style.color = '#f1e3d3';
-                }}
-              >
+              <a href="#join" className="fr-cta-secondary">
                 🔔 Don't miss the next question
               </a>
             </div>
@@ -403,18 +360,7 @@ const Home = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: i * 0.12 }}
-                style={{
-                  background: 'linear-gradient(145deg, #cfaa8a 0%, #be9070 50%, #ad7d58 100%)',
-                  borderRadius: '10px',
-                  padding: '24px 20px 20px',
-                  boxShadow: '0 6px 28px rgba(0,0,0,0.45)',
-                  border: '1px solid rgba(196,154,108,0.3)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  transition: 'transform 0.2s',
-                }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)')}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.transform = 'translateY(0)')}
+                className="fr-parchment-card"
               >
                 {/* Subtle parchment highlight */}
                 <div style={{
@@ -480,34 +426,12 @@ const Home = () => {
               type="email"
               required
               placeholder="Enter your email"
-              className="font-sans flex-1"
-              style={{
-                background: 'rgba(196,154,108,0.08)',
-                border: '1.5px solid rgba(196,154,108,0.32)',
-                borderRadius: '7px',
-                padding: '13px 18px',
-                color: '#f1e3d3',
-                fontSize: '0.88rem',
-                outline: 'none',
-              }}
+              className="fr-email-input"
             />
             <button
               type="submit"
               disabled={emailSubmitted}
-              className="font-sans font-semibold whitespace-nowrap"
-              style={{
-                background: '#8f2f2a',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '7px',
-                padding: '13px 24px',
-                fontSize: '0.88rem',
-                cursor: emailSubmitted ? 'default' : 'pointer',
-                transition: 'background 0.2s',
-                opacity: emailSubmitted ? 0.75 : 1,
-              }}
-              onMouseEnter={e => !emailSubmitted && ((e.currentTarget as HTMLElement).style.background = '#a63a34')}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = '#8f2f2a')}
+              className="fr-submit-btn"
             >
               {emailSubmitted ? "You're on the list!" : 'Join the List'}
             </button>
@@ -547,13 +471,7 @@ const Home = () => {
 
 /* ─── Platform button ─── */
 const PlatformBtn = ({ name, icon, href, color }: { name: string; icon: React.ReactNode; href: string; color: string }) => (
-  <a
-    href={href} target="_blank" rel="noopener noreferrer"
-    className="inline-flex items-center gap-2 font-sans font-medium"
-    style={{ color, textDecoration: 'none', fontSize: '0.95rem', opacity: 0.85, transition: 'opacity 0.2s' }}
-    onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-    onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
-  >
+  <a href={href} target="_blank" rel="noopener noreferrer" className="fr-platform-link" style={{ color }}>
     {icon}
     {name}
   </a>
