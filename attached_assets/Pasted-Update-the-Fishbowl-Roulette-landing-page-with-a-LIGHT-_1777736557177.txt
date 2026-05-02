@@ -1,0 +1,135 @@
+Update the Fishbowl Roulette landing page with a LIGHT/DARK theme system and fix the hero layout.
+
+DO NOT rebuild the app.
+DO NOT remove working features.
+DO NOT break privacy page, email signup, Pull a Question, Submit a Question, episode links, or footer links.
+Only update styling, theme behavior, and hero layout.
+
+GOAL:
+- Light mode should be the DEFAULT visual style.
+- Dark mode should still exist as an optional toggle.
+- Fix Sandra’s photo so she is bright, visible, and not hidden in shadows.
+- Fix the fishbowl so it never covers hero text.
+- Make desktop and mobile feel clean, modern, current, and polished.
+
+THEME SYSTEM:
+Add a visible theme toggle in the header:
+- Label or icon: Light / Dark or sun/moon icon
+- Default theme: Light
+- Save preference in localStorage if simple
+- If localStorage exists, respect user choice
+- Do not make dark mode the default
+
+LIGHT MODE STYLE:
+- Background: #F7F5F2
+- Alternate background: #EEE9E1
+- Text: #2B2B2B
+- Muted text: rgba(43,43,43,0.6)
+- Accent coral: #E36A5D
+- Soft gold/beige: #E8D8B9
+- Cards: #FFFFFF or #F8F3EA
+- Overall feel: clean, airy, modern, slightly playful, podcast/app-like
+
+DARK MODE STYLE:
+- Keep a tasteful dark version, but make it less heavy than the current lounge look
+- Use deep espresso only as background, not giant black panels
+- Keep Sandra visible
+- Keep text readable
+- Avoid hiding images under dark overlays
+
+HEADER:
+- Light mode: cream/transparent header, charcoal nav text, muted gold/coral logo accent
+- Dark mode: dark header allowed, but keep logo/nav readable
+- Add theme toggle without crowding mobile nav
+
+HERO LAYOUT FIX:
+Desktop:
+- Use a clean 2-column layout
+- Left column: badge, headline, short text, buttons
+- Right column: Sandra photo and fishbowl visual
+- Do NOT allow the fishbowl to overlap the headline or body copy
+- Keep generous spacing between columns
+
+Mobile:
+- Stack cleanly
+- Headline and buttons first
+- Sandra/photo/fishbowl visual below or separated clearly
+- Fishbowl must not cover text or buttons
+
+HERO COPY:
+Keep:
+“New episode every Wednesday”
+
+Use headline:
+“You don’t get to prepare for this.”
+
+Supporting copy:
+“We reach into the bowl…
+and whatever comes out—comes out of us too.”
+
+Add/keep:
+“You never know what question is coming next. And neither do they.”
+
+Buttons:
+Primary:
+“🎧 Start Listening”
+Secondary:
+“🔔 Get the Wednesday Question”
+
+SANDRA PHOTO FIX:
+- Remove heavy dark overlay from Sandra’s photo
+- Make her clearly visible
+- Use a light rounded card/frame in light mode
+- Use subtle shadow only
+- Do not crop her face awkwardly
+- Do not hide her in a dark right-side block
+- On desktop, place her cleanly on the right with breathing room
+
+FISHBOWL FIX:
+- Reduce fishbowl size on desktop if it is too large
+- Position it as a visual accent near/below Sandra, not over text
+- It can sit near the hero visual area, but not over headline/body/buttons
+- Keep it lighter and less heavy in light mode
+- Keep it responsive on mobile
+
+PAGE SECTIONS:
+Latest Episode:
+- Light mode: clean light card/section
+- Keep:
+  “First Guest in the Bowl: Jeff Brune”
+  “He thought it would be casual. It wasn’t.”
+- Button remains muted coral
+
+Category Cards:
+- Keep current category cards and SVG fishbowls if present
+- Light mode: light parchment/cream cards, no dark section behind them
+- Dark mode: tasteful dark background with readable cards
+- Keep soft shadows only
+
+Platform Links:
+- Light mode: place on light background, readable icons/text
+- Avoid dark strip treatment in light mode
+
+Wednesday Ritual + Email Signup:
+Keep:
+“Make Wednesday your question day.”
+“One question. Every Wednesday. In your inbox.”
+- Light mode: soft cream/beige section
+- Input light with charcoal text
+- Button muted coral
+
+Footer:
+- Light mode footer
+- Keep Privacy Policy, Contact, hello@fishbowlroulette.com, New episodes every Wednesday
+- Text should be charcoal/muted charcoal in light mode
+
+FINAL CHECK:
+- Light mode is default
+- Dark mode is optional and works
+- Desktop hero is not dark or heavy by default
+- Sandra is visible and flattering
+- Fishbowl does not cover text
+- Mobile stacks cleanly
+- No working buttons/forms/routes are broken
+- Privacy page still works
+- Pull a Question and Submit a Question still work

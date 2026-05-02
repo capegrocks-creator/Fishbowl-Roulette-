@@ -7,12 +7,30 @@ const fishbowlImg = `${BASE}images/fishbowl.png`;
 const wineImg = `${BASE}images/wine-glass.png`;
 const textureBg = `${BASE}images/dark-texture.png`;
 
+/* ── Theme init: respect localStorage, default to light ── */
+const getInitialTheme = (): 'light' | 'dark' => {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('fr-theme');
+    if (stored === 'light' || stored === 'dark') return stored;
+  }
+  return 'light';
+};
+
 const Home = () => {
+  const [theme, setTheme] = useState<'light' | 'dark'>(getInitialTheme);
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [fishbowlErr, setFishbowlErr] = useState(false);
   const [wineErr, setWineErr] = useState(false);
+
+  const isDark = theme === 'dark';
+
+  const toggleTheme = () => {
+    const next: 'light' | 'dark' = isDark ? 'light' : 'dark';
+    setTheme(next);
+    localStorage.setItem('fr-theme', next);
+  };
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 40);
@@ -34,55 +52,100 @@ const Home = () => {
     { label: 'Follow', href: '#join' },
   ];
 
+  /* ── Theme-aware colour tokens ── */
+  const bg        = isDark ? '#1a1008' : '#F7F5F2';
+  const bgAlt     = isDark ? '#1e1009' : '#EEE9E1';
+  const bgAlt2    = isDark ? '#231410' : '#E8E2D8';
+  const text      = isDark ? '#f1e3d3' : '#2B2B2B';
+  const textMuted = isDark ? 'rgba(217,194,173,0.72)' : 'rgba(43,43,43,0.58)';
+  const textSubtle= isDark ? 'rgba(217,194,173,0.3)'  : 'rgba(43,43,43,0.28)';
+  const accent    = isDark ? '#8f2f2a' : '#E36A5D';
+  const gold      = isDark ? '#c49a6c' : '#B8854A';
+  const border    = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(43,43,43,0.09)';
+
+  const headerScrolledBg  = isDark ? 'rgba(18,10,5,0.96)'    : 'rgba(247,245,242,0.96)';
+  const headerScrolledShadow = isDark ? '0 2px 20px rgba(0,0,0,0.5)' : '0 2px 20px rgba(43,43,43,0.07)';
+
   return (
-    <div className="min-h-screen text-light-bg-1 overflow-x-hidden" style={{ background: '#1a1008' }}>
+    <div
+      data-theme={theme}
+      className="min-h-screen overflow-x-hidden"
+      style={{ background: bg, color: text, transition: 'background 0.3s, color 0.3s' }}
+    >
 
       {/* ─── HEADER ─── */}
       <header
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
-          isScrolled ? 'py-3' : 'py-5 bg-transparent'
-        }`}
-        style={isScrolled ? {
-          background: 'rgba(18,10,5,0.95)',
-          backdropFilter: 'blur(8px)',
-          boxShadow: '0 2px 20px rgba(0,0,0,0.5)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-        } : {}}
+        className="fixed top-0 inset-x-0 z-50 transition-all duration-400"
+        style={{
+          padding: isScrolled ? '10px 0' : '18px 0',
+          background: isScrolled ? headerScrolledBg : 'transparent',
+          backdropFilter: isScrolled ? 'blur(10px)' : 'none',
+          boxShadow: isScrolled ? headerScrolledShadow : 'none',
+          borderBottom: isScrolled ? `1px solid ${border}` : 'none',
+        }}
       >
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <div className="font-serif font-bold text-xl tracking-tight">
-            <span style={{ color: '#c49a6c' }}>Fishbowl</span>
-            <span style={{ color: '#c49a6c' }} className="italic"> Roulette</span>
+          {/* Logo */}
+          <div className="font-serif font-bold text-xl tracking-tight" style={{ color: gold }}>
+            Fishbowl<em> Roulette</em>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8">
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-7">
             {navLinks.map(l => (
-              <a key={l.label} href={l.href} className="fr-nav-link">
+              <a key={l.label} href={l.href}
+                className="font-sans text-sm tracking-widest uppercase transition-colors duration-200"
+                style={{ color: isDark ? '#d9c2ad' : '#444', textDecoration: 'none' }}
+                onMouseEnter={e => (e.currentTarget.style.color = gold)}
+                onMouseLeave={e => (e.currentTarget.style.color = isDark ? '#d9c2ad' : '#444')}
+              >
                 {l.label}
               </a>
             ))}
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              style={{
+                background: 'transparent',
+                border: `1.5px solid ${isDark ? 'rgba(196,154,108,0.35)' : 'rgba(43,43,43,0.18)'}`,
+                borderRadius: '20px', padding: '5px 13px',
+                cursor: 'pointer', color: isDark ? '#c49a6c' : '#555',
+                fontSize: '0.75rem', letterSpacing: '0.06em',
+                display: 'flex', alignItems: 'center', gap: '5px',
+                transition: 'all 0.2s',
+              }}
+            >
+              {isDark ? '☀ Light' : '☾ Dark'}
+            </button>
           </nav>
 
-          <button
-            className="md:hidden flex flex-col gap-1.5 p-2"
-            onClick={() => setMenuOpen(v => !v)}
-            aria-label="Toggle menu"
-          >
-            <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-            <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
-            <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
-          </button>
+          {/* Mobile controls */}
+          <div className="md:hidden flex items-center gap-3">
+            <button onClick={toggleTheme} aria-label="Toggle theme"
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1rem', color: text }}
+            >
+              {isDark ? '☀' : '☾'}
+            </button>
+            <button className="flex flex-col gap-1.5 p-1"
+              onClick={() => setMenuOpen(v => !v)} aria-label="Toggle menu"
+            >
+              <span className={`block w-6 h-0.5 transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} style={{ background: text }} />
+              <span className={`block w-6 h-0.5 transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} style={{ background: text }} />
+              <span className={`block w-6 h-0.5 transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} style={{ background: text }} />
+            </button>
+          </div>
         </div>
 
+        {/* Mobile menu */}
         {menuOpen && (
-          <div
-            className="md:hidden border-t border-white/5 px-6 py-6 flex flex-col gap-5"
-            style={{ background: 'rgba(18,10,5,0.98)', backdropFilter: 'blur(8px)' }}
+          <div className="md:hidden border-t px-6 py-6 flex flex-col gap-5"
+            style={{ background: isDark ? 'rgba(18,10,5,0.98)' : 'rgba(247,245,242,0.98)', backdropFilter: 'blur(10px)', borderColor: border }}
           >
             {navLinks.map(l => (
               <a key={l.label} href={l.href} onClick={() => setMenuOpen(false)}
                 className="font-sans text-base tracking-widest uppercase"
-                style={{ color: '#f1e3d3' }}
+                style={{ color: text, textDecoration: 'none' }}
               >
                 {l.label}
               </a>
@@ -91,266 +154,172 @@ const Home = () => {
         )}
       </header>
 
-      {/* ═══════════════════════════════════════════
-          HERO
-          - Full dark warm bar atmosphere background
-          - Sandra upper-right, masked to show face only
-          - Fishbowl + wine glass at bottom-center-left on table
-      ═══════════════════════════════════════════ */}
-      <section className="relative overflow-hidden" style={{ minHeight: '100svh' }}>
+      {/* ═══════════════════════════════════════════════════
+          HERO — proper 2-column grid, no overlapping
+      ═══════════════════════════════════════════════════ */}
+      <section
+        style={{
+          background: isDark
+            ? `radial-gradient(ellipse 60% 55% at 65% 45%, rgba(140,65,10,0.28) 0%, transparent 70%),
+               radial-gradient(ellipse 110% 100% at 50% 50%, transparent 35%, rgba(8,4,2,0.45) 100%),
+               url(${textureBg}) center/cover no-repeat,
+               #1a1008`
+            : bg,
+          minHeight: '100svh',
+          display: 'flex',
+          alignItems: 'center',
+          paddingTop: '72px',
+        }}
+      >
+        <div className="w-full max-w-6xl mx-auto px-6 sm:px-10 md:px-14 py-10 md:py-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
 
-        {/* ── Background: warm dark bar texture ── */}
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url(${textureBg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }} />
-
-        {/* ── Warm radial glow in center-right (bar bokeh / candlelight effect) ── */}
-        <div className="absolute inset-0" style={{
-          background: 'radial-gradient(ellipse 60% 50% at 68% 42%, rgba(140,65,10,0.42) 0%, rgba(10,5,2,0.0) 70%)',
-        }} />
-        {/* Secondary warm spot upper-right for atmospheric depth */}
-        <div className="absolute inset-0" style={{
-          background: 'radial-gradient(ellipse 30% 25% at 78% 18%, rgba(180,100,20,0.22) 0%, transparent 70%)',
-        }} />
-
-        {/* ── Overall dark vignette ── */}
-        <div className="absolute inset-0" style={{
-          background: 'radial-gradient(ellipse 110% 100% at 50% 50%, transparent 30%, rgba(8,4,2,0.62) 100%)',
-        }} />
-
-        {/* ── Top shadow ── */}
-        <div className="absolute inset-x-0 top-0" style={{
-          height: '160px',
-          background: 'linear-gradient(to bottom, rgba(8,4,2,0.75) 0%, transparent 100%)',
-        }} />
-
-        {/* ── Sandra photo — upper right, composited into the dark bar scene ── */}
-        {/*    objectPosition shifts to show mainly face/shoulders.           */}
-        {/*    Radial mask creates oval spotlight on face, hides bridge.       */}
-        <div
-          className="absolute"
-          style={{
-            top: '-4%',
-            right: '-1%',
-            width: 'clamp(300px, 52%, 680px)',
-            height: '82%',
-            zIndex: 2,
-            overflow: 'hidden',
-          }}
-        >
-          <img
-            src={sandraImg}
-            alt="Sandra, host of Fishbowl Roulette"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              /* Shift down so face/shoulders fill most of the display, hiding the bright bridge exit up top */
-              objectPosition: '40% 32%',
-              display: 'block',
-              /* Oval reveal tight on face: center at 55% x / 52% y (lower-center) */
-              WebkitMaskImage: 'radial-gradient(ellipse 68% 68% at 55% 50%, black 0%, black 20%, rgba(0,0,0,0.82) 36%, rgba(0,0,0,0.42) 52%, rgba(0,0,0,0.1) 65%, transparent 78%)',
-              maskImage: 'radial-gradient(ellipse 68% 68% at 55% 50%, black 0%, black 20%, rgba(0,0,0,0.82) 36%, rgba(0,0,0,0.42) 52%, rgba(0,0,0,0.1) 65%, transparent 78%)',
-            }}
-          />
-          {/* Warm dark grade — desaturates the bridge and adds bar atmosphere */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'rgba(18,8,2,0.42)',
-            mixBlendMode: 'multiply',
-            pointerEvents: 'none',
-          }} />
-          {/* Top cover — fully hides bright bridge tunnel exit. Solid dark block at very top, then gradient fade. */}
-          <div style={{
-            position: 'absolute', inset: '0 0 auto 0',
-            height: '22%',
-            background: 'rgba(8,4,2,1)',
-            pointerEvents: 'none',
-          }} />
-          <div style={{
-            position: 'absolute', top: '22%', left: 0, right: 0,
-            height: '22%',
-            background: 'linear-gradient(to bottom, rgba(8,4,2,1) 0%, rgba(8,4,2,0.7) 50%, transparent 100%)',
-            pointerEvents: 'none',
-          }} />
-          {/* Bottom fade */}
-          <div style={{
-            position: 'absolute', inset: 'auto 0 0 0',
-            height: '30%',
-            background: 'linear-gradient(to top, rgba(10,5,2,0.88) 0%, transparent 100%)',
-            pointerEvents: 'none',
-          }} />
-          {/* Left edge fade — blends into dark hero left side */}
-          <div style={{
-            position: 'absolute', inset: '0 auto 0 0',
-            width: '30%',
-            background: 'linear-gradient(to right, rgba(10,5,2,0.85) 0%, transparent 100%)',
-            pointerEvents: 'none',
-          }} />
-          {/* Right edge fade */}
-          <div style={{
-            position: 'absolute', inset: '0 0 0 auto',
-            width: '12%',
-            background: 'linear-gradient(to left, rgba(10,5,2,0.7) 0%, transparent 100%)',
-            pointerEvents: 'none',
-          }} />
-        </div>
-
-        {/* ── Left dark gradient to ensure text legibility ── */}
-        <div className="absolute inset-y-0 left-0 hidden md:block" style={{
-          width: '60%',
-          background: 'linear-gradient(to right, rgba(8,4,2,0.72) 0%, rgba(8,4,2,0.55) 55%, transparent 100%)',
-          zIndex: 3,
-          pointerEvents: 'none',
-        }} />
-
-        {/* ── Headline + CTAs ── */}
-        <div
-          className="relative flex flex-col justify-start px-6 sm:px-10 md:px-14 lg:px-16"
-          style={{ paddingTop: 'clamp(90px, 14vh, 130px)', zIndex: 10, maxWidth: '560px' }}
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.85, ease: 'easeOut', delay: 0.12 }}
-            className="space-y-4"
-          >
-            {/* Wednesday badge */}
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase',
-              color: '#c49a6c', fontFamily: 'sans-serif', fontWeight: 600,
-            }}>
-              <span style={{ color: '#c49a6c', fontSize: '0.6rem' }}>●</span>
-              New episode every Wednesday
-            </div>
-
-            <h1
-              className="font-serif font-bold"
-              style={{ fontSize: 'clamp(2rem, 4vw, 3.2rem)', color: '#f1e3d3', lineHeight: 1.12 }}
+            {/* ── LEFT: text content ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 28 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
+              className="flex flex-col gap-5"
             >
-              You don't get<br />to prepare for this.
-            </h1>
+              {/* Wednesday badge */}
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: '7px',
+                fontSize: '0.68rem', letterSpacing: '0.12em', textTransform: 'uppercase',
+                color: gold, fontFamily: 'var(--font-sans)', fontWeight: 700,
+              }}>
+                <span style={{ fontSize: '0.55rem' }}>●</span>
+                New episode every Wednesday
+              </div>
 
-            <div
-              className="font-sans leading-relaxed space-y-1"
-              style={{ fontSize: 'clamp(0.88rem, 1.3vw, 1rem)', color: '#d9c2ad' }}
+              <h1 className="font-serif font-bold" style={{
+                fontSize: 'clamp(2.1rem, 4.5vw, 3.4rem)',
+                color: text, lineHeight: 1.1,
+              }}>
+                You don't get<br />to prepare for this.
+              </h1>
+
+              <div className="font-sans" style={{
+                fontSize: 'clamp(0.9rem, 1.35vw, 1.02rem)',
+                color: textMuted, lineHeight: 1.68,
+              }}>
+                <p>We reach into the bowl…<br />and whatever comes out—comes out of us too.</p>
+                <p style={{ marginTop: '6px' }}>You never know what question is coming next. And neither do they.</p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-1">
+                <a href="#latest" style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  gap: '0.45rem', padding: '13px 24px', borderRadius: '8px',
+                  background: accent, color: '#fff',
+                  fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.875rem',
+                  letterSpacing: '0.02em', textDecoration: 'none',
+                  boxShadow: isDark ? '0 4px 18px rgba(143,47,42,0.5)' : '0 4px 18px rgba(227,106,93,0.32)',
+                  transition: 'background 0.2s',
+                }}
+                  onMouseEnter={e => (e.currentTarget.style.background = isDark ? '#a63a34' : '#D05A4D')}
+                  onMouseLeave={e => (e.currentTarget.style.background = accent)}
+                >
+                  🎧 Start Listening
+                </a>
+                <a href="#join" style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  gap: '0.45rem', padding: '13px 24px', borderRadius: '8px',
+                  background: 'transparent',
+                  border: `1.5px solid ${isDark ? 'rgba(217,194,173,0.35)' : 'rgba(43,43,43,0.2)'}`,
+                  color: text,
+                  fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '0.875rem',
+                  textDecoration: 'none', transition: 'border-color 0.2s',
+                }}>
+                  🔔 Get the Wednesday Question
+                </a>
+              </div>
+            </motion.div>
+
+            {/* ── RIGHT: Sandra photo + fishbowl decorative ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, ease: 'easeOut', delay: 0.25 }}
+              className="flex flex-col items-center gap-5"
             >
-              <p>We reach into the bowl...<br />and whatever comes out—comes out of us too.</p>
-              <p style={{ marginTop: '4px' }}>You never know what question is coming next. And neither do they.</p>
-            </div>
+              {/* Sandra photo card */}
+              <div style={{
+                width: '100%',
+                maxWidth: '400px',
+                borderRadius: '20px',
+                overflow: 'hidden',
+                aspectRatio: '4 / 5',
+                position: 'relative',
+                boxShadow: isDark
+                  ? '0 24px 64px rgba(0,0,0,0.65), 0 4px 16px rgba(0,0,0,0.4)'
+                  : '0 12px 52px rgba(43,43,43,0.13), 0 2px 8px rgba(43,43,43,0.06)',
+                border: isDark
+                  ? '1px solid rgba(196,154,108,0.14)'
+                  : '3px solid #fff',
+              }}>
+                <img
+                  src={sandraImg}
+                  alt="Sandra, host of Fishbowl Roulette"
+                  style={{
+                    width: '100%', height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: '40% 28%',
+                    display: 'block',
+                    /* Dark mode: light radial mask to blend edges only, face stays fully visible */
+                    ...(isDark ? {
+                      WebkitMaskImage: 'radial-gradient(ellipse 92% 88% at 52% 46%, black 55%, rgba(0,0,0,0.7) 78%, transparent 95%)',
+                      maskImage: 'radial-gradient(ellipse 92% 88% at 52% 46%, black 55%, rgba(0,0,0,0.7) 78%, transparent 95%)',
+                    } : {}),
+                  }}
+                />
+                {/* Dark mode: minimal top/bottom fade — NO heavy overlay */}
+                {isDark && (
+                  <>
+                    <div style={{ position: 'absolute', inset: '0 0 auto 0', height: '15%', background: 'linear-gradient(to bottom, rgba(10,5,2,0.55) 0%, transparent 100%)', pointerEvents: 'none' }} />
+                    <div style={{ position: 'absolute', inset: 'auto 0 0 0', height: '18%', background: 'linear-gradient(to top, rgba(10,5,2,0.5) 0%, transparent 100%)', pointerEvents: 'none' }} />
+                  </>
+                )}
+              </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 pt-1">
-              <a href="#latest" className="fr-cta-primary">
-                🎧 Start Listening
-              </a>
-              <a href="#join" className="fr-cta-secondary">
-                🔔 Get the Wednesday Question
-              </a>
-            </div>
-          </motion.div>
+              {/* Fishbowl + wine glass — decorative below photo, never overlapping text */}
+              <div className="flex items-end justify-center gap-4" style={{ width: '100%', maxWidth: '400px' }}>
+                <div style={{
+                  width: 'clamp(120px, 16vw, 200px)',
+                  filter: isDark
+                    ? 'drop-shadow(0 12px 28px rgba(0,0,0,0.65))'
+                    : 'drop-shadow(0 6px 16px rgba(43,43,43,0.16))',
+                }}>
+                  {fishbowlErr ? <FishbowlSVG /> : (
+                    <img src={fishbowlImg} alt="Glass fishbowl with question slips"
+                      style={{ width: '100%', display: 'block' }}
+                      onError={() => setFishbowlErr(true)} />
+                  )}
+                </div>
+                <div style={{
+                  width: 'clamp(44px, 5.5vw, 72px)',
+                  filter: isDark
+                    ? 'drop-shadow(0 8px 16px rgba(0,0,0,0.65))'
+                    : 'drop-shadow(0 4px 10px rgba(43,43,43,0.13))',
+                }}>
+                  {wineErr ? <WineGlassSVG /> : (
+                    <img src={wineImg} alt="White wine glass"
+                      style={{ width: '100%', display: 'block' }}
+                      onError={() => setWineErr(true)} />
+                  )}
+                </div>
+              </div>
+            </motion.div>
+
+          </div>
         </div>
-
-        {/* ── Table surface: dark mahogany English estate library ── */}
-        <div className="absolute inset-x-0 bottom-0" style={{
-          height: 'clamp(55px, 8vw, 100px)',
-          zIndex: 5,
-          background: 'linear-gradient(to bottom, #1e0f07 0%, #2a1208 18%, #261007 55%, #1a0b05 100%)',
-          boxShadow: 'inset 0 10px 32px rgba(0,0,0,0.8)',
-        }}>
-          {/* Polished top edge — mahogany highlight */}
-          <div style={{
-            position: 'absolute', inset: 0, top: 0, height: '2px',
-            background: 'linear-gradient(to right, transparent 0%, rgba(160,80,30,0.6) 20%, rgba(200,120,60,0.75) 50%, rgba(160,80,30,0.6) 80%, transparent 100%)',
-          }} />
-          {/* Inlay band — decorative gilt/brass-toned stripe below top edge */}
-          <div style={{
-            position: 'absolute', left: 0, right: 0, top: '5px', height: '1px',
-            background: 'linear-gradient(to right, transparent 0%, rgba(196,154,108,0.3) 15%, rgba(196,154,108,0.5) 50%, rgba(196,154,108,0.3) 85%, transparent 100%)',
-          }} />
-          {/* Deep mahogany grain lines */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: `repeating-linear-gradient(90deg,
-              transparent 0px, transparent 80px,
-              rgba(80,20,5,0.18) 80px, rgba(80,20,5,0.18) 82px,
-              transparent 82px, transparent 180px
-            )`,
-          }} />
-          {/* Warm gloss sheen */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'linear-gradient(to bottom, rgba(180,80,20,0.06) 0%, transparent 50%)',
-          }} />
-        </div>
-
-        {/* ── Fishbowl — bottom-left of hero, sitting on table ── */}
-        <div
-          className="absolute"
-          style={{
-            bottom: 'clamp(40px, 5.5vw, 80px)',
-            left: 'clamp(16px, 3.5vw, 52px)',
-            width: 'clamp(180px, 25vw, 360px)',
-            zIndex: 10,
-            filter: 'drop-shadow(0 18px 36px rgba(0,0,0,0.75))',
-          }}
-        >
-          {fishbowlErr ? (
-            <FishbowlSVG />
-          ) : (
-            <img
-              src={fishbowlImg}
-              alt="Glass fishbowl with paper question slips"
-              style={{ width: '100%', display: 'block' }}
-              onError={() => setFishbowlErr(true)}
-            />
-          )}
-        </div>
-
-        {/* ── Wine glass — bottom, right of fishbowl ── */}
-        <div
-          className="absolute"
-          style={{
-            bottom: 'clamp(40px, 5.5vw, 80px)',
-            left: 'clamp(200px, 28vw, 410px)',
-            width: 'clamp(70px, 8.5vw, 120px)',
-            zIndex: 10,
-            filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.7))',
-          }}
-        >
-          {wineErr ? (
-            <WineGlassSVG />
-          ) : (
-            <img
-              src={wineImg}
-              alt="White wine glass"
-              style={{ width: '100%', display: 'block' }}
-              onError={() => setWineErr(true)}
-            />
-          )}
-        </div>
-
-        {/* Warm glow reflection under glasses */}
-        <div className="absolute" style={{
-          bottom: 'clamp(38px, 5.2vw, 76px)',
-          left: 'clamp(10px, 2vw, 30px)',
-          width: 'clamp(280px, 34vw, 500px)',
-          height: '22px',
-          background: 'radial-gradient(ellipse 80% 100% at 35% 0%, rgba(196,154,108,0.18) 0%, transparent 70%)',
-          zIndex: 9,
-          pointerEvents: 'none',
-        }} />
-
       </section>
 
       {/* ═══════════════════════════════════════════
           LATEST EPISODE
       ═══════════════════════════════════════════ */}
       <section id="latest" style={{
-        background: '#1e1009',
-        borderTop: '1px solid rgba(255,255,255,0.05)',
+        background: bgAlt,
+        borderTop: `1px solid ${border}`,
         padding: '36px 24px',
       }}>
         <motion.div
@@ -361,26 +330,34 @@ const Home = () => {
           style={{ maxWidth: '620px', margin: '0 auto' }}
         >
           <div style={{
-            display: 'inline-block',
             fontSize: '0.65rem', letterSpacing: '0.14em', textTransform: 'uppercase',
-            color: '#c49a6c', fontFamily: 'sans-serif', fontWeight: 700,
+            color: gold, fontFamily: 'var(--font-sans)', fontWeight: 700,
             marginBottom: '10px',
           }}>
             Latest Episode
           </div>
           <h2 className="font-serif font-bold" style={{
             fontSize: 'clamp(1.25rem, 2.8vw, 1.9rem)',
-            color: '#f1e3d3', lineHeight: 1.2, marginBottom: '8px',
+            color: text, lineHeight: 1.2, marginBottom: '8px',
           }}>
             First Guest in the Bowl: Jeff Brune
           </h2>
           <p className="font-sans" style={{
-            fontSize: '0.95rem', color: '#d9c2ad',
-            fontStyle: 'italic', marginBottom: '18px',
+            fontSize: '0.95rem', color: textMuted,
+            fontStyle: 'italic', marginBottom: '20px',
           }}>
             He thought it would be casual. It wasn't.
           </p>
-          <a href="#listen" className="fr-cta-primary" style={{ display: 'inline-flex' }}>
+          <a href="#listen" style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
+            padding: '12px 22px', borderRadius: '8px',
+            background: accent, color: '#fff',
+            fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.875rem',
+            textDecoration: 'none', transition: 'background 0.2s',
+          }}
+            onMouseEnter={e => (e.currentTarget.style.background = isDark ? '#a63a34' : '#D05A4D')}
+            onMouseLeave={e => (e.currentTarget.style.background = accent)}
+          >
             🎧 Start Listening
           </a>
         </motion.div>
@@ -389,9 +366,12 @@ const Home = () => {
       {/* ═══════════════════════════════════════════
           CARDS SECTION
       ═══════════════════════════════════════════ */}
-      <section id="cards" style={{ background: '#231410', padding: '52px 0 44px' }}>
+      <section id="cards" style={{
+        background: bgAlt2,
+        borderTop: `1px solid ${border}`,
+        padding: '52px 0 44px',
+      }}>
         <div style={{ maxWidth: '860px', margin: '0 auto', padding: '0 24px' }}>
-
           <motion.h2
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -400,13 +380,11 @@ const Home = () => {
             className="font-serif font-semibold text-center"
             style={{
               fontSize: 'clamp(1.3rem, 3.2vw, 2.1rem)',
-              color: '#f1e3d3',
-              marginBottom: '32px',
-              lineHeight: 1.3,
+              color: text, marginBottom: '32px', lineHeight: 1.3,
             }}
           >
             We pulled the first question...{' '}
-            <span style={{ color: '#c49a6c', fontStyle: 'italic' }}>and it went there.</span>
+            <span style={{ color: accent, fontStyle: 'italic' }}>and it went there.</span>
           </motion.h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" style={{ marginBottom: '24px' }}>
@@ -423,12 +401,7 @@ const Home = () => {
                 transition={{ duration: 0.6, delay: i * 0.12 }}
                 className="fr-parchment-card"
               >
-                {/* Subtle parchment highlight */}
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  background: 'linear-gradient(145deg, rgba(255,235,200,0.18) 0%, transparent 60%)',
-                  pointerEvents: 'none',
-                }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg, rgba(255,235,200,0.18) 0%, transparent 60%)', pointerEvents: 'none' }} />
                 <div style={{ position: 'relative' }}>
                   <div style={{ marginBottom: '10px' }}>{card.icon}</div>
                   <h3 className="font-serif font-bold" style={{ fontSize: '1.2rem', color: '#2a1208', marginBottom: '7px' }}>
@@ -448,7 +421,7 @@ const Home = () => {
             viewport={{ once: true }}
             transition={{ delay: 0.4, duration: 0.8 }}
             className="font-sans text-center"
-            style={{ color: 'rgba(217,194,173,0.6)', fontSize: '0.9rem', fontStyle: 'italic' }}
+            style={{ color: textMuted, fontSize: '0.9rem', fontStyle: 'italic' }}
           >
             The truth is usually one question away.
           </motion.p>
@@ -459,16 +432,16 @@ const Home = () => {
           PLATFORM LINKS
       ═══════════════════════════════════════════ */}
       <section id="listen" style={{
-        background: '#1e1009',
-        borderTop: '1px solid rgba(255,255,255,0.05)',
+        background: bgAlt,
+        borderTop: `1px solid ${border}`,
         padding: '28px 24px',
       }}>
         <div style={{ maxWidth: '580px', margin: '0 auto', textAlign: 'center' }}>
           <div className="flex flex-wrap justify-center gap-5 md:gap-7">
             <PlatformBtn name="Spotify"        icon={<SpotifyIcon />}  href="#" color="#1DB954" />
-            <PlatformBtn name="Apple Podcasts" icon={<AppleIcon />}    href="#" color="#c49a6c" />
+            <PlatformBtn name="Apple Podcasts" icon={<AppleIcon />}    href="#" color={isDark ? '#c49a6c' : '#B8854A'} />
             <PlatformBtn name="YouTube"        icon={<YoutubeIcon />}  href="#" color="#FF4444" />
-            <PlatformBtn name="TikTok"         icon={<TikTokIcon />}   href="#" color="#d9c2ad" />
+            <PlatformBtn name="TikTok"         icon={<TikTokIcon />}   href="#" color={isDark ? '#d9c2ad' : '#2B2B2B'} />
           </div>
         </div>
       </section>
@@ -477,9 +450,9 @@ const Home = () => {
           WEDNESDAY RITUAL
       ═══════════════════════════════════════════ */}
       <section style={{
-        background: '#1a1008',
-        borderTop: '1px solid rgba(255,255,255,0.05)',
-        padding: '40px 24px',
+        background: bg,
+        borderTop: `1px solid ${border}`,
+        padding: '44px 24px',
         textAlign: 'center',
       }}>
         <motion.div
@@ -490,18 +463,27 @@ const Home = () => {
           style={{ maxWidth: '520px', margin: '0 auto' }}
         >
           <h2 className="font-serif font-bold" style={{
-            fontSize: 'clamp(1.2rem, 2.6vw, 1.75rem)',
-            color: '#f1e3d3', lineHeight: 1.25, marginBottom: '10px',
+            fontSize: 'clamp(1.25rem, 2.6vw, 1.8rem)',
+            color: text, lineHeight: 1.25, marginBottom: '10px',
           }}>
             Make Wednesday your question day.
           </h2>
           <p className="font-sans" style={{
-            fontSize: '0.92rem', color: 'rgba(217,194,173,0.7)',
-            lineHeight: 1.6, marginBottom: '20px',
+            fontSize: '0.92rem', color: textMuted,
+            lineHeight: 1.65, marginBottom: '22px',
           }}>
             Every week, a new episode drops with one question nobody saw coming.
           </p>
-          <a href="#join" className="fr-cta-primary" style={{ display: 'inline-flex' }}>
+          <a href="#join" style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
+            padding: '12px 24px', borderRadius: '8px',
+            background: accent, color: '#fff',
+            fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.875rem',
+            textDecoration: 'none', transition: 'background 0.2s',
+          }}
+            onMouseEnter={e => (e.currentTarget.style.background = isDark ? '#a63a34' : '#D05A4D')}
+            onMouseLeave={e => (e.currentTarget.style.background = accent)}
+          >
             Get the Wednesday Question
           </a>
         </motion.div>
@@ -511,9 +493,9 @@ const Home = () => {
           EMAIL CAPTURE
       ═══════════════════════════════════════════ */}
       <section id="join" style={{
-        background: '#1e1009',
-        borderTop: '1px solid rgba(255,255,255,0.05)',
-        padding: '36px 24px 40px',
+        background: bgAlt,
+        borderTop: `1px solid ${border}`,
+        padding: '36px 24px 44px',
       }}>
         <div style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'center' }}>
           <motion.div
@@ -524,13 +506,13 @@ const Home = () => {
           >
             <h2 className="font-serif font-bold" style={{
               fontSize: 'clamp(1.1rem, 2.4vw, 1.55rem)',
-              color: '#f1e3d3', lineHeight: 1.3, marginBottom: '8px',
+              color: text, lineHeight: 1.3, marginBottom: '8px',
             }}>
               One question. Every Wednesday. In your inbox.
             </h2>
             <p className="font-sans" style={{
-              fontSize: '0.85rem', color: 'rgba(217,194,173,0.6)',
-              marginBottom: '20px', lineHeight: 1.55,
+              fontSize: '0.85rem', color: textMuted,
+              marginBottom: '22px', lineHeight: 1.6,
             }}>
               Get new episode drops, standout questions, and the occasional wildcard.
             </p>
@@ -540,12 +522,25 @@ const Home = () => {
               type="email"
               required
               placeholder="Enter your email"
-              className="fr-email-input"
+              style={{
+                flex: 1,
+                background: isDark ? 'rgba(196,154,108,0.08)' : '#fff',
+                border: `1.5px solid ${isDark ? 'rgba(196,154,108,0.32)' : 'rgba(43,43,43,0.16)'}`,
+                borderRadius: '8px', padding: '13px 18px',
+                color: text, fontFamily: 'var(--font-sans)', fontSize: '0.875rem',
+                outline: 'none',
+              }}
             />
             <button
               type="submit"
               disabled={emailSubmitted}
-              className="fr-submit-btn"
+              style={{
+                background: accent, color: '#fff', border: 'none',
+                borderRadius: '8px', padding: '13px 24px',
+                fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.875rem',
+                whiteSpace: 'nowrap', cursor: emailSubmitted ? 'default' : 'pointer',
+                opacity: emailSubmitted ? 0.75 : 1, transition: 'background 0.2s',
+              }}
             >
               {emailSubmitted ? "You're on the list!" : 'Join the List'}
             </button>
@@ -557,52 +552,50 @@ const Home = () => {
           FOOTER
       ═══════════════════════════════════════════ */}
       <footer style={{
-        background: '#1a1008',
-        borderTop: '1px solid rgba(255,255,255,0.05)',
-        padding: '44px 24px 32px',
+        background: bgAlt2,
+        borderTop: `1px solid ${border}`,
+        padding: '44px 24px 36px',
       }}>
         <div style={{ maxWidth: '680px', margin: '0 auto', textAlign: 'center' }}>
-          <h2 className="font-serif font-bold" style={{ fontSize: 'clamp(1.7rem, 4vw, 2.8rem)', color: '#f1e3d3', lineHeight: 1.2 }}>
+          <h2 className="font-serif font-bold" style={{
+            fontSize: 'clamp(1.7rem, 4vw, 2.8rem)', color: text, lineHeight: 1.2,
+          }}>
             Pull up a chair.
           </h2>
-          <p className="font-serif" style={{ fontSize: 'clamp(1rem, 2.2vw, 1.5rem)', color: '#d9c2ad', marginTop: '8px' }}>
+          <p className="font-serif" style={{
+            fontSize: 'clamp(1rem, 2.2vw, 1.5rem)', color: textMuted, marginTop: '8px',
+          }}>
             You never know what question is coming next.
           </p>
           <p className="font-sans" style={{
-            fontSize: '0.8rem', color: 'rgba(196,154,108,0.55)',
+            fontSize: '0.8rem', color: gold,
             marginTop: '10px', letterSpacing: '0.04em',
           }}>
             New episodes every Wednesday.
           </p>
-          <div style={{ marginTop: '22px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <div className="flex flex-wrap justify-center gap-x-5 gap-y-2" style={{ marginBottom: '10px' }}>
-              <a
-                href="/privacy"
-                className="font-sans"
-                style={{
-                  fontSize: '0.7rem', color: 'rgba(196,154,108,0.5)',
-                  letterSpacing: '0.08em', textDecoration: 'none', transition: 'color 0.2s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'rgba(196,154,108,0.9)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(196,154,108,0.5)')}
+          <div style={{ marginTop: '22px', paddingTop: '16px', borderTop: `1px solid ${border}` }}>
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2" style={{ marginBottom: '10px' }}>
+              <a href="/privacy" className="font-sans" style={{
+                fontSize: '0.7rem', color: textMuted, letterSpacing: '0.08em',
+                textDecoration: 'none', transition: 'color 0.2s',
+              }}
+                onMouseEnter={e => (e.currentTarget.style.color = gold)}
+                onMouseLeave={e => (e.currentTarget.style.color = textMuted)}
               >
                 Privacy Policy
               </a>
-              <a
-                href="mailto:hello@fishbowlroulette.com"
-                className="font-sans"
-                style={{
-                  fontSize: '0.7rem', color: 'rgba(196,154,108,0.5)',
-                  letterSpacing: '0.08em', textDecoration: 'none', transition: 'color 0.2s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'rgba(196,154,108,0.9)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(196,154,108,0.5)')}
+              <a href="mailto:hello@fishbowlroulette.com" className="font-sans" style={{
+                fontSize: '0.7rem', color: textMuted, letterSpacing: '0.08em',
+                textDecoration: 'none', transition: 'color 0.2s',
+              }}
+                onMouseEnter={e => (e.currentTarget.style.color = gold)}
+                onMouseLeave={e => (e.currentTarget.style.color = textMuted)}
               >
                 Contact
               </a>
             </div>
             <p className="font-sans" style={{
-              fontSize: '0.68rem', color: 'rgba(217,194,173,0.25)',
+              fontSize: '0.68rem', color: textSubtle,
               letterSpacing: '0.12em', textTransform: 'uppercase',
             }}>
               © {new Date().getFullYear()} Fishbowl Roulette &mdash; fishbowlroulette.com
@@ -627,7 +620,6 @@ const PlatformBtn = ({ name, icon, href, color }: { name: string; icon: React.Re
 const BrainIcon = () => (
   <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
     <circle cx="19" cy="19" r="17" fill="rgba(143,47,42,0.2)" stroke="rgba(143,47,42,0.4)" strokeWidth="1" />
-    {/* Stylized brain - two hemispheres with folds */}
     <path d="M19 10 C14 10 11 13 11 16.5 C11 18 12 19.5 13.5 20 C12 20.5 11 22 11 23.5 C11 26.5 13.5 28.5 17 28.5 L19 28.5" stroke="#8f2f2a" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
     <path d="M19 10 C24 10 27 13 27 16.5 C27 18 26 19.5 24.5 20 C26 20.5 27 22 27 23.5 C27 26.5 24.5 28.5 21 28.5 L19 28.5" stroke="#8f2f2a" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
     <line x1="19" y1="10" x2="19" y2="28.5" stroke="#8f2f2a" strokeWidth="1" strokeLinecap="round"/>
@@ -658,7 +650,7 @@ const DiceIcon = () => (
   </svg>
 );
 
-/* ─── Fallback SVG fishbowl (if AI image fails) ─── */
+/* ─── Fallback SVG fishbowl ─── */
 const FishbowlSVG = () => (
   <svg viewBox="0 0 260 280" fill="none" style={{ width: '100%', display: 'block' }}>
     <defs>
@@ -693,7 +685,7 @@ const FishbowlSVG = () => (
   </svg>
 );
 
-/* ─── Fallback SVG wine glass (if AI image fails) ─── */
+/* ─── Fallback SVG wine glass ─── */
 const WineGlassSVG = () => (
   <svg viewBox="0 0 80 200" fill="none" style={{ width: '100%', display: 'block' }}>
     <defs>
@@ -707,20 +699,13 @@ const WineGlassSVG = () => (
         <stop offset="100%" stopColor="#fff" stopOpacity="0.12" />
       </linearGradient>
     </defs>
-    {/* Bowl */}
     <path d="M 14,14 Q 8,55 8,75 Q 8,110 40,118 Q 72,110 72,75 Q 72,55 66,14 Z"
       fill="url(#wglass)" stroke="#d4c8a0" strokeWidth="1.5" strokeOpacity="0.55" />
-    {/* Wine fill */}
     <path d="M 13,72 Q 11,105 40,114 Q 69,105 67,72 Z" fill="url(#wine)" opacity="0.9" />
-    {/* Wine surface shimmer */}
     <ellipse cx="40" cy="72" rx="27" ry="5.5" fill="#e8d88a" opacity="0.55" />
-    {/* Rim highlight */}
     <ellipse cx="40" cy="14" rx="26" ry="5" fill="none" stroke="#e0d4b0" strokeWidth="1.5" strokeOpacity="0.6" />
-    {/* Glass highlight */}
     <path d="M 18,20 Q 14,60 14,80" stroke="#fff" strokeWidth="4" strokeOpacity="0.18" strokeLinecap="round" fill="none" />
-    {/* Stem */}
     <line x1="40" y1="118" x2="40" y2="178" stroke="#c9b898" strokeWidth="2.5" strokeOpacity="0.7" />
-    {/* Base */}
     <ellipse cx="40" cy="180" rx="28" ry="6" fill="none" stroke="#c9b898" strokeWidth="2" strokeOpacity="0.6" />
     <ellipse cx="40" cy="180" rx="28" ry="4" fill="rgba(196,154,108,0.1)" />
   </svg>
