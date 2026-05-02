@@ -365,8 +365,15 @@ const Home = () => {
                 fontSize: 'clamp(0.95rem, 1.35vw, 1.08rem)',
                 color: textMuted, lineHeight: 1.7, maxWidth: '38ch',
               }}>
-                <p>We reach into the bowl — and whatever comes out, comes out of us too.</p>
-                <p style={{ marginTop: '8px' }}>No script. No prep. Just real people, pulled straight into a real conversation.</p>
+                <p>
+                  Real conversations.{' '}
+                  <strong style={{ color: text, fontWeight: 700 }}>
+                    No script. No warning.
+                  </strong>
+                </p>
+                <p style={{ marginTop: '8px' }}>
+                  Fishbowl Roulette is where honest people pull random questions—and go wherever the conversation takes them.
+                </p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -728,12 +735,13 @@ const Home = () => {
                             )}
                           </div>
                           {/* Title */}
-                          <h3 className="font-serif font-bold" style={{
+                          <span className="font-serif font-bold" style={{
+                            display: 'block',
                             fontSize: 'clamp(0.98rem, 1.6vw, 1.12rem)',
-                            color: epHeading, lineHeight: 1.35, margin: 0,
+                            color: epHeading, lineHeight: 1.35,
                           }}>
                             {ep.title}
-                          </h3>
+                          </span>
                         </div>
                         {/* Chevron */}
                         <span
