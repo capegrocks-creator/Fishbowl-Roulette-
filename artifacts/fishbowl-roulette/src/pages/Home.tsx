@@ -1051,7 +1051,7 @@ const Home = () => {
               <SubscribePill
                 name="Spotify"
                 icon={<SpotifyIcon />}
-                href="https://open.spotify.com/search/Fishbowl%20Roulette/shows"
+                href="https://open.spotify.com/show/2j2HgUMfENC9HlazFpK2jH"
                 color="#1DB954"
                 isDark={isDark}
                 border={epCardBorder}
