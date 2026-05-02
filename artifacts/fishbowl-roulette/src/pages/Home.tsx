@@ -1267,16 +1267,22 @@ const Home = () => {
           </AnimatePresence>
 
           {/* ── Fishbowl + three parchment category cards ──
-                Row 1: [Beliefs] [Fishbowl (clickable)] [Relationships]
-                Row 2:        [    Wildcards centered    ]
-                On mobile (1-col grid) the order is preserved vertically. */}
+                Mobile: smaller fishbowl on top + horizontal scroll row
+                       of three compact category cards below.
+                Desktop: original 3-col grid with the fishbowl in the
+                       center of row 1 and Wildcards centered below. */}
           {(() => {
             const cardData = {
               Beliefs:       { icon: <BrainIcon />, text: "What do you believe when no one's listening?" },
               Relationships: { icon: <HeartIcon />, text: "The stuff we think... but don't always say out loud." },
               Wildcards:     { icon: <DiceIcon />, text: 'No rules. No warning. Anything goes.' },
             } as const;
-            const renderCard = (title: keyof typeof cardData, delay: number) => {
+
+            const renderCard = (
+              title: keyof typeof cardData,
+              delay: number,
+              compact = false,
+            ) => {
               const c = cardData[title];
               return (
                 <motion.div
@@ -1289,144 +1295,169 @@ const Home = () => {
                 >
                   <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg, rgba(255,235,200,0.18) 0%, transparent 60%)', pointerEvents: 'none' }} />
                   <div style={{ position: 'relative' }}>
-                    <div style={{ marginBottom: '10px' }}>{c.icon}</div>
-                    <h3 className="font-serif font-bold" style={{ fontSize: '1.2rem', color: '#2a1208', marginBottom: '7px' }}>
+                    <div style={{ marginBottom: compact ? '6px' : '10px', transform: compact ? 'scale(0.82)' : 'none', transformOrigin: 'left top' }}>{c.icon}</div>
+                    <h3 className="font-serif font-bold" style={{
+                      fontSize: compact ? '1rem' : '1.2rem',
+                      color: '#2a1208',
+                      marginBottom: compact ? '4px' : '7px',
+                    }}>
                       {title}
                     </h3>
-                    <p className="font-sans" style={{ fontSize: '0.83rem', color: 'rgba(38,15,6,0.75)', lineHeight: 1.55 }}>
+                    <p className="font-sans" style={{
+                      fontSize: compact ? '0.78rem' : '0.83rem',
+                      color: 'rgba(38,15,6,0.75)',
+                      lineHeight: 1.5,
+                    }}>
                       {c.text}
                     </p>
                   </div>
                 </motion.div>
               );
             };
+
+            /* Reusable bowl + "Tap to pull!" badge. `maxWidth` lets us
+               render a smaller bowl in the mobile layout so it doesn't
+               eat half the viewport. */
+            const renderFishbowl = (maxWidth: string) => (
+              <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    top: '-14px',
+                    left: 0,
+                    right: 0,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    zIndex: 2,
+                    pointerEvents: 'none',
+                  }}
+                >
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{
+                      opacity: { duration: 0.5, delay: 0.4 },
+                      scale: { duration: 0.5, delay: 0.4 },
+                      y: { duration: 1.6, repeat: Infinity, ease: 'easeInOut' },
+                    }}
+                    style={{
+                      background: '#9b2020',
+                      color: '#f5ead8',
+                      fontFamily: 'var(--font-sans)',
+                      fontWeight: 700,
+                      fontSize: '0.72rem',
+                      letterSpacing: '0.14em',
+                      padding: '6px 14px 6px 12px',
+                      borderRadius: '999px',
+                      textTransform: 'uppercase',
+                      whiteSpace: 'nowrap',
+                      boxShadow: '0 6px 18px rgba(155,32,32,0.55), 0 0 0 3px rgba(155,32,32,0.18)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    <span aria-hidden="true">👇</span> Tap to pull!
+                  </motion.div>
+                </div>
+
+                <motion.button
+                  type="button"
+                  onClick={handlePullQuestion}
+                  aria-label="Pull a random question from the fishbowl"
+                  initial={{ opacity: 0, scale: 0.85 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  whileHover={{ scale: 1.06 }}
+                  whileTap={{ scale: 0.94 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.7, delay: 0.12 }}
+                  title="Click to pull a random question"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '4px 0',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    width: '100%',
+                  }}
+                >
+                  <motion.img
+                    src={fishbowlQuestionsImg}
+                    alt="A glass fishbowl filled with rolled-up question slips. Click to pull a random question."
+                    animate={{ y: [0, -3, 0, 3, 0], rotate: [0, -1.2, 0, 1.2, 0] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+                    style={{
+                      width: '100%',
+                      maxWidth,
+                      height: 'auto',
+                      display: 'block',
+                      filter: 'drop-shadow(0 18px 36px rgba(0,0,0,0.65)) drop-shadow(0 0 22px rgba(196,154,108,0.18))',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                </motion.button>
+              </div>
+            );
+
             return (
               <>
-                {/* Row 1: card | fishbowl | card */}
-                <div
-                  className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 items-center"
-                  style={{ marginBottom: '16px' }}
-                >
-                  {renderCard('Beliefs', 0)}
+                {/* ─── MOBILE LAYOUT ─────────────────────────────
+                    Compact: smaller fishbowl on top, then a single
+                    swipeable row of three smaller category cards. */}
+                <div className="sm:hidden">
+                  <div style={{ marginBottom: '14px' }}>
+                    {renderFishbowl('180px')}
+                  </div>
+                  <p className="font-sans text-center" style={{
+                    fontSize: '0.78rem', color: gold,
+                    fontWeight: 600, letterSpacing: '0.06em',
+                    margin: '0 0 14px',
+                    textTransform: 'uppercase',
+                  }}>
+                    ← Swipe the bowls →
+                  </p>
+                  <div className="fr-cat-scroll" role="list">
+                    {renderCard('Beliefs',       0,    true)}
+                    {renderCard('Relationships', 0.12, true)}
+                    {renderCard('Wildcards',     0.24, true)}
+                  </div>
+                </div>
 
-                  {/* Fishbowl click target. The wrapping div is relative so
-                      we can float a gently-bouncing "Tap to pull!" badge
-                      above the bowl as an obvious affordance.
-                      Centering note: the badge wrapper uses a full-width
-                      flex row instead of `left:50%; translateX(-50%)`
-                      because Framer Motion's animated `y`/scale on the
-                      inner motion.div would otherwise clobber the inline
-                      transform and shift the badge to the right. */}
-                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-                    <div
-                      aria-hidden="true"
-                      style={{
-                        position: 'absolute',
-                        top: '-14px',
-                        left: 0,
-                        right: 0,
-                        display: 'flex',
-                        justifyContent: 'center',
-                        zIndex: 2,
-                        pointerEvents: 'none',
-                      }}
-                    >
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.85 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        animate={{ y: [0, -6, 0] }}
-                        transition={{
-                          opacity: { duration: 0.5, delay: 0.4 },
-                          scale: { duration: 0.5, delay: 0.4 },
-                          y: { duration: 1.6, repeat: Infinity, ease: 'easeInOut' },
-                        }}
-                        style={{
-                          background: '#9b2020',
-                          color: '#f5ead8',
-                          fontFamily: 'var(--font-sans)',
-                          fontWeight: 700,
-                          fontSize: '0.72rem',
-                          letterSpacing: '0.14em',
-                          padding: '6px 14px 6px 12px',
-                          borderRadius: '999px',
-                          textTransform: 'uppercase',
-                          whiteSpace: 'nowrap',
-                          boxShadow: '0 6px 18px rgba(155,32,32,0.55), 0 0 0 3px rgba(155,32,32,0.18)',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                        }}
-                      >
-                        <span aria-hidden="true">👇</span> Tap to pull!
-                      </motion.div>
-                    </div>
-
-                    <motion.button
-                      type="button"
-                      onClick={handlePullQuestion}
-                      aria-label="Pull a random question from the fishbowl"
-                      initial={{ opacity: 0, scale: 0.85 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      whileHover={{ scale: 1.06 }}
-                      whileTap={{ scale: 0.94 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.7, delay: 0.12 }}
-                      title="Click to pull a random question"
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        padding: '4px 0',
-                        background: 'transparent',
-                        border: 'none',
-                        cursor: 'pointer',
-                        width: '100%',
-                      }}
-                    >
-                      {/* Continuous "breathing" wobble draws the eye and
-                          signals that the bowl is alive/interactive. */}
-                      <motion.img
-                        src={fishbowlQuestionsImg}
-                        alt="A glass fishbowl filled with rolled-up question slips. Click to pull a random question."
-                        animate={{ y: [0, -3, 0, 3, 0], rotate: [0, -1.2, 0, 1.2, 0] }}
-                        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-                        style={{
-                          width: '100%',
-                          maxWidth: '260px',
-                          height: 'auto',
-                          display: 'block',
-                          filter: 'drop-shadow(0 18px 36px rgba(0,0,0,0.65)) drop-shadow(0 0 22px rgba(196,154,108,0.18))',
-                          pointerEvents: 'none',
-                        }}
-                      />
-                    </motion.button>
+                {/* ─── DESKTOP LAYOUT ────────────────────────────
+                    Original 3-col grid: card | fishbowl | card,
+                    with Wildcards centered below the fishbowl. */}
+                <div className="hidden sm:block">
+                  <div
+                    className="grid sm:grid-cols-3 gap-6 items-center"
+                    style={{ marginBottom: '16px' }}
+                  >
+                    {renderCard('Beliefs', 0)}
+                    {renderFishbowl('260px')}
+                    {renderCard('Relationships', 0.24)}
                   </div>
 
-                  {renderCard('Relationships', 0.24)}
-                </div>
+                  <div
+                    className="grid sm:grid-cols-3 gap-6"
+                    style={{ marginBottom: '8px' }}
+                  >
+                    <div />
+                    {renderCard('Wildcards', 0.36)}
+                    <div />
+                  </div>
 
-                {/* Row 2: Wildcards card centered below the fishbowl */}
-                <div
-                  className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6"
-                  style={{ marginBottom: '8px' }}
-                >
-                  {/* Empty cells on either side keep the centered card aligned
-                      under the fishbowl on the 3-col grid. They collapse to
-                      nothing on mobile because of `display: contents`-like
-                      stacking via grid-cols-1. */}
-                  <div className="hidden sm:block" />
-                  {renderCard('Wildcards', 0.36)}
-                  <div className="hidden sm:block" />
+                  <p className="font-sans text-center" style={{
+                    fontSize: '0.95rem', color: gold,
+                    fontWeight: 600, letterSpacing: '0.04em',
+                    marginTop: '18px',
+                  }}>
+                    ☝ Click the fishbowl to pull a random question
+                  </p>
                 </div>
-
-                <p className="font-sans text-center" style={{
-                  fontSize: '0.95rem', color: gold,
-                  fontWeight: 600, letterSpacing: '0.04em',
-                  marginTop: '18px',
-                }}>
-                  ☝ Click the fishbowl to pull a random question
-                </p>
               </>
             );
           })()}
@@ -1446,47 +1477,104 @@ const Home = () => {
             <div style={{ flex: 1, height: 1, background: 'rgba(245,234,216,0.18)' }} />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
+          {(() => {
+            const steps = [
               { n: '01', title: 'We sit down',         body: 'Two people. A conversation that could go anywhere.' },
               { n: '02', title: 'We pull a question',  body: 'From one of five bowls — Beliefs, Hot Topics, Wildcards, and more.' },
               { n: '03', title: 'We answer it',        body: 'Honestly. No editing. No warning.' },
-            ].map((step, i) => (
-              <motion.div
-                key={step.n}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.55, delay: 0.06 * i }}
-                style={{
-                  background: 'rgba(245,234,216,0.06)',
-                  border: '1px solid rgba(245,234,216,0.18)',
-                  borderRadius: '12px',
-                  padding: '20px 18px',
-                  backdropFilter: 'blur(6px)',
-                }}
-              >
-                <div className="font-sans" style={{
-                  fontSize: '0.72rem', letterSpacing: '0.18em',
-                  color: gold, fontWeight: 600, marginBottom: '10px',
+            ];
+
+            return (
+              <>
+                {/* ─── MOBILE: compact numbered list (no boxes) ── */}
+                <ol className="sm:hidden" style={{
+                  listStyle: 'none', margin: 0, padding: 0,
+                  display: 'flex', flexDirection: 'column', gap: '14px',
                 }}>
-                  {step.n}
+                  {steps.map((step, i) => (
+                    <motion.li
+                      key={step.n}
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.45, delay: 0.05 * i }}
+                      style={{
+                        display: 'flex',
+                        gap: '14px',
+                        paddingBottom: '12px',
+                        borderBottom: i < steps.length - 1
+                          ? '1px solid rgba(245,234,216,0.10)'
+                          : 'none',
+                      }}
+                    >
+                      <span className="font-sans" style={{
+                        flexShrink: 0,
+                        fontSize: '0.72rem', letterSpacing: '0.16em',
+                        color: gold, fontWeight: 700,
+                        paddingTop: '3px',
+                        minWidth: '28px',
+                      }}>
+                        {step.n}
+                      </span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h3 className="font-serif font-bold" style={{
+                          fontSize: '1rem', color: '#f5ead8',
+                          margin: '0 0 4px', lineHeight: 1.25,
+                        }}>
+                          {step.title}
+                        </h3>
+                        <p className="font-sans" style={{
+                          fontSize: '0.85rem', color: 'rgba(241,227,211,0.72)',
+                          lineHeight: 1.5, margin: 0,
+                        }}>
+                          {step.body}
+                        </p>
+                      </div>
+                    </motion.li>
+                  ))}
+                </ol>
+
+                {/* ─── DESKTOP: 3-col cards ────────────────────── */}
+                <div className="hidden sm:grid sm:grid-cols-3 gap-4">
+                  {steps.map((step, i) => (
+                    <motion.div
+                      key={step.n}
+                      initial={{ opacity: 0, y: 16 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.55, delay: 0.06 * i }}
+                      style={{
+                        background: 'rgba(245,234,216,0.06)',
+                        border: '1px solid rgba(245,234,216,0.18)',
+                        borderRadius: '12px',
+                        padding: '20px 18px',
+                        backdropFilter: 'blur(6px)',
+                      }}
+                    >
+                      <div className="font-sans" style={{
+                        fontSize: '0.72rem', letterSpacing: '0.18em',
+                        color: gold, fontWeight: 600, marginBottom: '10px',
+                      }}>
+                        {step.n}
+                      </div>
+                      <h3 className="font-serif font-bold" style={{
+                        fontSize: '1.1rem', color: '#f5ead8',
+                        marginBottom: '6px', lineHeight: 1.3,
+                      }}>
+                        {step.title}
+                      </h3>
+                      <p className="font-sans" style={{
+                        fontSize: '0.88rem', color: 'rgba(241,227,211,0.75)',
+                        lineHeight: 1.55, margin: 0,
+                      }}>
+                        {step.body}
+                      </p>
+                    </motion.div>
+                  ))}
                 </div>
-                <h3 className="font-serif font-bold" style={{
-                  fontSize: '1.1rem', color: '#f5ead8',
-                  marginBottom: '6px', lineHeight: 1.3,
-                }}>
-                  {step.title}
-                </h3>
-                <p className="font-sans" style={{
-                  fontSize: '0.88rem', color: 'rgba(241,227,211,0.75)',
-                  lineHeight: 1.55, margin: 0,
-                }}>
-                  {step.body}
-                </p>
-              </motion.div>
-            ))}
-          </div>
+              </>
+            );
+          })()}
         </div>
       </section>
 

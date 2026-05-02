@@ -213,3 +213,26 @@
 .fr-parchment-card:hover {
   transform: translateY(-2px);
 }
+
+/* Compact horizontal-scroll variant used on mobile so the three category
+   cards become a single swipeable row instead of three full-width stacks
+   that dominate the page. Snap points keep each card crisply aligned. */
+.fr-cat-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 20px 14px;
+  margin: 0 -20px;
+  scrollbar-width: none;
+}
+.fr-cat-scroll::-webkit-scrollbar { display: none; }
+.fr-cat-scroll > .fr-parchment-card {
+  flex: 0 0 64%;
+  max-width: 240px;
+  min-width: 200px;
+  padding: 16px 14px 14px;
+  scroll-snap-align: start;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.38);
+}

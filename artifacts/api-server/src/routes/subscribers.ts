@@ -11,10 +11,19 @@ const router: IRouter = Router();
    Returns { ok: true } on both fresh inserts and duplicates so
    the public form never leaks whether an email is already on the
    list (basic enumeration protection). */
+/* Defense-in-depth: clamp client-supplied `source` to a known
+   allowlist before it ever reaches the database. Anything else
+   (including odd strings that could be useful for spreadsheet
+   abuse on CSV export) collapses to "website". */
+const ALLOWED_SOURCES = new Set(["website", "landing-page", "footer", "hero"]);
+
 router.post("/subscribe", async (req: Request, res: Response) => {
+  const rawSource = typeof req.body?.source === "string" ? req.body.source : "";
+  const safeSource = ALLOWED_SOURCES.has(rawSource) ? rawSource : "website";
+
   const parsed = insertSubscriberSchema.safeParse({
     email: req.body?.email,
-    source: req.body?.source ?? "website",
+    source: safeSource,
   });
 
   if (!parsed.success) {
@@ -206,7 +215,15 @@ router.get(
         .from(subscribersTable)
         .orderBy(desc(subscribersTable.createdAt));
 
-      const csvCell = (v: string) => `"${v.replace(/"/g, '""')}"`;
+      /* Defend against CSV formula injection: if a cell starts with
+         a character a spreadsheet would interpret as a formula
+         (`=`, `+`, `-`, `@`, tab, CR), prepend a single quote so
+         Excel/Sheets render it as literal text instead of executing
+         it. `source` is user-supplied so this is required. */
+      const csvCell = (v: string) => {
+        const safe = /^[=+\-@\t\r]/.test(v) ? `'${v}` : v;
+        return `"${safe.replace(/"/g, '""')}"`;
+      };
       const lines = ["email,source,created_at"];
       for (const r of rows) {
         lines.push(

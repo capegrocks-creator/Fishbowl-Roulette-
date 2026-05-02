@@ -1,0 +1,105 @@
+Audit and fix the Fishbowl Roulette landing page layout on mobile and desktop.
+
+IMPORTANT:
+- Do NOT rebuild the site
+- Do NOT remove working features
+- Do NOT break Podbean player, Pull a Question, Submit a Question, privacy page, theme toggle, or email signup
+- Only improve layout, spacing, and mobile/desktop presentation
+
+PROBLEMS:
+- Mobile has too many large stacked cards
+- Category cards take up too much vertical space
+- How It Works cards feel too large on mobile
+- The fishbowl visual interrupts the card flow
+- Desktop should be checked so the layout still feels balanced
+
+GOAL:
+Make mobile feel lighter, shorter, and easier to scan while keeping desktop polished.
+
+MOBILE FIXES:
+
+1. Category Cards
+On mobile, do NOT show all category cards as large full-width stacked cards.
+
+Instead:
+- Convert category cards into a compact horizontal scroll row OR a 2-column compact grid
+- Preferred: horizontal scroll carousel
+- Each card should be smaller and easier to scan
+- Keep label + short description
+- Reduce padding
+- Reduce card height
+- Keep fishbowl/icon visual smaller
+
+Mobile card style:
+- max-height should be compact
+- less vertical padding
+- smaller icons/fishbowls
+- text should not feel oversized
+
+2. “Tap to Pull” / Main Fishbowl
+- Keep it visually engaging, but reduce its mobile size
+- It should not create a huge gap between category cards
+- Position it as its own “Try Your Luck” section, not floating awkwardly between cards
+- Add clear spacing above/below
+
+3. How It Works
+On mobile, reduce the large card treatment.
+
+Change from three big stacked cards to:
+- compact numbered list
+- smaller padding
+- less border emphasis
+- tighter vertical spacing
+
+Example mobile layout:
+01 — We sit down
+Two people. A conversation that could go anywhere.
+
+02 — We pull a question
+From one of five bowls.
+
+03 — We answer it
+Honestly. No editing. No warning.
+
+Do not use oversized boxes on mobile.
+
+4. Sandra/About Section
+If Sandra photo appears below How It Works:
+- Ensure it has proper spacing
+- Do not let it feel like another giant card immediately after three big cards
+- Keep it clean and intentional
+
+DESKTOP FIXES:
+
+1. Category Cards
+On desktop:
+- Keep the 3 + 2 grid OR improve to a balanced 5-card layout
+- Cards can remain larger on desktop, but should not feel oversized
+- Keep consistent spacing and alignment
+
+2. How It Works
+On desktop:
+- Use 3 horizontal columns if space allows
+- Avoid huge stacked cards on desktop
+- Keep it elegant and easy to scan
+
+3. Hero / Fishbowl
+- Check desktop hero spacing
+- Fishbowl should not cover text
+- Sandra/photo area should not feel like a dark empty block
+- Maintain balance between copy and visuals
+
+GENERAL STYLE RULES:
+- Reduce vertical scrolling fatigue
+- Use spacing, not oversized cards
+- Keep mobile sections compact
+- Keep desktop sections polished and balanced
+- Maintain the current brand styling
+- Do not reintroduce clutter
+
+FINAL CHECK:
+- Mobile no longer feels like endless stacked cards
+- Category section is compact on mobile
+- How It Works is compact on mobile
+- Desktop still looks intentional and balanced
+- All existing buttons and features still work
