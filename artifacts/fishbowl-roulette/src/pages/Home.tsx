@@ -7,6 +7,66 @@ const sandraImg = `${BASE}images/sandra.jpg`;
 const fishbowlQuestionsImg = `${BASE}images/fishbowl-questions.png`;
 const textureBg = `${BASE}images/dark-texture.png`;
 
+/* ─── Episode category inference (client-side, visual flavor only) ───
+   The Podbean RSS feed doesn't ship a taxonomy, so we infer one of three
+   buckets from each episode's title + description so cards can show a
+   color-coded badge that matches the fishbowl ("Personal" / "Beliefs" /
+   "Wildcard"). When nothing matches, default to "Wildcard". */
+type EpisodeCategory = 'personal' | 'beliefs' | 'wildcard';
+const CATEGORY_META: Record<EpisodeCategory, { label: string; color: string; textColor: string }> = {
+  personal: { label: 'Personal', color: '#c8922a', textColor: '#2b1a08' },
+  beliefs:  { label: 'Beliefs',  color: '#7a4fb5', textColor: '#f5ead8' },
+  wildcard: { label: 'Wildcard', color: '#2a8a6e', textColor: '#f5ead8' },
+};
+const inferCategory = (ep: { title: string; description: string }): EpisodeCategory => {
+  const t = `${ep.title ?? ''} ${ep.description ?? ''}`.toLowerCase();
+  if (/\b(belief|beliefs|believe|believes|believed|believing|faith|religion|religious|god|spiritual|spirituality|moral|morals|morality|values|principles|conviction|convictions|right and wrong)\b/.test(t)) {
+    return 'beliefs';
+  }
+  if (/\b(relationship|relationships|friend|friends|friendship|family|love|dating|marriage|partner|secret|secrets|memory|childhood|regret|regrets|younger self|forgive|forgiveness|never told|told anyone|crossed a line)\b/.test(t)) {
+    return 'personal';
+  }
+  return 'wildcard';
+};
+
+/* ─── Triangular play arrow ─── */
+const PlayIcon = () => (
+  <svg width="11" height="13" viewBox="0 0 10 12" aria-hidden="true">
+    <path d="M0 0 L10 6 L0 12 Z" fill="currentColor" />
+  </svg>
+);
+
+/* ─── Animated waveform (featured-card flourish) ─── */
+const WAVE_BARS = [18, 28, 22, 34, 20, 30, 14, 26, 32, 18, 24, 36, 20, 28, 16];
+const Waveform = ({ color }: { color: string }) => (
+  <div
+    aria-hidden="true"
+    style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: '36px' }}
+  >
+    {WAVE_BARS.map((h, i) => (
+      <motion.span
+        key={i}
+        animate={{ scaleY: [0.4, 1, 0.55, 0.9, 0.45] }}
+        transition={{
+          duration: 1.2 + (i % 3) * 0.18,
+          repeat: Infinity,
+          ease: 'easeInOut',
+          delay: (i % 5) * 0.09,
+        }}
+        style={{
+          display: 'inline-block',
+          width: '3px',
+          height: `${h}px`,
+          background: color,
+          borderRadius: '2px',
+          opacity: 0.78,
+          transformOrigin: 'bottom',
+        }}
+      />
+    ))}
+  </div>
+);
+
 /* ── Theme init: respect localStorage, default to light ── */
 const getInitialTheme = (): 'light' | 'dark' => {
   if (typeof window !== 'undefined') {
@@ -21,7 +81,6 @@ const Home = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [emailSubmitted, setEmailSubmitted] = useState(false);
-  const [playerOpen, setPlayerOpen] = useState(false);
 
   /* Episode list state — fetched from /api/podcast/episodes on mount.
      Each episode has its own native HTML5 audio element so listeners can
@@ -50,9 +109,13 @@ const Home = () => {
     localStorage.setItem('fr-theme', next);
   };
 
-  /** Open the Podbean player and scroll to it */
+  /** Scroll the page to the Episodes section and auto-start the latest
+   *  episode if nothing is currently playing. Wired to the hero
+   *  "Start Listening" CTA and the nav "Listen Now" / "Episodes" links. */
   const openPlayerAndScroll = () => {
-    setPlayerOpen(true);
+    if (!activeEpisodeGuid && episodes[0]?.guid) {
+      setActiveEpisodeGuid(episodes[0].guid);
+    }
     setTimeout(() => {
       document.getElementById('episodes')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 60);
@@ -90,12 +153,6 @@ const Home = () => {
   }, []);
 
   /* Helpers for the episode list */
-  const formatPubDate = (ms: number): string => {
-    if (!ms) return '';
-    return new Date(ms).toLocaleDateString('en-US', {
-      month: 'short', day: 'numeric', year: 'numeric',
-    });
-  };
   const formatDuration = (sec: number | null): string => {
     if (sec === null || sec <= 0) return '';
     const m = Math.floor(sec / 60);
@@ -164,6 +221,7 @@ const Home = () => {
           <nav className="hidden md:flex items-center gap-7">
             {navLinks.map(l => (
               <a key={l.label} href={l.href}
+                onClick={l.href === '#episodes' ? (e) => { e.preventDefault(); openPlayerAndScroll(); } : undefined}
                 className="font-sans text-sm tracking-widest uppercase transition-colors duration-200"
                 style={{ color: isDark ? '#d9c2ad' : '#444', textDecoration: 'none' }}
                 onMouseEnter={e => (e.currentTarget.style.color = gold)}
@@ -213,7 +271,11 @@ const Home = () => {
             style={{ background: isDark ? 'rgba(18,10,5,0.98)' : 'rgba(247,245,242,0.98)', backdropFilter: 'blur(10px)', borderColor: border }}
           >
             {navLinks.map(l => (
-              <a key={l.label} href={l.href} onClick={() => setMenuOpen(false)}
+              <a key={l.label} href={l.href}
+                onClick={(e) => {
+                  setMenuOpen(false);
+                  if (l.href === '#episodes') { e.preventDefault(); openPlayerAndScroll(); }
+                }}
                 className="font-sans text-base tracking-widest uppercase"
                 style={{ color: text, textDecoration: 'none' }}
               >
@@ -582,341 +644,452 @@ const Home = () => {
       </section>
 
       {/* ═══════════════════════════════════════════
-          EPISODES — Listen In + Podbean player
+          EPISODES — Tavern-style featured + grid
       ═══════════════════════════════════════════ */}
+      {(() => {
+        /* Section-local theme tokens — mirrors the hero "tavern" mood
+           in dark mode (warm wood + gold) and softens to a parchment
+           cream in light mode so cards stay readable. */
+        const epHeading    = isDark ? '#f5ead8' : '#3d2510';
+        const epMuted      = isDark ? '#a08060' : 'rgba(61,37,16,0.62)';
+        const epGold       = isDark ? '#c8922a' : '#b8854a';
+        const epGoldLight  = isDark ? '#e8b84b' : '#c49a3a';
+        const epRed        = '#9b2020';
+        const epRedHover   = '#b52a2a';
+        const epCardBg     = isDark ? 'rgba(44,26,8,0.85)' : 'rgba(255,253,247,0.96)';
+        const epCardBorder = isDark ? 'rgba(200,146,42,0.20)' : 'rgba(184,133,74,0.25)';
+        const epCardHoverB = isDark ? 'rgba(200,146,42,0.55)' : 'rgba(184,133,74,0.6)';
+        const epDivider    = isDark ? 'rgba(200,146,42,0.12)' : 'rgba(184,133,74,0.18)';
+        const sectionBg    = isDark
+          ? `repeating-linear-gradient(88deg, transparent, transparent 2px, rgba(255,200,100,0.014) 2px, rgba(255,200,100,0.014) 4px),
+             repeating-linear-gradient(92deg, transparent, transparent 60px, rgba(0,0,0,0.06) 60px, rgba(0,0,0,0.06) 62px),
+             linear-gradient(180deg, #2c1a08 0%, #3d2510 40%, #2c1a08 100%)`
+          : `radial-gradient(ellipse at 50% 0%, rgba(184,133,74,0.10) 0%, transparent 60%),
+             linear-gradient(180deg, #f5ead8 0%, #ede0c5 100%)`;
+        const sectionEdge  = isDark ? 'rgba(255,200,100,0.08)' : 'rgba(184,133,74,0.18)';
+
+        return (
       <section id="episodes" style={{
-        background: bgAlt,
-        borderTop: `1px solid ${border}`,
-        padding: '52px 24px 56px',
+        position: 'relative',
+        background: isDark ? '#1a1108' : '#f5ead8',
+        backgroundImage: sectionBg,
+        borderTop: `1px solid ${sectionEdge}`,
+        borderBottom: `1px solid ${sectionEdge}`,
+        padding: '78px 24px 92px',
       }}>
-        <div style={{ maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
 
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <div style={{
-              fontSize: '0.65rem', letterSpacing: '0.14em', textTransform: 'uppercase',
-              color: gold, fontFamily: 'var(--font-sans)', fontWeight: 700,
-              marginBottom: '10px',
-            }}>
-              Episodes
-            </div>
-            <h2 className="font-serif font-bold" style={{
-              fontSize: 'clamp(1.6rem, 3.6vw, 2.4rem)',
-              color: text, lineHeight: 1.2, marginBottom: '10px',
-            }}>
-              Listen In
-            </h2>
-            <p className="font-sans" style={{
-              fontSize: '1rem', color: textMuted,
-              lineHeight: 1.6, marginBottom: '28px',
-            }}>
-              Real conversations, ready when you are.
-            </p>
-          </motion.div>
-
-          {/* Choose Your Episode card — horizontal layout */}
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.65, delay: 0.05 }}
+          {/* ── Header ── */}
+          <motion.p
+            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.6 }}
+            className="font-sans"
             style={{
-              background: isDark ? 'rgba(196,154,108,0.06)' : '#fff',
-              border: `1px solid ${border}`,
-              borderRadius: '14px',
-              padding: '22px 24px',
-              boxShadow: isDark
-                ? '0 4px 22px rgba(0,0,0,0.35)'
-                : '0 4px 22px rgba(43,43,43,0.06)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '18px',
-              textAlign: 'left',
-              flexWrap: 'wrap',
+              textAlign: 'center', fontStyle: 'italic',
+              fontSize: '0.95rem', color: epGold, letterSpacing: '0.12em',
+              textTransform: 'uppercase', marginBottom: '14px',
             }}
           >
-            {/* Play-icon avatar */}
-            <div style={{
-              flexShrink: 0,
-              width: '52px', height: '52px',
-              borderRadius: '50%',
-              border: `1.5px solid ${isDark ? 'rgba(196,154,108,0.45)' : 'rgba(43,43,43,0.18)'}`,
+            Pull a question. Start talking.
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.08 }}
+            className="font-serif font-bold"
+            style={{
+              textAlign: 'center',
+              fontSize: 'clamp(2rem, 5vw, 3rem)',
+              color: epHeading, lineHeight: 1.15, marginBottom: '14px',
+            }}
+          >
+            Latest Episodes
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.16 }}
+            className="font-sans"
+            style={{
+              textAlign: 'center', fontSize: '1rem', color: epMuted,
+              maxWidth: '520px', margin: '0 auto 40px', lineHeight: 1.7,
+            }}
+          >
+            Every episode is unrehearsed. Someone reaches into the bowl — and wherever it goes, it goes.
+          </motion.p>
+
+          {/* ── Triple-diamond divider ── */}
+          <motion.div
+            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
+            viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.22 }}
+            style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: textMuted,
-            }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                <circle cx="12" cy="12" r="10" />
-                <polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none" />
-              </svg>
-            </div>
-
-            {/* Title + description */}
-            <div style={{ flex: '1 1 240px', minWidth: 0 }}>
-              <h3 className="font-serif font-bold" style={{
-                fontSize: 'clamp(1.1rem, 2.2vw, 1.35rem)',
-                color: text, marginBottom: '4px', lineHeight: 1.25,
-              }}>
-                Choose Your Episode
-              </h3>
-              <p className="font-sans" style={{
-                fontSize: '0.9rem', color: textMuted,
-                lineHeight: 1.55, margin: 0,
-              }}>
-                Open the list to browse every Fishbowl Roulette episode — pick any one to start listening right here.
-              </p>
-            </div>
-
-            {/* Open Player button (right side) */}
-            <button
-              onClick={() => setPlayerOpen(o => !o)}
-              aria-expanded={playerOpen}
-              aria-controls="fbr-episode-list-panel"
-              style={{
-                flexShrink: 0,
-                display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
-                padding: '11px 22px', borderRadius: '999px',
-                background: isDark ? '#3a1a14' : '#2B2B2B',
-                color: '#fff', border: 'none',
-                fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.88rem',
-                cursor: 'pointer', transition: 'background 0.2s, opacity 0.2s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-            >
-              {playerOpen ? <>✕ Hide Episodes</> : <>▶ Browse Episodes</>}
-            </button>
+              gap: '14px', marginBottom: '52px',
+            }}
+            aria-hidden="true"
+          >
+            <span style={{
+              flex: 1, height: '1px', maxWidth: '180px',
+              background: `linear-gradient(90deg, transparent, ${epGold}, transparent)`,
+            }} />
+            {[0, 1, 2].map(i => (
+              <span key={i} style={{
+                width: '8px', height: '8px', background: epGold, transform: 'rotate(45deg)',
+              }} />
+            ))}
+            <span style={{
+              flex: 1, height: '1px', maxWidth: '180px',
+              background: `linear-gradient(90deg, transparent, ${epGold}, transparent)`,
+            }} />
           </motion.div>
 
-          {/* ── Custom episode list (expandable) ── */}
-          {playerOpen && (
-            <motion.div
-              id="fbr-episode-list-panel"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              transition={{ duration: 0.4 }}
-              style={{
-                marginTop: '18px',
-                overflow: 'hidden',
-                background: isDark ? 'rgba(196,154,108,0.04)' : '#fff',
-                border: `1px solid ${border}`,
-                borderRadius: '14px',
-                textAlign: 'left',
-              }}
-            >
-              {/* Now Playing header bar */}
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '12px 18px',
-                borderBottom: `1px solid ${border}`,
-              }}>
-                <div className="font-sans" style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '8px',
-                  fontSize: '0.7rem', letterSpacing: '0.16em', textTransform: 'uppercase',
-                  color: textMuted, fontWeight: 700,
-                }}>
-                  <span style={{
-                    width: '7px', height: '7px', borderRadius: '50%', background: accent,
-                  }} />
-                  Now Playing
-                </div>
-                <button
-                  onClick={() => setPlayerOpen(false)}
-                  style={{
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    color: textMuted, fontFamily: 'var(--font-sans)',
-                    fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '4px',
-                  }}
-                  aria-label="Close player"
-                >
-                  ✕ Close
-                </button>
-              </div>
+          {/* ── Loading / error / empty ── */}
+          {episodesLoading && (
+            <div className="font-sans" style={{
+              padding: '40px 20px', textAlign: 'center', color: epMuted, fontSize: '0.95rem',
+            }}>
+              Loading episodes…
+            </div>
+          )}
 
-              {/* ── Episode list ── */}
-              <div
-                style={{
-                  maxHeight: '560px',
-                  overflowY: 'auto',
-                  padding: '6px 6px 6px 6px',
-                }}
+          {!episodesLoading && episodesError && episodes.length === 0 && (
+            <div className="font-sans" style={{
+              padding: '32px 20px', textAlign: 'center', color: epMuted, fontSize: '0.95rem',
+            }}>
+              Couldn't load the episode list right now.{' '}
+              <a
+                href="https://fishbowlroulettepodcast.podbean.com/"
+                target="_blank" rel="noopener noreferrer"
+                style={{ color: epGold, textDecoration: 'underline' }}
               >
-                {episodesLoading && (
-                  <div className="font-sans" style={{
-                    padding: '40px 20px', textAlign: 'center',
-                    color: textMuted, fontSize: '0.92rem',
-                  }}>
-                    Loading episodes…
-                  </div>
-                )}
+                Browse on Podbean
+              </a>
+            </div>
+          )}
 
-                {!episodesLoading && episodesError && episodes.length === 0 && (
-                  <div className="font-sans" style={{
-                    padding: '32px 20px', textAlign: 'center',
-                    color: textMuted, fontSize: '0.92rem',
-                  }}>
-                    Couldn't load the episode list right now.{' '}
-                    <a
-                      href="https://fishbowlroulettepodcast.podbean.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: gold, textDecoration: 'underline' }}
-                    >
-                      Browse on Podbean
-                    </a>
-                  </div>
-                )}
+          {/* ── Featured + grid ── */}
+          {!episodesLoading && episodes.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-                {!episodesLoading && episodes.length > 0 && (
-                  <ul style={{
-                    listStyle: 'none', padding: 0, margin: 0,
-                    display: 'flex', flexDirection: 'column', gap: '6px',
-                  }}>
-                    {episodes.map((ep) => {
-                      const isActive = activeEpisodeGuid === ep.guid;
-                      const dateStr = formatPubDate(ep.pubDateMs);
-                      const durStr = formatDuration(ep.durationSeconds);
-                      const meta = [dateStr, durStr].filter(Boolean).join(' • ');
-                      const epLabel = ep.episodeNumber ? `Ep ${ep.episodeNumber}` : null;
-                      return (
-                        <li
-                          key={ep.guid}
-                          style={{
-                            background: isActive
-                              ? (isDark ? 'rgba(196,154,108,0.10)' : '#fbf6ee')
-                              : 'transparent',
-                            borderRadius: '10px',
-                            border: `1px solid ${isActive ? (isDark ? 'rgba(196,154,108,0.35)' : '#e8d9bf') : 'transparent'}`,
-                            transition: 'background 0.18s, border-color 0.18s',
-                          }}
-                        >
+              {/* ─── FEATURED (latest) ─── */}
+              {(() => {
+                const ep = episodes[0];
+                const cat = inferCategory(ep);
+                const meta = CATEGORY_META[cat];
+                const isActive = activeEpisodeGuid === ep.guid;
+                const numLabel = ep.episodeNumber
+                  ? `EP. ${String(ep.episodeNumber).padStart(2, '0')}`
+                  : 'LATEST';
+                const durStr = formatDuration(ep.durationSeconds);
+                return (
+                  <motion.article
+                    initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }} transition={{ duration: 0.55, delay: 0.28 }}
+                    style={{
+                      position: 'relative',
+                      background: epCardBg,
+                      border: `1px solid ${epCardBorder}`,
+                      borderRadius: '6px',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      boxShadow: isDark
+                        ? '0 18px 45px rgba(0,0,0,0.45)'
+                        : '0 12px 32px rgba(120,80,30,0.10)',
+                    }}
+                  >
+                    {/* Left gold accent bar */}
+                    <div style={{ width: '4px', flexShrink: 0, background: epGoldLight }} />
+
+                    {/* Body — wraps on narrow */}
+                    <div style={{
+                      flex: 1, padding: '26px 28px',
+                      display: 'flex', flexWrap: 'wrap', gap: '28px', alignItems: 'center',
+                    }}>
+                      {/* "✦ Latest Episode" tag */}
+                      <span className="font-serif" style={{
+                        position: 'absolute', top: '12px', right: '18px',
+                        fontStyle: 'italic', fontSize: '0.75rem',
+                        color: epGoldLight, letterSpacing: '0.08em',
+                      }}>
+                        ✦ Latest Episode
+                      </span>
+
+                      {/* Content */}
+                      <div style={{
+                        flex: '1 1 280px', minWidth: 0,
+                        display: 'flex', flexDirection: 'column', gap: '10px',
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span className="font-serif" style={{
+                            fontSize: '0.72rem', color: epMuted, letterSpacing: '0.1em',
+                          }}>
+                            {numLabel}
+                          </span>
+                          <span className="font-sans" style={{
+                            fontSize: '0.62rem', fontStyle: 'italic',
+                            textTransform: 'uppercase', letterSpacing: '0.1em',
+                            padding: '3px 9px', borderRadius: '2px',
+                            color: meta.textColor, background: meta.color,
+                          }}>
+                            {meta.label}
+                          </span>
+                        </div>
+                        <h3 className="font-serif font-bold" style={{
+                          fontSize: '1.25rem', color: epHeading, lineHeight: 1.3, margin: 0,
+                        }}>
+                          {ep.title}
+                        </h3>
+                        {ep.description && (
+                          <p className="font-sans" style={{
+                            fontSize: '0.92rem', color: epMuted, lineHeight: 1.6, margin: 0,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: 'vertical' as const,
+                            overflow: 'hidden',
+                          }}>
+                            {ep.description}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Right action area */}
+                      <div style={{
+                        display: 'flex', flexDirection: 'column', gap: '14px',
+                        alignItems: 'flex-start',
+                      }}>
+                        <Waveform color={epGold} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                          <button
+                            type="button"
+                            onClick={() => setActiveEpisodeGuid(isActive ? null : ep.guid)}
+                            aria-expanded={isActive}
+                            aria-label={`${isActive ? 'Hide' : 'Play'} latest episode: ${ep.title}`}
+                            style={{
+                              display: 'inline-flex', alignItems: 'center', gap: '8px',
+                              background: epRed, color: '#f5ead8', border: 'none',
+                              borderRadius: '4px', padding: '10px 20px',
+                              fontFamily: 'var(--font-sans)', fontWeight: 600,
+                              fontSize: '0.86rem', letterSpacing: '0.04em',
+                              cursor: 'pointer',
+                              transition: 'background 0.2s, transform 0.15s',
+                            }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.background = epRedHover;
+                              e.currentTarget.style.transform = 'scale(1.04)';
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.background = epRed;
+                              e.currentTarget.style.transform = 'scale(1)';
+                            }}
+                          >
+                            <PlayIcon /> {isActive ? 'Now Playing' : 'Listen Now'}
+                          </button>
+                          {durStr && (
+                            <span className="font-sans" style={{
+                              fontSize: '0.82rem', color: epMuted, fontStyle: 'italic',
+                            }}>
+                              {durStr}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Inline audio player when this card is active */}
+                      {isActive && ep.audioUrl && (
+                        <div style={{ flexBasis: '100%', marginTop: '4px' }}>
+                          <audio
+                            key={ep.guid} controls autoPlay preload="metadata" src={ep.audioUrl}
+                            style={{ width: '100%', borderRadius: '6px' }}
+                          >
+                            Your browser doesn't support the audio element.{' '}
+                            <a href={ep.audioUrl} style={{ color: epGold }}>Download MP3</a>
+                          </audio>
+                          {ep.episodeUrl && (
+                            <div style={{ marginTop: '8px', fontSize: '0.78rem' }}>
+                              <a
+                                href={ep.episodeUrl} target="_blank" rel="noopener noreferrer"
+                                style={{ color: epGold, textDecoration: 'underline' }}
+                              >
+                                View episode page on Podbean ↗
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </motion.article>
+                );
+              })()}
+
+              {/* ─── GRID of remaining episodes ─── */}
+              {episodes.length > 1 && (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))',
+                  gap: '24px',
+                }}>
+                  {episodes.slice(1).map((ep, i) => {
+                    const cat = inferCategory(ep);
+                    const meta = CATEGORY_META[cat];
+                    const isActive = activeEpisodeGuid === ep.guid;
+                    const numLabel = ep.episodeNumber
+                      ? `EP. ${String(ep.episodeNumber).padStart(2, '0')}`
+                      : '—';
+                    const durStr = formatDuration(ep.durationSeconds);
+                    return (
+                      <motion.article
+                        key={ep.guid}
+                        initial={{ opacity: 0, y: 18 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: '-50px' }}
+                        transition={{ duration: 0.5, delay: 0.04 + (i % 6) * 0.06 }}
+                        whileHover={{ y: -5 }}
+                        style={{
+                          background: epCardBg,
+                          border: `1px solid ${epCardBorder}`,
+                          borderRadius: '6px',
+                          overflow: 'hidden',
+                          display: 'flex', flexDirection: 'column',
+                          boxShadow: isDark
+                            ? '0 8px 22px rgba(0,0,0,0.35)'
+                            : '0 6px 18px rgba(120,80,30,0.08)',
+                          transition: 'border-color 0.25s, box-shadow 0.25s',
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.borderColor = epCardHoverB;
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.borderColor = epCardBorder;
+                        }}
+                      >
+                        {/* Top accent bar — category-colored */}
+                        <div style={{ height: '3px', background: meta.color }} />
+
+                        {/* Body */}
+                        <div style={{
+                          padding: '22px 22px 14px', flex: 1,
+                          display: 'flex', flexDirection: 'column', gap: '10px',
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span className="font-serif" style={{
+                              fontSize: '0.72rem', color: epMuted, letterSpacing: '0.1em',
+                            }}>
+                              {numLabel}
+                            </span>
+                            <span className="font-sans" style={{
+                              fontSize: '0.62rem', fontStyle: 'italic',
+                              textTransform: 'uppercase', letterSpacing: '0.1em',
+                              padding: '3px 9px', borderRadius: '2px',
+                              color: meta.textColor, background: meta.color,
+                            }}>
+                              {meta.label}
+                            </span>
+                          </div>
+                          <h3 className="font-serif font-bold" style={{
+                            fontSize: '1.08rem', color: epHeading, lineHeight: 1.35, margin: 0,
+                          }}>
+                            {ep.title}
+                          </h3>
+                          {ep.description && (
+                            <p className="font-sans" style={{
+                              fontSize: '0.88rem', color: epMuted, lineHeight: 1.6,
+                              margin: 0, flex: 1,
+                              display: '-webkit-box',
+                              WebkitLineClamp: 3,
+                              WebkitBoxOrient: 'vertical' as const,
+                              overflow: 'hidden',
+                            }}>
+                              {ep.description}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Footer */}
+                        <div style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '12px 22px 18px',
+                          borderTop: `1px solid ${epDivider}`, marginTop: 'auto',
+                        }}>
+                          <span className="font-sans" style={{
+                            fontSize: '0.82rem', color: epMuted, fontStyle: 'italic',
+                          }}>
+                            {durStr || '—'}
+                          </span>
                           <button
                             type="button"
                             onClick={() => setActiveEpisodeGuid(isActive ? null : ep.guid)}
                             aria-expanded={isActive}
                             aria-label={`${isActive ? 'Hide' : 'Play'} episode: ${ep.title}`}
                             style={{
-                              width: '100%', textAlign: 'left',
-                              background: 'transparent', border: 'none', cursor: 'pointer',
-                              padding: '14px 16px',
-                              display: 'flex', alignItems: 'flex-start', gap: '14px',
-                              fontFamily: 'inherit', color: 'inherit',
+                              display: 'inline-flex', alignItems: 'center', gap: '7px',
+                              background: epRed, color: '#f5ead8', border: 'none',
+                              borderRadius: '4px', padding: '7px 14px',
+                              fontFamily: 'var(--font-sans)', fontWeight: 600,
+                              fontSize: '0.8rem', letterSpacing: '0.04em',
+                              cursor: 'pointer',
+                              transition: 'background 0.2s, transform 0.15s',
+                            }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.background = epRedHover;
+                              e.currentTarget.style.transform = 'scale(1.04)';
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.background = epRed;
+                              e.currentTarget.style.transform = 'scale(1)';
                             }}
                           >
-                            {/* Play / pause circle */}
-                            <span style={{
-                              flexShrink: 0,
-                              width: '40px', height: '40px',
-                              borderRadius: '50%',
-                              background: isActive ? accent : (isDark ? '#2a1810' : '#2B2B2B'),
-                              color: '#fff',
-                              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                              fontSize: '0.92rem',
-                              boxShadow: isActive
-                                ? (isDark ? '0 4px 14px rgba(143,47,42,0.45)' : '0 4px 14px rgba(227,106,93,0.32)')
-                                : 'none',
-                              transition: 'background 0.18s',
-                            }}>
-                              {isActive ? '❚❚' : '▶'}
-                            </span>
-
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div className="font-sans" style={{
-                                display: 'flex', alignItems: 'center', gap: '8px',
-                                flexWrap: 'wrap',
-                                fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase',
-                                color: textMuted, fontWeight: 700,
-                                marginBottom: '4px',
-                              }}>
-                                {epLabel && <span style={{ color: gold }}>{epLabel}</span>}
-                                {meta && <span>{meta}</span>}
-                              </div>
-                              <h4 className="font-serif" style={{
-                                fontSize: '1.02rem', fontWeight: 700,
-                                color: text, margin: 0, lineHeight: 1.3,
-                              }}>
-                                {ep.title}
-                              </h4>
-                              {ep.description && (
-                                <p className="font-sans" style={{
-                                  fontSize: '0.86rem', color: textMuted,
-                                  margin: '6px 0 0', lineHeight: 1.5,
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: isActive ? 6 : 2,
-                                  WebkitBoxOrient: 'vertical' as const,
-                                  overflow: 'hidden',
-                                }}>
-                                  {ep.description}
-                                </p>
-                              )}
-                            </div>
+                            <PlayIcon /> {isActive ? 'Playing' : 'Play'}
                           </button>
+                        </div>
 
-                          {isActive && ep.audioUrl && (
-                            <div style={{ padding: '0 16px 14px 70px' }}>
-                              <audio
-                                key={ep.guid}
-                                controls
-                                autoPlay
-                                preload="metadata"
-                                src={ep.audioUrl}
-                                style={{
-                                  width: '100%',
-                                  borderRadius: '8px',
-                                  marginTop: '4px',
-                                }}
-                              >
-                                Your browser doesn't support the audio element.{' '}
-                                <a href={ep.audioUrl} style={{ color: gold }}>Download MP3</a>
-                              </audio>
-                              {ep.episodeUrl && (
-                                <div style={{ marginTop: '6px', fontSize: '0.78rem' }}>
-                                  <a
-                                    href={ep.episodeUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{ color: gold, textDecoration: 'underline' }}
-                                  >
-                                    View episode page on Podbean ↗
-                                  </a>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-
-              {episodes.length > 0 && (
-                <p className="font-sans" style={{
-                  fontSize: '0.78rem', color: textMuted,
-                  padding: '10px 18px 14px', textAlign: 'center', margin: 0,
-                  borderTop: `1px solid ${border}`,
-                }}>
-                  Showing {episodes.length} episode{episodes.length === 1 ? '' : 's'}.{' '}
-                  <a
-                    href="https://fishbowlroulettepodcast.podbean.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: gold, textDecoration: 'underline' }}
-                  >
-                    Browse all on Podbean ↗
-                  </a>
-                </p>
+                        {/* Inline audio player when active */}
+                        {isActive && ep.audioUrl && (
+                          <div style={{ padding: '0 22px 18px' }}>
+                            <audio
+                              key={ep.guid} controls autoPlay preload="metadata" src={ep.audioUrl}
+                              style={{ width: '100%', borderRadius: '6px' }}
+                            >
+                              Your browser doesn't support the audio element.{' '}
+                              <a href={ep.audioUrl} style={{ color: epGold }}>Download MP3</a>
+                            </audio>
+                          </div>
+                        )}
+                      </motion.article>
+                    );
+                  })}
+                </div>
               )}
-            </motion.div>
+
+              {/* ─── Browse all button ─── */}
+              <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                <a
+                  href="https://fishbowlroulettepodcast.podbean.com/"
+                  target="_blank" rel="noopener noreferrer"
+                  className="font-sans"
+                  style={{
+                    display: 'inline-block', background: 'transparent',
+                    border: `1px solid ${epGold}`, color: epGold,
+                    fontStyle: 'italic', fontSize: '0.95rem', letterSpacing: '0.08em',
+                    padding: '14px 42px', borderRadius: '4px', textDecoration: 'none',
+                    transition: 'background 0.25s, color 0.25s',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = epGold;
+                    e.currentTarget.style.color = isDark ? '#1a1108' : '#fffaf0';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = epGold;
+                  }}
+                >
+                  Browse All Episodes ↗
+                </a>
+              </div>
+            </div>
           )}
 
-          {/* Subscribe row — pill-style podcast subscription links */}
-          <div style={{ marginTop: '36px' }}>
+          {/* ── Subscribe row — preserved ── */}
+          <div style={{ marginTop: '52px', textAlign: 'center' }}>
             <p className="font-sans" style={{
-              fontSize: '0.92rem', color: textMuted,
+              fontSize: '0.92rem', color: epMuted,
               marginBottom: '16px', lineHeight: 1.6,
             }}>
               Subscribe on your favourite platform to get every new episode automatically.
@@ -928,8 +1101,8 @@ const Home = () => {
                 href="https://open.spotify.com/search/Fishbowl%20Roulette/shows"
                 color="#1DB954"
                 isDark={isDark}
-                border={border}
-                text={text}
+                border={epCardBorder}
+                text={epHeading}
               />
               <SubscribePill
                 name="Apple Podcasts"
@@ -937,8 +1110,8 @@ const Home = () => {
                 href="https://podcasts.apple.com/us/podcast/fishbowl-roulette/id1885180650"
                 color={isDark ? '#c49a6c' : '#7E57C2'}
                 isDark={isDark}
-                border={border}
-                text={text}
+                border={epCardBorder}
+                text={epHeading}
               />
               <SubscribePill
                 name="RSS Feed"
@@ -946,14 +1119,16 @@ const Home = () => {
                 href="https://feed.podbean.com/fishbowlroulettepodcast/feed.xml"
                 color={isDark ? '#d9c2ad' : '#E36A5D'}
                 isDark={isDark}
-                border={border}
-                text={text}
+                border={epCardBorder}
+                text={epHeading}
               />
             </div>
           </div>
 
         </div>
       </section>
+        );
+      })()}
 
       {/* ═══════════════════════════════════════════
           EMAIL CAPTURE
