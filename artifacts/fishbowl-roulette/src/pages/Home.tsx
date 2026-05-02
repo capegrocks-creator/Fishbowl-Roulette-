@@ -238,7 +238,7 @@ const Home = () => {
           <nav className="hidden md:flex items-center gap-7">
             {navLinks.map(l => (
               <a key={l.label} href={l.href}
-                onClick={l.href === '#episodes' ? (e) => { e.preventDefault(); openPlayerAndScroll(); } : undefined}
+                onClick={l.label === 'Listen Now' ? (e) => { e.preventDefault(); openPlayerAndScroll(); } : undefined}
                 className="font-sans text-sm tracking-widest uppercase transition-colors duration-200"
                 style={{ color: isDark ? '#d9c2ad' : '#444', textDecoration: 'none' }}
                 onMouseEnter={e => (e.currentTarget.style.color = gold)}
@@ -291,7 +291,7 @@ const Home = () => {
               <a key={l.label} href={l.href}
                 onClick={(e) => {
                   setMenuOpen(false);
-                  if (l.href === '#episodes') { e.preventDefault(); openPlayerAndScroll(); }
+                  if (l.label === 'Listen Now') { e.preventDefault(); openPlayerAndScroll(); }
                 }}
                 className="font-sans text-base tracking-widest uppercase"
                 style={{ color: text, textDecoration: 'none' }}
