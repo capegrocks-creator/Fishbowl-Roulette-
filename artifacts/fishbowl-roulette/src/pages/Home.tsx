@@ -120,7 +120,7 @@ const Home = () => {
 
   const navLinks = [
     { label: 'Listen Now', href: '#episodes' },
-    { label: 'About', href: '#cards' },
+    { label: 'About', href: '#about' },
     { label: 'Episodes', href: '#episodes' },
     { label: 'Follow', href: '#join' },
   ];
@@ -247,24 +247,23 @@ const Home = () => {
         <div className="w-full max-w-6xl mx-auto px-6 sm:px-10 md:px-14 py-10 md:py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
 
-            {/* ── LEFT: text content ── */}
+            {/* ── LEFT: prominently featured roulette wheel ── */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85, rotate: -25 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ duration: 0.95, ease: 'easeOut', delay: 0.05 }}
+              className="flex justify-center md:justify-start"
+            >
+              <RouletteWheel size="min(420px, 82vw)" isDark={isDark} spinSeconds={14} />
+            </motion.div>
+
+            {/* ── RIGHT: text content + CTAs ── */}
             <motion.div
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
+              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.18 }}
               className="flex flex-col gap-5"
             >
-              {/* Automated roulette wheel — fills the empty space above
-                  the Wednesday badge. Auto-spins continuously. */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.85, rotate: -25 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                transition={{ duration: 0.9, ease: 'easeOut', delay: 0.05 }}
-                style={{ alignSelf: 'flex-start', marginBottom: '4px' }}
-              >
-                <RouletteWheel size={340} isDark={isDark} spinSeconds={14} />
-              </motion.div>
-
               {/* Wednesday badge */}
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: '7px',
@@ -322,134 +321,190 @@ const Home = () => {
               </div>
             </motion.div>
 
-            {/* ── RIGHT: Sandra photo + fishbowl decorative ── */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, ease: 'easeOut', delay: 0.25 }}
-              className="flex flex-col items-center gap-5"
-            >
-              {/* Sandra photo card */}
-              <div style={{
-                width: '100%',
-                maxWidth: '400px',
-                borderRadius: '20px',
-                overflow: 'hidden',
-                aspectRatio: '4 / 5',
-                position: 'relative',
-                boxShadow: isDark
-                  ? '0 24px 64px rgba(0,0,0,0.65), 0 4px 16px rgba(0,0,0,0.4)'
-                  : '0 12px 52px rgba(43,43,43,0.13), 0 2px 8px rgba(43,43,43,0.06)',
-                border: isDark
-                  ? '1px solid rgba(196,154,108,0.14)'
-                  : '3px solid #fff',
-              }}>
-                <img
-                  src={sandraImg}
-                  alt="Sandra, host of Fishbowl Roulette"
-                  style={{
-                    width: '100%', height: '100%',
-                    objectFit: 'cover',
-                    objectPosition: '40% 28%',
-                    display: 'block',
-                    /* Dark mode: light radial mask to blend edges only, face stays fully visible */
-                    ...(isDark ? {
-                      WebkitMaskImage: 'radial-gradient(ellipse 92% 88% at 52% 46%, black 55%, rgba(0,0,0,0.7) 78%, transparent 95%)',
-                      maskImage: 'radial-gradient(ellipse 92% 88% at 52% 46%, black 55%, rgba(0,0,0,0.7) 78%, transparent 95%)',
-                    } : {}),
-                  }}
-                />
-                {/* Dark mode: minimal top/bottom fade — NO heavy overlay */}
-                {isDark && (
-                  <>
-                    <div style={{ position: 'absolute', inset: '0 0 auto 0', height: '15%', background: 'linear-gradient(to bottom, rgba(10,5,2,0.55) 0%, transparent 100%)', pointerEvents: 'none' }} />
-                    <div style={{ position: 'absolute', inset: 'auto 0 0 0', height: '18%', background: 'linear-gradient(to top, rgba(10,5,2,0.5) 0%, transparent 100%)', pointerEvents: 'none' }} />
-                  </>
-                )}
-              </div>
-
-              {/* Fishbowl + wine glass — decorative below photo, never overlapping text */}
-              <div className="flex items-end justify-center gap-4" style={{ width: '100%', maxWidth: '400px' }}>
-                <div style={{
-                  width: 'clamp(120px, 16vw, 200px)',
-                  filter: isDark
-                    ? 'drop-shadow(0 12px 28px rgba(0,0,0,0.65))'
-                    : 'drop-shadow(0 6px 16px rgba(43,43,43,0.16))',
-                }}>
-                  {fishbowlErr ? <FishbowlSVG /> : (
-                    <img src={fishbowlImg} alt="Glass fishbowl with question slips"
-                      style={{ width: '100%', display: 'block' }}
-                      onError={() => setFishbowlErr(true)} />
-                  )}
-                </div>
-                <div style={{
-                  width: 'clamp(44px, 5.5vw, 72px)',
-                  filter: isDark
-                    ? 'drop-shadow(0 8px 16px rgba(0,0,0,0.65))'
-                    : 'drop-shadow(0 4px 10px rgba(43,43,43,0.13))',
-                }}>
-                  {wineErr ? <WineGlassSVG /> : (
-                    <img src={wineImg} alt="White wine glass"
-                      style={{ width: '100%', display: 'block' }}
-                      onError={() => setWineErr(true)} />
-                  )}
-                </div>
-              </div>
-            </motion.div>
-
           </div>
         </div>
       </section>
 
       {/* ═══════════════════════════════════════════
-          LISTEN TO THE SHOW (intro callout)
+          MEET SANDRA — host bio with photo
       ═══════════════════════════════════════════ */}
-      <section style={{
+      <section id="about" style={{
         background: bgAlt,
         borderTop: `1px solid ${border}`,
-        padding: '36px 24px',
+        padding: '64px 24px 72px',
       }}>
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.65 }}
-          style={{ maxWidth: '620px', margin: '0 auto' }}
-        >
-          <div style={{
-            fontSize: '0.65rem', letterSpacing: '0.14em', textTransform: 'uppercase',
-            color: gold, fontFamily: 'var(--font-sans)', fontWeight: 700,
-            marginBottom: '10px',
-          }}>
-            The Show
+        <div className="w-full max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
+
+            {/* Sandra photo (now lower on the page, in its own section) */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.7 }}
+              className="flex justify-center md:justify-start"
+            >
+              {/* Outer wrapper is `position: relative` WITHOUT overflow:hidden,
+                  so the "Host" tag (positioned with negative offsets) can sit
+                  outside the photo's rounded edge without being clipped. */}
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                maxWidth: '380px',
+              }}>
+                <div style={{
+                  width: '100%',
+                  borderRadius: '20px',
+                  overflow: 'hidden',
+                  aspectRatio: '4 / 5',
+                  position: 'relative',
+                  boxShadow: isDark
+                    ? '0 24px 64px rgba(0,0,0,0.65), 0 4px 16px rgba(0,0,0,0.4)'
+                    : '0 12px 52px rgba(43,43,43,0.13), 0 2px 8px rgba(43,43,43,0.06)',
+                  border: isDark
+                    ? '1px solid rgba(196,154,108,0.14)'
+                    : '3px solid #fff',
+                }}>
+                  <img
+                    src={sandraImg}
+                    alt="Sandra, host of Fishbowl Roulette"
+                    style={{
+                      width: '100%', height: '100%',
+                      objectFit: 'cover',
+                      objectPosition: '40% 28%',
+                      display: 'block',
+                      ...(isDark ? {
+                        WebkitMaskImage: 'radial-gradient(ellipse 92% 88% at 52% 46%, black 55%, rgba(0,0,0,0.7) 78%, transparent 95%)',
+                        maskImage: 'radial-gradient(ellipse 92% 88% at 52% 46%, black 55%, rgba(0,0,0,0.7) 78%, transparent 95%)',
+                      } : {}),
+                    }}
+                  />
+                  {isDark && (
+                    <>
+                      <div style={{ position: 'absolute', inset: '0 0 auto 0', height: '15%', background: 'linear-gradient(to bottom, rgba(10,5,2,0.55) 0%, transparent 100%)', pointerEvents: 'none' }} />
+                      <div style={{ position: 'absolute', inset: 'auto 0 0 0', height: '18%', background: 'linear-gradient(to top, rgba(10,5,2,0.5) 0%, transparent 100%)', pointerEvents: 'none' }} />
+                    </>
+                  )}
+                </div>
+                {/* "Host" tag — sibling of the photo, NOT a child, so it can
+                    overhang the rounded corner without being clipped. */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: '-14px', left: '-14px',
+                  background: isDark ? '#1f1108' : '#2B2B2B',
+                  border: `1px solid ${isDark ? 'rgba(196,154,108,0.35)' : 'rgba(196,154,108,0.4)'}`,
+                  borderRadius: '12px',
+                  padding: '6px 14px',
+                  boxShadow: '0 6px 16px rgba(0,0,0,0.18)',
+                  zIndex: 2,
+                }}>
+                  <p className="font-serif" style={{
+                    fontStyle: 'italic', color: gold,
+                    fontSize: '0.85rem', margin: 0,
+                  }}>
+                    Host
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* About Sandra copy */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.7, delay: 0.12 }}
+              className="flex flex-col gap-5"
+            >
+              <div style={{
+                fontSize: '0.65rem', letterSpacing: '0.14em', textTransform: 'uppercase',
+                color: gold, fontFamily: 'var(--font-sans)', fontWeight: 700,
+              }}>
+                Meet your host
+              </div>
+
+              <h2 className="font-serif font-bold" style={{
+                fontSize: 'clamp(1.8rem, 3.6vw, 2.6rem)',
+                color: text, lineHeight: 1.15, fontStyle: 'italic',
+                margin: 0,
+              }}>
+                I'm Sandra.
+              </h2>
+
+              <div className="font-sans" style={{
+                fontSize: '1rem', color: textMuted,
+                lineHeight: 1.7,
+              }}>
+                <p style={{ marginBottom: '14px' }}>
+                  I like real conversations — the kind that don't stay on the surface for long.
+                </p>
+                <p style={{ marginBottom: '14px' }}>
+                  Somewhere along the way, I realized the right question can change everything.
+                  So I built this. A space where people stop performing, start telling the truth,
+                  and sometimes surprise themselves in the process.
+                </p>
+                <p style={{ margin: 0 }}>
+                  I'll be right there with them.{' '}
+                  <span style={{ fontStyle: 'italic', color: text }}>
+                    No script. No pretending. Just seeing what comes up.
+                  </span>
+                </p>
+              </div>
+
+              {/* Decorative fishbowl + wine — moved here from the hero.
+                  These are purely decorative so they're hidden from screen
+                  readers (the section already has rich textual context). */}
+              <div className="flex items-end gap-4" aria-hidden="true" style={{
+                marginTop: '8px', maxWidth: '320px',
+              }}>
+                <div style={{
+                  width: 'clamp(110px, 14vw, 170px)',
+                  filter: isDark
+                    ? 'drop-shadow(0 12px 28px rgba(0,0,0,0.65))'
+                    : 'drop-shadow(0 6px 16px rgba(43,43,43,0.16))',
+                }}>
+                  {fishbowlErr ? <FishbowlSVG /> : (
+                    <img src={fishbowlImg} alt=""
+                      style={{ width: '100%', display: 'block' }}
+                      onError={() => setFishbowlErr(true)} />
+                  )}
+                </div>
+                <div style={{
+                  width: 'clamp(40px, 5vw, 60px)',
+                  filter: isDark
+                    ? 'drop-shadow(0 8px 16px rgba(0,0,0,0.65))'
+                    : 'drop-shadow(0 4px 10px rgba(43,43,43,0.13))',
+                }}>
+                  {wineErr ? <WineGlassSVG /> : (
+                    <img src={wineImg} alt=""
+                      style={{ width: '100%', display: 'block' }}
+                      onError={() => setWineErr(true)} />
+                  )}
+                </div>
+              </div>
+
+              <a
+                href="#episodes"
+                onClick={(e) => { e.preventDefault(); openPlayerAndScroll(); }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                  color: isDark ? '#e88a82' : '#7a2520',
+                  fontFamily: 'var(--font-sans)',
+                  fontWeight: 700, fontSize: '0.95rem',
+                  letterSpacing: '0.04em',
+                  textDecoration: 'underline',
+                  textDecorationThickness: '1.5px',
+                  textUnderlineOffset: '4px',
+                  marginTop: '8px',
+                }}
+              >
+                Listen to an episode
+                <span aria-hidden="true">→</span>
+              </a>
+            </motion.div>
+
           </div>
-          <h2 className="font-serif font-bold" style={{
-            fontSize: 'clamp(1.25rem, 2.8vw, 1.9rem)',
-            color: text, lineHeight: 1.2, marginBottom: '8px',
-          }}>
-            Listen to the Show
-          </h2>
-          <p className="font-sans" style={{
-            fontSize: '0.95rem', color: textMuted,
-            marginBottom: '20px', lineHeight: 1.55,
-          }}>
-            Real conversations, ready when you are.
-          </p>
-          <button
-            onClick={openPlayerAndScroll}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
-              padding: '12px 22px', borderRadius: '8px',
-              background: accent, color: '#fff', border: 'none',
-              fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.875rem',
-              cursor: 'pointer', transition: 'background 0.2s',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = isDark ? '#a63a34' : '#D05A4D')}
-            onMouseLeave={e => (e.currentTarget.style.background = accent)}
-          >
-            🎧 Open Player
-          </button>
-        </motion.div>
+        </div>
       </section>
 
       {/* ═══════════════════════════════════════════

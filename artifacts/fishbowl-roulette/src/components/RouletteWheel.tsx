@@ -1,5 +1,6 @@
 interface RouletteWheelProps {
-  size?: number;
+  /** Pixel number or any CSS length string (e.g. 'min(420px, 80vw)') */
+  size?: number | string;
   isDark?: boolean;
   spinSeconds?: number;
 }
@@ -7,17 +8,22 @@ interface RouletteWheelProps {
 const BASE = import.meta.env.BASE_URL;
 const LOGO_SRC = `${BASE}images/fishbowl-roulette-logo.png`;
 
-/* The brand logo has 3 concentric zones:
-     • Outer black band with gold "FISHBOWL ROULETTE" text  (STATIC)
-     • Middle red/black roulette wheel ring                  (SPINS)
-     • Inner white circle with the three fishbowls           (STATIC)
+/* The brand logo has 3 concentric zones (verified by sampling pixels of
+   the actual 1400×1400 PNG):
+     • Outer black band with gold "FISHBOWL ROULETTE" text  68%–91% radius  (STATIC)
+     • Middle red/black/green roulette segments band         54%–67% radius  (SPINS)
+     • Inner cream area with the three fishbowls              0%–53% radius  (STATIC)
    We render the same image twice, stacked. The bottom copy is the full
    static logo; the top copy is masked to a thin annulus covering ONLY
-   the red/black ring — that copy is what rotates. The mask radii are
-   tuned to the actual logo proportions: red/black band is roughly
-   52%–66% of the diameter from center. */
+   the colored roulette band — that copy is what rotates.
+
+   IMPORTANT: `closest-side` is required so the gradient stops are measured
+   relative to the element's RADIUS (half-width), not to the default
+   "farthest-corner" which is √2 × radius. Without this the percentages
+   are off by ~41% and the mask leaks into the outer text band — making
+   the words appear to spin. */
 const SPIN_RING_MASK =
-  'radial-gradient(circle at 50% 50%, transparent 0 51.5%, black 53% 65.5%, transparent 67% 100%)';
+  'radial-gradient(circle closest-side at 50% 50%, transparent 0 53%, black 55% 66%, transparent 68% 100%)';
 
 export function RouletteWheel({
   size = 340,
