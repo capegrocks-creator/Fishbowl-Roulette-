@@ -74,7 +74,7 @@ const Privacy = () => {
 
         <Section title="Third-Party Links">
           <p>
-            This site may include links to Spotify, Apple Podcasts, YouTube, TikTok, Instagram, Facebook,
+            This site may include links to Spotify, Apple Podcasts, YouTube, TikTok, Facebook,
             and other platforms. These platforms have their own privacy policies and practices, which are
             independent of Fishbowl Roulette. We encourage you to review those policies when visiting
             third-party sites.

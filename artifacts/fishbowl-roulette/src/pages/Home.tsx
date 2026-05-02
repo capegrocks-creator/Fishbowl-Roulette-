@@ -23,6 +23,7 @@ const Home = () => {
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [fishbowlErr, setFishbowlErr] = useState(false);
   const [wineErr, setWineErr] = useState(false);
+  const [playerOpen, setPlayerOpen] = useState(false);
 
   const isDark = theme === 'dark';
 
@@ -30,6 +31,14 @@ const Home = () => {
     const next: 'light' | 'dark' = isDark ? 'light' : 'dark';
     setTheme(next);
     localStorage.setItem('fr-theme', next);
+  };
+
+  /** Open the Podbean player and scroll to it */
+  const openPlayerAndScroll = () => {
+    setPlayerOpen(true);
+    setTimeout(() => {
+      document.getElementById('episodes')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 60);
   };
 
   useEffect(() => {
@@ -46,9 +55,9 @@ const Home = () => {
   };
 
   const navLinks = [
-    { label: 'Listen Now', href: '#listen' },
+    { label: 'Listen Now', href: '#episodes' },
     { label: 'About', href: '#cards' },
-    { label: 'Episodes', href: '#listen' },
+    { label: 'Episodes', href: '#episodes' },
     { label: 'Follow', href: '#join' },
   ];
 
@@ -207,15 +216,18 @@ const Home = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 pt-1">
-                <a href="#latest" style={{
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  gap: '0.45rem', padding: '13px 24px', borderRadius: '8px',
-                  background: accent, color: '#fff',
-                  fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.875rem',
-                  letterSpacing: '0.02em', textDecoration: 'none',
-                  boxShadow: isDark ? '0 4px 18px rgba(143,47,42,0.5)' : '0 4px 18px rgba(227,106,93,0.32)',
-                  transition: 'background 0.2s',
-                }}
+                <a
+                  href="#episodes"
+                  onClick={(e) => { e.preventDefault(); openPlayerAndScroll(); }}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    gap: '0.45rem', padding: '13px 24px', borderRadius: '8px',
+                    background: accent, color: '#fff',
+                    fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.875rem',
+                    letterSpacing: '0.02em', textDecoration: 'none', cursor: 'pointer',
+                    boxShadow: isDark ? '0 4px 18px rgba(143,47,42,0.5)' : '0 4px 18px rgba(227,106,93,0.32)',
+                    transition: 'background 0.2s',
+                  }}
                   onMouseEnter={e => (e.currentTarget.style.background = isDark ? '#a63a34' : '#D05A4D')}
                   onMouseLeave={e => (e.currentTarget.style.background = accent)}
                 >
@@ -315,9 +327,9 @@ const Home = () => {
       </section>
 
       {/* ═══════════════════════════════════════════
-          LATEST EPISODE
+          LISTEN TO THE SHOW (intro callout)
       ═══════════════════════════════════════════ */}
-      <section id="latest" style={{
+      <section style={{
         background: bgAlt,
         borderTop: `1px solid ${border}`,
         padding: '36px 24px',
@@ -334,32 +346,34 @@ const Home = () => {
             color: gold, fontFamily: 'var(--font-sans)', fontWeight: 700,
             marginBottom: '10px',
           }}>
-            Latest Episode
+            The Show
           </div>
           <h2 className="font-serif font-bold" style={{
             fontSize: 'clamp(1.25rem, 2.8vw, 1.9rem)',
             color: text, lineHeight: 1.2, marginBottom: '8px',
           }}>
-            First Guest in the Bowl: Jeff Brune
+            Listen to the Show
           </h2>
           <p className="font-sans" style={{
             fontSize: '0.95rem', color: textMuted,
-            fontStyle: 'italic', marginBottom: '20px',
+            marginBottom: '20px', lineHeight: 1.55,
           }}>
-            He thought it would be casual. It wasn't.
+            Real conversations, ready when you are.
           </p>
-          <a href="#listen" style={{
-            display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
-            padding: '12px 22px', borderRadius: '8px',
-            background: accent, color: '#fff',
-            fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.875rem',
-            textDecoration: 'none', transition: 'background 0.2s',
-          }}
+          <button
+            onClick={openPlayerAndScroll}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
+              padding: '12px 22px', borderRadius: '8px',
+              background: accent, color: '#fff', border: 'none',
+              fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.875rem',
+              cursor: 'pointer', transition: 'background 0.2s',
+            }}
             onMouseEnter={e => (e.currentTarget.style.background = isDark ? '#a63a34' : '#D05A4D')}
             onMouseLeave={e => (e.currentTarget.style.background = accent)}
           >
-            🎧 Start Listening
-          </a>
+            🎧 Open Player
+          </button>
         </motion.div>
       </section>
 
@@ -429,20 +443,162 @@ const Home = () => {
       </section>
 
       {/* ═══════════════════════════════════════════
-          PLATFORM LINKS
+          EPISODES — Listen In + Podbean player
       ═══════════════════════════════════════════ */}
-      <section id="listen" style={{
+      <section id="episodes" style={{
         background: bgAlt,
         borderTop: `1px solid ${border}`,
-        padding: '28px 24px',
+        padding: '52px 24px 56px',
       }}>
-        <div style={{ maxWidth: '580px', margin: '0 auto', textAlign: 'center' }}>
-          <div className="flex flex-wrap justify-center gap-5 md:gap-7">
-            <PlatformBtn name="Spotify"        icon={<SpotifyIcon />}  href="#" color="#1DB954" />
-            <PlatformBtn name="Apple Podcasts" icon={<AppleIcon />}    href="#" color={isDark ? '#c49a6c' : '#B8854A'} />
-            <PlatformBtn name="YouTube"        icon={<YoutubeIcon />}  href="#" color="#FF4444" />
-            <PlatformBtn name="TikTok"         icon={<TikTokIcon />}   href="#" color={isDark ? '#d9c2ad' : '#2B2B2B'} />
+        <div style={{ maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div style={{
+              fontSize: '0.65rem', letterSpacing: '0.14em', textTransform: 'uppercase',
+              color: gold, fontFamily: 'var(--font-sans)', fontWeight: 700,
+              marginBottom: '10px',
+            }}>
+              Episodes
+            </div>
+            <h2 className="font-serif font-bold" style={{
+              fontSize: 'clamp(1.6rem, 3.6vw, 2.4rem)',
+              color: text, lineHeight: 1.2, marginBottom: '10px',
+            }}>
+              Listen In
+            </h2>
+            <p className="font-sans" style={{
+              fontSize: '1rem', color: textMuted,
+              lineHeight: 1.6, marginBottom: '28px',
+            }}>
+              Real conversations, ready when you are.
+            </p>
+          </motion.div>
+
+          {/* Choose Your Episode card */}
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.65, delay: 0.05 }}
+            style={{
+              background: isDark ? 'rgba(196,154,108,0.06)' : '#fff',
+              border: `1px solid ${border}`,
+              borderRadius: '14px',
+              padding: '28px 24px',
+              boxShadow: isDark
+                ? '0 4px 22px rgba(0,0,0,0.35)'
+                : '0 4px 22px rgba(43,43,43,0.06)',
+            }}
+          >
+            <h3 className="font-serif font-bold" style={{
+              fontSize: 'clamp(1.15rem, 2.4vw, 1.45rem)',
+              color: text, marginBottom: '6px',
+            }}>
+              Choose Your Episode
+            </h3>
+            <p className="font-sans" style={{
+              fontSize: '0.92rem', color: textMuted,
+              lineHeight: 1.6, marginBottom: '20px',
+            }}>
+              Open the player to browse every Fishbowl Roulette episode and start listening.
+            </p>
+
+            <div className="flex flex-wrap justify-center gap-3">
+              <button
+                onClick={() => setPlayerOpen(o => !o)}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
+                  padding: '12px 24px', borderRadius: '8px',
+                  background: accent, color: '#fff', border: 'none',
+                  fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.9rem',
+                  cursor: 'pointer', transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = isDark ? '#a63a34' : '#D05A4D')}
+                onMouseLeave={e => (e.currentTarget.style.background = accent)}
+              >
+                {playerOpen ? '▶ Now Playing' : '🎧 Open Player'}
+              </button>
+              {playerOpen && (
+                <button
+                  onClick={() => setPlayerOpen(false)}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
+                    padding: '12px 22px', borderRadius: '8px',
+                    background: 'transparent',
+                    border: `1.5px solid ${isDark ? 'rgba(217,194,173,0.35)' : 'rgba(43,43,43,0.2)'}`,
+                    color: text,
+                    fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '0.9rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Close
+                </button>
+              )}
+            </div>
+
+            {/* ── Embedded Podbean player ── */}
+            {/* TODO: confirm this is the correct Podbean show URL — best guess based on brand name. */}
+            {playerOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                transition={{ duration: 0.4 }}
+                style={{ marginTop: '24px', overflow: 'hidden' }}
+              >
+                <iframe
+                  title="Fishbowl Roulette podcast — all episodes"
+                  src="https://fishbowlroulette.podbean.com/"
+                  width="100%"
+                  height="600"
+                  style={{
+                    border: `1px solid ${border}`,
+                    borderRadius: '10px',
+                    background: isDark ? '#0e0805' : '#fff',
+                    display: 'block',
+                  }}
+                  loading="lazy"
+                  allow="autoplay; clipboard-write; encrypted-media"
+                />
+                <p className="font-sans" style={{
+                  fontSize: '0.78rem', color: textMuted,
+                  marginTop: '12px', textAlign: 'center',
+                }}>
+                  Trouble loading?{' '}
+                  <a
+                    href="https://fishbowlroulette.podbean.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: gold, textDecoration: 'underline' }}
+                  >
+                    Open on Podbean ↗
+                  </a>
+                </p>
+              </motion.div>
+            )}
+          </motion.div>
+
+          {/* Subscribe row — relocated platform links */}
+          <div style={{ marginTop: '36px', paddingTop: '24px', borderTop: `1px solid ${border}` }}>
+            <p className="font-sans" style={{
+              fontSize: '0.7rem', letterSpacing: '0.14em', textTransform: 'uppercase',
+              color: textMuted, fontWeight: 600, marginBottom: '14px',
+            }}>
+              Or subscribe / follow
+            </p>
+            <div className="flex flex-wrap justify-center gap-5 md:gap-7">
+              <PlatformBtn name="Spotify"        icon={<SpotifyIcon />}  href="#" color="#1DB954" />
+              <PlatformBtn name="Apple Podcasts" icon={<AppleIcon />}    href="#" color={isDark ? '#c49a6c' : '#B8854A'} />
+              <PlatformBtn name="YouTube"        icon={<YoutubeIcon />}  href="#" color="#FF4444" />
+              <PlatformBtn name="TikTok"         icon={<TikTokIcon />}   href="https://www.tiktok.com/@fishbowl1560?_r=1&_t=ZT-961qb2BbDQ5" color={isDark ? '#d9c2ad' : '#2B2B2B'} />
+              <PlatformBtn name="Facebook"       icon={<FacebookIcon />} href="https://www.facebook.com/share/1G8o4HmC9M/?mibextid=wwXIfr" color="#1877F2" />
+            </div>
           </div>
+
         </div>
       </section>
 
@@ -733,6 +889,12 @@ const YoutubeIcon = () => (
 const TikTokIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
     <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
+  </svg>
+);
+
+const FacebookIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
   </svg>
 );
 
