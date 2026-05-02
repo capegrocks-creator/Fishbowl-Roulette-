@@ -52,12 +52,15 @@ Every package extends `tsconfig.base.json` which sets `composite: true`. The roo
 
 ### `artifacts/fishbowl-roulette` (`@workspace/fishbowl-roulette`)
 
-Landing page for the Fishbowl Roulette podcast at fishbowlroulette.com. Pure React + Vite frontend, no backend.
+Landing page for the Fishbowl Roulette podcast at fishbowlroulette.com. Pure React + Vite frontend, talks to `@workspace/api-server` for episode list (`/api/podcast/episodes`).
 
 - Warm cinematic brand: Playfair Display (serif headings), Lato (body)
 - Brand palette: dark espresso backgrounds (#1a1210, #241816), warm parchment neutrals (#f1e3d3), burgundy (#8f2f2a), gold (#c49a6c)
-- Sections: Hero, Mid-content (Sandra bio), Dark feature cards (Beliefs/Relationships/Wildcards), Platform links, Email capture, Footer
-- Inline SVG illustrations: fishbowl with paper slips + red wine glass
+- **Section order (top → bottom)**: Header → Hero → Episodes → Cards (Pull a Question) → About (I'm Sandra) → Email capture / Follow → Footer
+- **Hero**: tavern-bokeh background; left column = headline + intro + two CTAs (red `Listen Now` → expands all episode cards & smooth-scrolls to `#episodes`; cream `Follow the Show` → `#join`); right column = `public/images/fishbowl-questions.png`
+- **Episodes section** (`#episodes`): heading "CHOOSE YOUR EPISODE". Single collapsible list (collapsed by default). Top red `Listen Now` button toggles `Listen Now ↔ Collapse All` and expands/collapses every card via `expandedGuids: Set<string>` state. Per-card chevron also toggles individually. Audio uses native `<audio controls preload="metadata">` — **no autoPlay anywhere** (playback is always user-initiated). Each card shows episode number, category badge, pub date (via `formatPubDate`), and duration; expanded body shows full description + audio player + Podbean link. Loading/error states preserved.
+- **Cards section** (`#cards`): the preserved `RouletteWheel` component sits as a brand accent above the heading "We pulled the first question... and it went there." `RouletteWheel.tsx` is untouched.
+- Pull-a-Question, email signup, Privacy page, social links — all preserved untouched.
 - Host photo at `public/images/sandra-portrait.png` (AI generated placeholder; replace with real photo)
 - Framer Motion animations, responsive mobile-first design
 - `previewPath: "/"`

@@ -36,37 +36,6 @@ const PlayIcon = () => (
   </svg>
 );
 
-/* ─── Animated waveform (featured-card flourish) ─── */
-const WAVE_BARS = [18, 28, 22, 34, 20, 30, 14, 26, 32, 18, 24, 36, 20, 28, 16];
-const Waveform = ({ color }: { color: string }) => (
-  <div
-    aria-hidden="true"
-    style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: '36px' }}
-  >
-    {WAVE_BARS.map((h, i) => (
-      <motion.span
-        key={i}
-        animate={{ scaleY: [0.4, 1, 0.55, 0.9, 0.45] }}
-        transition={{
-          duration: 1.2 + (i % 3) * 0.18,
-          repeat: Infinity,
-          ease: 'easeInOut',
-          delay: (i % 5) * 0.09,
-        }}
-        style={{
-          display: 'inline-block',
-          width: '3px',
-          height: `${h}px`,
-          background: color,
-          borderRadius: '2px',
-          opacity: 0.78,
-          transformOrigin: 'bottom',
-        }}
-      />
-    ))}
-  </div>
-);
-
 /* ── Theme init: respect localStorage, default to light ── */
 const getInitialTheme = (): 'light' | 'dark' => {
   if (typeof window !== 'undefined') {
@@ -99,11 +68,16 @@ const Home = () => {
   const [episodes, setEpisodes] = useState<FbrEpisode[]>([]);
   const [episodesLoading, setEpisodesLoading] = useState(true);
   const [episodesError, setEpisodesError] = useState<string | null>(null);
-  const [activeEpisodeGuid, setActiveEpisodeGuid] = useState<string | null>(null);
-  /* If the user clicks "Start Listening" / "Listen Now" before the episodes
-     fetch resolves, remember the intent and auto-start the latest episode
-     as soon as the list arrives. */
-  const [pendingAutoPlay, setPendingAutoPlay] = useState(false);
+  /* Set of guids whose cards are currently expanded. Cards collapse to a
+     compact header by default; expanding reveals the description + the
+     <audio> player. Clicking the top "Listen Now" CTA expands every card
+     at once but does NOT start playback — listeners use the native HTML5
+     play button on whichever episode they choose. */
+  const [expandedGuids, setExpandedGuids] = useState<Set<string>>(() => new Set());
+  /* If the hero "Listen Now" CTA is clicked before the episodes fetch
+     resolves, remember the intent and expand all cards as soon as the
+     list arrives. */
+  const [pendingExpandAll, setPendingExpandAll] = useState(false);
 
   const isDark = theme === 'dark';
 
@@ -113,30 +87,47 @@ const Home = () => {
     localStorage.setItem('fr-theme', next);
   };
 
-  /** Scroll the page to the Episodes section and auto-start the latest
-   *  episode if nothing is currently playing. Wired to the hero
-   *  "Start Listening" CTA and the nav "Listen Now" / "Episodes" links. */
+  /* Derived: are all episode cards currently expanded? Used to drive the
+     top "Listen Now / Collapse All" toggle. */
+  const allExpanded = episodes.length > 0 && expandedGuids.size === episodes.length;
+
+  /** Toggle a single episode card's expanded state. */
+  const toggleExpanded = (guid: string) => {
+    setExpandedGuids(prev => {
+      const next = new Set(prev);
+      if (next.has(guid)) next.delete(guid); else next.add(guid);
+      return next;
+    });
+  };
+
+  /** Expand every loaded episode card (or collapse them all). Does NOT
+   *  trigger playback — listeners click the native <audio> control. */
+  const setAllExpanded = (expand: boolean) => {
+    setExpandedGuids(expand ? new Set(episodes.map(e => e.guid)) : new Set());
+  };
+
+  /** Scroll to the Episodes section and expand all cards. Wired to the
+   *  hero "Listen Now" CTA and the nav "Listen Now" / "Episodes" links.
+   *  Per spec, this never auto-plays audio. */
   const openPlayerAndScroll = () => {
-    if (!activeEpisodeGuid) {
-      if (episodes[0]?.guid) {
-        setActiveEpisodeGuid(episodes[0].guid);
-      } else {
-        /* Episodes haven't loaded yet — defer auto-start until they do. */
-        setPendingAutoPlay(true);
-      }
+    if (episodes.length > 0) {
+      setAllExpanded(true);
+    } else {
+      /* Episodes haven't loaded yet — defer expand until they do. */
+      setPendingExpandAll(true);
     }
     setTimeout(() => {
       document.getElementById('episodes')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 60);
   };
 
-  /* Honor a deferred auto-play once episodes finish loading. */
+  /* Honor a deferred expand-all once episodes finish loading. */
   useEffect(() => {
-    if (pendingAutoPlay && !activeEpisodeGuid && episodes[0]?.guid) {
-      setActiveEpisodeGuid(episodes[0].guid);
-      setPendingAutoPlay(false);
+    if (pendingExpandAll && episodes.length > 0) {
+      setExpandedGuids(new Set(episodes.map(e => e.guid)));
+      setPendingExpandAll(false);
     }
-  }, [pendingAutoPlay, activeEpisodeGuid, episodes]);
+  }, [pendingExpandAll, episodes]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 40);
@@ -170,6 +161,17 @@ const Home = () => {
   }, []);
 
   /* Helpers for the episode list */
+  const formatPubDate = (ms: number): string => {
+    if (!ms) return '';
+    try {
+      return new Date(ms).toLocaleDateString(undefined, {
+        month: 'short', day: 'numeric', year: 'numeric',
+      });
+    } catch {
+      return '';
+    }
+  };
+
   const formatDuration = (sec: number | null): string => {
     if (sec === null || sec <= 0) return '';
     const m = Math.floor(sec / 60);
@@ -304,16 +306,28 @@ const Home = () => {
       </header>
 
       {/* ═══════════════════════════════════════════════════
-          HERO — proper 2-column grid, no overlapping
+          HERO — tavern bokeh, text left + fishbowl right
+          (Roulette wheel relocated to the Cards section so the
+          headline stays the focal point.)
       ═══════════════════════════════════════════════════ */}
       <section
         style={{
+          /* Dark mode: deep brown tavern with soft warm bokeh orbs.
+             Light mode: warm cream parchment with a subtle amber wash
+             so the tavern mood reads in both themes. */
           background: isDark
-            ? `radial-gradient(ellipse 60% 55% at 65% 45%, rgba(140,65,10,0.28) 0%, transparent 70%),
-               radial-gradient(ellipse 110% 100% at 50% 50%, transparent 35%, rgba(8,4,2,0.45) 100%),
+            ? `radial-gradient(circle 140px at 18% 28%, rgba(255,180,90,0.22) 0%, transparent 70%),
+               radial-gradient(circle 110px at 82% 22%, rgba(255,150,70,0.18) 0%, transparent 70%),
+               radial-gradient(circle 170px at 72% 78%, rgba(255,170,80,0.16) 0%, transparent 72%),
+               radial-gradient(circle 90px at 28% 82%, rgba(255,200,120,0.14) 0%, transparent 70%),
+               radial-gradient(circle 60px at 50% 50%, rgba(255,200,120,0.10) 0%, transparent 70%),
+               radial-gradient(ellipse 110% 100% at 50% 50%, transparent 35%, rgba(8,4,2,0.55) 100%),
                url(${textureBg}) center/cover no-repeat,
-               #1a1008`
-            : bg,
+               #16100a`
+            : `radial-gradient(circle 200px at 22% 30%, rgba(196,154,108,0.22) 0%, transparent 70%),
+               radial-gradient(circle 160px at 80% 78%, rgba(196,154,108,0.18) 0%, transparent 72%),
+               radial-gradient(ellipse 110% 100% at 50% 50%, rgba(245,234,216,0.4) 0%, transparent 80%),
+               linear-gradient(180deg, #f7f0e2 0%, #f1e6d0 100%)`,
           minHeight: '100svh',
           display: 'flex',
           alignItems: 'center',
@@ -321,29 +335,19 @@ const Home = () => {
         }}
       >
         <div className="w-full max-w-6xl mx-auto px-6 sm:px-10 md:px-14 py-10 md:py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-[1.15fr_1fr] gap-10 md:gap-14 items-center">
 
-            {/* ── LEFT: prominently featured roulette wheel ── */}
+            {/* ── LEFT: text content + CTAs ── */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.85, rotate: -25 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{ duration: 0.95, ease: 'easeOut', delay: 0.05 }}
-              className="flex justify-center md:justify-start"
-            >
-              <RouletteWheel size="min(420px, 82vw)" isDark={isDark} spinSeconds={14} />
-            </motion.div>
-
-            {/* ── RIGHT: text content + CTAs ── */}
-            <motion.div
-              initial={{ opacity: 0, y: 28 }}
+              initial={{ opacity: 0, y: 22 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.18 }}
-              className="flex flex-col gap-5"
+              transition={{ duration: 0.85, ease: 'easeOut', delay: 0.05 }}
+              className="flex flex-col gap-5 order-2 md:order-1"
             >
               {/* Wednesday badge */}
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: '7px',
-                fontSize: '0.68rem', letterSpacing: '0.12em', textTransform: 'uppercase',
+                fontSize: '0.68rem', letterSpacing: '0.14em', textTransform: 'uppercase',
                 color: gold, fontFamily: 'var(--font-sans)', fontWeight: 700,
               }}>
                 <span style={{ fontSize: '0.55rem' }}>●</span>
@@ -351,50 +355,96 @@ const Home = () => {
               </div>
 
               <h1 className="font-serif font-bold" style={{
-                fontSize: 'clamp(2.1rem, 4.5vw, 3.4rem)',
-                color: text, lineHeight: 1.1,
+                fontSize: 'clamp(2.2rem, 5vw, 3.7rem)',
+                color: text, lineHeight: 1.08,
+                letterSpacing: '-0.01em',
               }}>
-                You don't get<br />to prepare for this.
+                You never know<br />
+                what question is<br />
+                coming <span style={{ fontStyle: 'italic', color: accent }}>next.</span>
               </h1>
 
               <div className="font-sans" style={{
-                fontSize: 'clamp(0.9rem, 1.35vw, 1.02rem)',
-                color: textMuted, lineHeight: 1.68,
+                fontSize: 'clamp(0.95rem, 1.35vw, 1.08rem)',
+                color: textMuted, lineHeight: 1.7, maxWidth: '38ch',
               }}>
-                <p>We reach into the bowl…<br />and whatever comes out—comes out of us too.</p>
-                <p style={{ marginTop: '6px' }}>You never know what question is coming next. And neither do they.</p>
+                <p>We reach into the bowl — and whatever comes out, comes out of us too.</p>
+                <p style={{ marginTop: '8px' }}>No script. No prep. Just real people, pulled straight into a real conversation.</p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-1">
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                {/* Red Listen Now — expands all episode cards (no auto-play) */}
                 <a
                   href="#episodes"
                   onClick={(e) => { e.preventDefault(); openPlayerAndScroll(); }}
                   style={{
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    gap: '0.45rem', padding: '13px 24px', borderRadius: '8px',
-                    background: accent, color: '#fff',
-                    fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.875rem',
-                    letterSpacing: '0.02em', textDecoration: 'none', cursor: 'pointer',
-                    boxShadow: isDark ? '0 4px 18px rgba(143,47,42,0.5)' : '0 4px 18px rgba(227,106,93,0.32)',
-                    transition: 'background 0.2s',
+                    gap: '0.5rem', padding: '14px 26px', borderRadius: '6px',
+                    background: '#9b2020', color: '#f5ead8',
+                    fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '0.92rem',
+                    letterSpacing: '0.04em', textDecoration: 'none', cursor: 'pointer',
+                    boxShadow: isDark
+                      ? '0 6px 22px rgba(155,32,32,0.45)'
+                      : '0 6px 22px rgba(155,32,32,0.28)',
+                    transition: 'background 0.2s, transform 0.15s',
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.background = isDark ? '#a63a34' : '#D05A4D')}
-                  onMouseLeave={e => (e.currentTarget.style.background = accent)}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = '#b52a2a';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = '#9b2020';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
                 >
-                  🎧 Start Listening
+                  <PlayIcon /> Listen Now
                 </a>
-                <a href="#join" style={{
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  gap: '0.45rem', padding: '13px 24px', borderRadius: '8px',
-                  background: 'transparent',
-                  border: `1.5px solid ${isDark ? 'rgba(217,194,173,0.35)' : 'rgba(43,43,43,0.2)'}`,
-                  color: text,
-                  fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '0.875rem',
-                  textDecoration: 'none', transition: 'border-color 0.2s',
-                }}>
-                  🔔 Get the Wednesday Question
+                {/* Cream Follow the Show — jumps to email + social section */}
+                <a
+                  href="#join"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    gap: '0.45rem', padding: '14px 26px', borderRadius: '6px',
+                    background: '#f5ead8', color: '#3d2510',
+                    fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.92rem',
+                    letterSpacing: '0.04em',
+                    border: `1.5px solid ${isDark ? 'rgba(245,234,216,0.55)' : 'rgba(184,133,74,0.35)'}`,
+                    textDecoration: 'none', transition: 'background 0.2s, transform 0.15s',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = '#fff7e6';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = '#f5ead8';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  Follow the Show
                 </a>
               </div>
+            </motion.div>
+
+            {/* ── RIGHT: fishbowl image ── */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.95, ease: 'easeOut', delay: 0.18 }}
+              className="flex justify-center md:justify-end order-1 md:order-2"
+            >
+              <img
+                src={fishbowlQuestionsImg}
+                alt="A glass fishbowl filled with rolled-up question slips labeled Relationships, Beliefs and Wildcards"
+                style={{
+                  width: '100%',
+                  maxWidth: 'min(440px, 82vw)',
+                  height: 'auto',
+                  display: 'block',
+                  filter: isDark
+                    ? 'drop-shadow(0 24px 48px rgba(0,0,0,0.7)) drop-shadow(0 0 32px rgba(255,170,80,0.18))'
+                    : 'drop-shadow(0 18px 36px rgba(43,43,43,0.22))',
+                }}
+              />
             </motion.div>
 
           </div>
@@ -402,7 +452,596 @@ const Home = () => {
       </section>
 
       {/* ═══════════════════════════════════════════
+          EPISODES — Tavern-style featured + grid
+      ═══════════════════════════════════════════ */}
+      {(() => {
+        /* Section-local theme tokens — mirrors the hero "tavern" mood
+           in dark mode (warm wood + gold) and softens to a parchment
+           cream in light mode so cards stay readable. */
+        const epHeading    = isDark ? '#f5ead8' : '#3d2510';
+        const epMuted      = isDark ? '#a08060' : 'rgba(61,37,16,0.62)';
+        const epGold       = isDark ? '#c8922a' : '#b8854a';
+        const epGoldLight  = isDark ? '#e8b84b' : '#c49a3a';
+        const epRed        = '#9b2020';
+        const epRedHover   = '#b52a2a';
+        const epCardBg     = isDark ? 'rgba(44,26,8,0.85)' : 'rgba(255,253,247,0.96)';
+        const epCardBorder = isDark ? 'rgba(200,146,42,0.20)' : 'rgba(184,133,74,0.25)';
+        const epCardHoverB = isDark ? 'rgba(200,146,42,0.55)' : 'rgba(184,133,74,0.6)';
+        const epDivider    = isDark ? 'rgba(200,146,42,0.12)' : 'rgba(184,133,74,0.18)';
+        const sectionBg    = isDark
+          ? `repeating-linear-gradient(88deg, transparent, transparent 2px, rgba(255,200,100,0.014) 2px, rgba(255,200,100,0.014) 4px),
+             repeating-linear-gradient(92deg, transparent, transparent 60px, rgba(0,0,0,0.06) 60px, rgba(0,0,0,0.06) 62px),
+             linear-gradient(180deg, #2c1a08 0%, #3d2510 40%, #2c1a08 100%)`
+          : `radial-gradient(ellipse at 50% 0%, rgba(184,133,74,0.10) 0%, transparent 60%),
+             linear-gradient(180deg, #f5ead8 0%, #ede0c5 100%)`;
+        const sectionEdge  = isDark ? 'rgba(255,200,100,0.08)' : 'rgba(184,133,74,0.18)';
+
+        return (
+      <section id="episodes" style={{
+        position: 'relative',
+        background: isDark ? '#1a1108' : '#f5ead8',
+        backgroundImage: sectionBg,
+        borderTop: `1px solid ${sectionEdge}`,
+        borderBottom: `1px solid ${sectionEdge}`,
+        padding: '78px 24px 92px',
+      }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+
+          {/* ── Header ── */}
+          <motion.p
+            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.6 }}
+            className="font-sans"
+            style={{
+              textAlign: 'center', fontStyle: 'italic',
+              fontSize: '0.95rem', color: epGold, letterSpacing: '0.12em',
+              textTransform: 'uppercase', marginBottom: '14px',
+            }}
+          >
+            Pull a question. Start talking.
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.08 }}
+            className="font-serif font-bold"
+            style={{
+              textAlign: 'center',
+              fontSize: 'clamp(2rem, 5vw, 3rem)',
+              color: epHeading, lineHeight: 1.15, marginBottom: '14px',
+              letterSpacing: '0.02em',
+            }}
+          >
+            CHOOSE YOUR EPISODE
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.16 }}
+            className="font-sans"
+            style={{
+              textAlign: 'center', fontSize: '1rem', color: epMuted,
+              maxWidth: '520px', margin: '0 auto 40px', lineHeight: 1.7,
+              fontStyle: 'italic',
+            }}
+          >
+            Every episode is unrehearsed. Someone reaches into the bowl — and wherever it goes, it goes.
+          </motion.p>
+
+          {/* ── Triple-diamond divider ── */}
+          <motion.div
+            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
+            viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.22 }}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: '14px', marginBottom: '52px',
+            }}
+            aria-hidden="true"
+          >
+            <span style={{
+              flex: 1, height: '1px', maxWidth: '180px',
+              background: `linear-gradient(90deg, transparent, ${epGold}, transparent)`,
+            }} />
+            {[0, 1, 2].map(i => (
+              <span key={i} style={{
+                width: '8px', height: '8px', background: epGold, transform: 'rotate(45deg)',
+              }} />
+            ))}
+            <span style={{
+              flex: 1, height: '1px', maxWidth: '180px',
+              background: `linear-gradient(90deg, transparent, ${epGold}, transparent)`,
+            }} />
+          </motion.div>
+
+          {/* ── Loading / error / empty ── */}
+          {episodesLoading && (
+            <div className="font-sans" style={{
+              padding: '40px 20px', textAlign: 'center', color: epMuted, fontSize: '0.95rem',
+            }}>
+              Loading episodes…
+            </div>
+          )}
+
+          {!episodesLoading && episodesError && episodes.length === 0 && (
+            <div className="font-sans" style={{
+              padding: '32px 20px', textAlign: 'center', color: epMuted, fontSize: '0.95rem',
+            }}>
+              Couldn't load the episode list right now.{' '}
+              <a
+                href="https://fishbowlroulettepodcast.podbean.com/"
+                target="_blank" rel="noopener noreferrer"
+                style={{ color: epGold, textDecoration: 'underline' }}
+              >
+                Browse on Podbean
+              </a>
+            </div>
+          )}
+
+          {/* ── Top "Listen Now" / "Collapse All" CTA ──
+              Per spec, this expands EVERY card so listeners can scan
+              titles + descriptions and pick what they want — but it
+              does NOT auto-play. Playback is always initiated by the
+              native HTML5 <audio> control inside an expanded card. */}
+          {!episodesLoading && episodes.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.26 }}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                gap: '8px', marginBottom: '32px',
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setAllExpanded(!allExpanded)}
+                aria-expanded={allExpanded}
+                aria-controls="fbr-episode-list"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '10px',
+                  background: epRed, color: '#f5ead8', border: 'none',
+                  borderRadius: '6px', padding: '14px 30px',
+                  fontFamily: 'var(--font-sans)', fontWeight: 700,
+                  fontSize: '0.95rem', letterSpacing: '0.05em',
+                  cursor: 'pointer',
+                  boxShadow: isDark
+                    ? '0 6px 22px rgba(155,32,32,0.45)'
+                    : '0 6px 22px rgba(155,32,32,0.28)',
+                  transition: 'background 0.2s, transform 0.15s',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = epRedHover;
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = epRed;
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <PlayIcon /> {allExpanded ? 'Collapse All' : 'Listen Now'}
+              </button>
+              <p className="font-sans" style={{
+                fontSize: '0.78rem', color: epMuted, fontStyle: 'italic',
+                margin: 0, textAlign: 'center',
+              }}>
+                {allExpanded
+                  ? 'All episodes open — pick one and hit play.'
+                  : 'Opens every episode. Pick one and tap play to start listening.'}
+              </p>
+            </motion.div>
+          )}
+
+          {/* ── Collapsible episode list ── */}
+          {!episodesLoading && episodes.length > 0 && (
+            <div
+              id="fbr-episode-list"
+              style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+            >
+              {episodes.map((ep, i) => {
+                const cat = inferCategory(ep);
+                const meta = CATEGORY_META[cat];
+                const isExpanded = expandedGuids.has(ep.guid);
+                const numLabel = ep.episodeNumber
+                  ? `EP. ${String(ep.episodeNumber).padStart(2, '0')}`
+                  : (i === 0 ? 'LATEST' : '—');
+                const dateStr = formatPubDate(ep.pubDateMs);
+                const durStr = formatDuration(ep.durationSeconds);
+                const isLatest = i === 0;
+
+                return (
+                  <motion.article
+                    key={ep.guid}
+                    initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.45, delay: Math.min(i * 0.035, 0.4) }}
+                    style={{
+                      position: 'relative',
+                      background: epCardBg,
+                      border: `1px solid ${isExpanded ? epCardHoverB : epCardBorder}`,
+                      borderRadius: '6px',
+                      overflow: 'hidden',
+                      boxShadow: isDark
+                        ? '0 6px 18px rgba(0,0,0,0.32)'
+                        : '0 4px 14px rgba(120,80,30,0.07)',
+                      transition: 'border-color 0.25s, box-shadow 0.25s',
+                    }}
+                  >
+                    {/* Header row — entire row is the click target */}
+                    <button
+                      type="button"
+                      onClick={() => toggleExpanded(ep.guid)}
+                      aria-expanded={isExpanded}
+                      aria-controls={`fbr-ep-body-${ep.guid}`}
+                      aria-label={`${isExpanded ? 'Collapse' : 'Expand'} episode: ${ep.title}`}
+                      style={{
+                        display: 'flex', alignItems: 'stretch',
+                        width: '100%', padding: 0,
+                        background: 'transparent', border: 'none',
+                        textAlign: 'left', cursor: 'pointer',
+                        color: 'inherit',
+                      }}
+                    >
+                      {/* Left category accent bar */}
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          width: '4px', flexShrink: 0,
+                          background: isLatest ? epGoldLight : meta.color,
+                        }}
+                      />
+                      <div style={{
+                        flex: 1, minWidth: 0,
+                        padding: '16px 18px',
+                        display: 'flex', alignItems: 'center', gap: '14px',
+                      }}>
+                        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {/* Meta row */}
+                          <div style={{
+                            display: 'flex', alignItems: 'center',
+                            gap: '8px', flexWrap: 'wrap',
+                          }}>
+                            <span className="font-serif" style={{
+                              fontSize: '0.7rem', color: epMuted, letterSpacing: '0.1em',
+                              fontWeight: 600,
+                            }}>
+                              {numLabel}
+                            </span>
+                            <span className="font-sans" style={{
+                              fontSize: '0.6rem', fontStyle: 'italic',
+                              textTransform: 'uppercase', letterSpacing: '0.1em',
+                              padding: '2px 8px', borderRadius: '2px',
+                              color: meta.textColor, background: meta.color,
+                            }}>
+                              {meta.label}
+                            </span>
+                            {isLatest && (
+                              <span className="font-serif" style={{
+                                fontSize: '0.68rem', fontStyle: 'italic',
+                                color: epGoldLight, letterSpacing: '0.06em',
+                              }}>
+                                ✦ Latest
+                              </span>
+                            )}
+                            {dateStr && (
+                              <span className="font-sans" style={{
+                                fontSize: '0.7rem', color: epMuted,
+                              }}>
+                                {dateStr}
+                              </span>
+                            )}
+                            {durStr && (
+                              <span className="font-sans" style={{
+                                fontSize: '0.7rem', color: epMuted,
+                              }}>
+                                · {durStr}
+                              </span>
+                            )}
+                          </div>
+                          {/* Title */}
+                          <h3 className="font-serif font-bold" style={{
+                            fontSize: 'clamp(0.98rem, 1.6vw, 1.12rem)',
+                            color: epHeading, lineHeight: 1.35, margin: 0,
+                          }}>
+                            {ep.title}
+                          </h3>
+                        </div>
+                        {/* Chevron */}
+                        <span
+                          aria-hidden="true"
+                          style={{
+                            flexShrink: 0,
+                            display: 'inline-flex',
+                            alignItems: 'center', justifyContent: 'center',
+                            width: '32px', height: '32px',
+                            borderRadius: '50%',
+                            background: isExpanded
+                              ? (isDark ? 'rgba(200,146,42,0.18)' : 'rgba(184,133,74,0.16)')
+                              : 'transparent',
+                            color: epGold,
+                            transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.25s, background 0.2s',
+                          }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+                            <path
+                              d="M2 5 L7 10 L12 5"
+                              stroke="currentColor" strokeWidth="2"
+                              fill="none" strokeLinecap="round" strokeLinejoin="round"
+                            />
+                          </svg>
+                        </span>
+                      </div>
+                    </button>
+
+                    {/* Expanded body — description + native HTML5 audio */}
+                    {isExpanded && (
+                      <div
+                        id={`fbr-ep-body-${ep.guid}`}
+                        style={{
+                          padding: '4px 22px 20px',
+                          borderTop: `1px solid ${epDivider}`,
+                          display: 'flex', flexDirection: 'column', gap: '14px',
+                        }}
+                      >
+                        {ep.description && (
+                          <p className="font-sans" style={{
+                            fontSize: '0.92rem', color: epMuted, lineHeight: 1.65,
+                            margin: '14px 0 0', whiteSpace: 'pre-wrap',
+                          }}>
+                            {ep.description}
+                          </p>
+                        )}
+                        {ep.audioUrl ? (
+                          <audio
+                            key={ep.guid}
+                            controls
+                            preload="metadata"
+                            src={ep.audioUrl}
+                            style={{ width: '100%', borderRadius: '6px' }}
+                          >
+                            Your browser doesn't support the audio element.{' '}
+                            <a href={ep.audioUrl} style={{ color: epGold }}>Download MP3</a>
+                          </audio>
+                        ) : (
+                          <p className="font-sans" style={{
+                            fontSize: '0.85rem', color: epMuted, fontStyle: 'italic', margin: 0,
+                          }}>
+                            Audio file not available — try the Podbean link below.
+                          </p>
+                        )}
+                        {ep.episodeUrl && (
+                          <div style={{ fontSize: '0.78rem' }}>
+                            <a
+                              href={ep.episodeUrl} target="_blank" rel="noopener noreferrer"
+                              style={{ color: epGold, textDecoration: 'underline' }}
+                            >
+                              View episode page on Podbean ↗
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </motion.article>
+                );
+              })}
+
+              {/* ─── Browse all button ─── */}
+              <div style={{ textAlign: 'center', marginTop: '28px' }}>
+                <a
+                  href="https://fishbowlroulettepodcast.podbean.com/"
+                  target="_blank" rel="noopener noreferrer"
+                  className="font-sans"
+                  style={{
+                    display: 'inline-block', background: 'transparent',
+                    border: `1px solid ${epGold}`, color: epGold,
+                    fontStyle: 'italic', fontSize: '0.95rem', letterSpacing: '0.08em',
+                    padding: '14px 42px', borderRadius: '4px', textDecoration: 'none',
+                    transition: 'background 0.25s, color 0.25s',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = epGold;
+                    e.currentTarget.style.color = isDark ? '#1a1108' : '#fffaf0';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = epGold;
+                  }}
+                >
+                  Browse All Episodes ↗
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* ── Subscribe row — preserved ── */}
+          <div style={{ marginTop: '52px', textAlign: 'center' }}>
+            <p className="font-sans" style={{
+              fontSize: '0.92rem', color: epMuted,
+              marginBottom: '16px', lineHeight: 1.6,
+            }}>
+              Subscribe on your favourite platform to get every new episode automatically.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <SubscribePill
+                name="Spotify"
+                icon={<SpotifyIcon />}
+                href="https://open.spotify.com/search/Fishbowl%20Roulette/shows"
+                color="#1DB954"
+                isDark={isDark}
+                border={epCardBorder}
+                text={epHeading}
+              />
+              <SubscribePill
+                name="Apple Podcasts"
+                icon={<AppleIcon />}
+                href="https://podcasts.apple.com/us/podcast/fishbowl-roulette/id1885180650"
+                color={isDark ? '#c49a6c' : '#7E57C2'}
+                isDark={isDark}
+                border={epCardBorder}
+                text={epHeading}
+              />
+              <SubscribePill
+                name="RSS Feed"
+                icon={<RssIcon />}
+                href="https://feed.podbean.com/fishbowlroulettepodcast/feed.xml"
+                color={isDark ? '#d9c2ad' : '#E36A5D'}
+                isDark={isDark}
+                border={epCardBorder}
+                text={epHeading}
+              />
+            </div>
+          </div>
+
+        </div>
+      </section>
+        );
+      })()}
+
+      {/* ═══════════════════════════════════════════
+          CARDS SECTION — "Pull a Question" with relocated
+          roulette wheel as a brand accent above the heading.
+      ═══════════════════════════════════════════ */}
+      <section id="cards" style={{
+        background: bgAlt2,
+        borderTop: `1px solid ${border}`,
+        padding: '52px 0 44px',
+      }}>
+        <div style={{ maxWidth: '860px', margin: '0 auto', padding: '0 24px' }}>
+          {/* Roulette wheel — relocated brand accent. The animated CSS-masked
+              spinning ring component is preserved verbatim and lives here as
+              a supporting flourish so the new tavern hero can stay focused
+              on the headline + CTAs. */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.7, ease: 'easeOut' }}
+            style={{
+              display: 'flex', justifyContent: 'center',
+              marginBottom: '24px',
+            }}
+          >
+            <RouletteWheel size="min(170px, 38vw)" isDark={isDark} spinSeconds={16} />
+          </motion.div>
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="font-serif font-semibold text-center"
+            style={{
+              fontSize: 'clamp(1.3rem, 3.2vw, 2.1rem)',
+              color: text, marginBottom: '32px', lineHeight: 1.3,
+            }}
+          >
+            We pulled the first question...{' '}
+            <span style={{ color: accent, fontStyle: 'italic' }}>and it went there.</span>
+          </motion.h2>
+
+          {/* Layout:
+                Row 1: [Beliefs] [Fishbowl image] [Relationships]
+                Row 2:        [    Wildcards centered    ]
+              On mobile (1-col grid) the order is preserved vertically. */}
+          {(() => {
+            const cardData = {
+              Beliefs:       { icon: <BrainIcon />, text: "What do you believe when no one's listening?" },
+              Relationships: { icon: <HeartIcon />, text: "The stuff we think... but don't always say out loud." },
+              Wildcards:     { icon: <DiceIcon />, text: 'No rules. No warning. Anything goes.' },
+            } as const;
+            const renderCard = (title: keyof typeof cardData, delay: number) => {
+              const c = cardData[title];
+              return (
+                <motion.div
+                  key={title}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay }}
+                  className="fr-parchment-card"
+                >
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg, rgba(255,235,200,0.18) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ marginBottom: '10px' }}>{c.icon}</div>
+                    <h3 className="font-serif font-bold" style={{ fontSize: '1.2rem', color: '#2a1208', marginBottom: '7px' }}>
+                      {title}
+                    </h3>
+                    <p className="font-sans" style={{ fontSize: '0.83rem', color: 'rgba(38,15,6,0.75)', lineHeight: 1.55 }}>
+                      {c.text}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            };
+            return (
+              <>
+                {/* Row 1: card | fishbowl | card */}
+                <div
+                  className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 items-center"
+                  style={{ marginBottom: '16px' }}
+                >
+                  {renderCard('Beliefs', 0)}
+
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7, delay: 0.12 }}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      padding: '4px 0',
+                    }}
+                  >
+                    <img
+                      src={fishbowlQuestionsImg}
+                      alt="A glass fishbowl filled with rolled-up question slips labeled Relationships, Beliefs and Wildcards"
+                      style={{
+                        width: '100%',
+                        maxWidth: '260px',
+                        height: 'auto',
+                        display: 'block',
+                        filter: isDark
+                          ? 'drop-shadow(0 18px 36px rgba(0,0,0,0.65))'
+                          : 'drop-shadow(0 12px 28px rgba(43,43,43,0.22))',
+                      }}
+                    />
+                  </motion.div>
+
+                  {renderCard('Relationships', 0.24)}
+                </div>
+
+                {/* Row 2: Wildcards card centered below the fishbowl */}
+                <div
+                  className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6"
+                  style={{ marginBottom: '24px' }}
+                >
+                  {/* Empty cells on either side keep the centered card aligned
+                      under the fishbowl on the 3-col grid. They collapse to
+                      nothing on mobile because of `display: contents`-like
+                      stacking via grid-cols-1. */}
+                  <div className="hidden sm:block" />
+                  {renderCard('Wildcards', 0.36)}
+                  <div className="hidden sm:block" />
+                </div>
+              </>
+            );
+          })()}
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4, duration: 0.8 }}
+            className="font-sans text-center"
+            style={{ color: textMuted, fontSize: '0.9rem', fontStyle: 'italic' }}
+          >
+            The truth is usually one question away.
+          </motion.p>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
           MEET SANDRA — host bio with photo
+          (Moved below Episodes per spec: episodes lead, then
+          the "Pull a question" cards, then host intro, then CTAs.)
       ═══════════════════════════════════════════ */}
       <section id="about" style={{
         background: bgAlt,
@@ -412,7 +1051,7 @@ const Home = () => {
         <div className="w-full max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
 
-            {/* Sandra photo (now lower on the page, in its own section) */}
+            {/* Sandra photo */}
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -532,621 +1171,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      {/* ═══════════════════════════════════════════
-          CARDS SECTION
-      ═══════════════════════════════════════════ */}
-      <section id="cards" style={{
-        background: bgAlt2,
-        borderTop: `1px solid ${border}`,
-        padding: '52px 0 44px',
-      }}>
-        <div style={{ maxWidth: '860px', margin: '0 auto', padding: '0 24px' }}>
-          <motion.h2
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="font-serif font-semibold text-center"
-            style={{
-              fontSize: 'clamp(1.3rem, 3.2vw, 2.1rem)',
-              color: text, marginBottom: '32px', lineHeight: 1.3,
-            }}
-          >
-            We pulled the first question...{' '}
-            <span style={{ color: accent, fontStyle: 'italic' }}>and it went there.</span>
-          </motion.h2>
-
-          {/* Layout:
-                Row 1: [Beliefs] [Fishbowl image] [Relationships]
-                Row 2:        [    Wildcards centered    ]
-              On mobile (1-col grid) the order is preserved vertically. */}
-          {(() => {
-            const cardData = {
-              Beliefs:       { icon: <BrainIcon />, text: "What do you believe when no one's listening?" },
-              Relationships: { icon: <HeartIcon />, text: "The stuff we think... but don't always say out loud." },
-              Wildcards:     { icon: <DiceIcon />, text: 'No rules. No warning. Anything goes.' },
-            } as const;
-            const renderCard = (title: keyof typeof cardData, delay: number) => {
-              const c = cardData[title];
-              return (
-                <motion.div
-                  key={title}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay }}
-                  className="fr-parchment-card"
-                >
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg, rgba(255,235,200,0.18) 0%, transparent 60%)', pointerEvents: 'none' }} />
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ marginBottom: '10px' }}>{c.icon}</div>
-                    <h3 className="font-serif font-bold" style={{ fontSize: '1.2rem', color: '#2a1208', marginBottom: '7px' }}>
-                      {title}
-                    </h3>
-                    <p className="font-sans" style={{ fontSize: '0.83rem', color: 'rgba(38,15,6,0.75)', lineHeight: 1.55 }}>
-                      {c.text}
-                    </p>
-                  </div>
-                </motion.div>
-              );
-            };
-            return (
-              <>
-                {/* Row 1: card | fishbowl | card */}
-                <div
-                  className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 items-center"
-                  style={{ marginBottom: '16px' }}
-                >
-                  {renderCard('Beliefs', 0)}
-
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.85 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.7, delay: 0.12 }}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      padding: '4px 0',
-                    }}
-                  >
-                    <img
-                      src={fishbowlQuestionsImg}
-                      alt="A glass fishbowl filled with rolled-up question slips labeled Relationships, Beliefs and Wildcards"
-                      style={{
-                        width: '100%',
-                        maxWidth: '260px',
-                        height: 'auto',
-                        display: 'block',
-                        filter: isDark
-                          ? 'drop-shadow(0 18px 36px rgba(0,0,0,0.65))'
-                          : 'drop-shadow(0 12px 28px rgba(43,43,43,0.22))',
-                      }}
-                    />
-                  </motion.div>
-
-                  {renderCard('Relationships', 0.24)}
-                </div>
-
-                {/* Row 2: Wildcards card centered below the fishbowl */}
-                <div
-                  className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6"
-                  style={{ marginBottom: '24px' }}
-                >
-                  {/* Empty cells on either side keep the centered card aligned
-                      under the fishbowl on the 3-col grid. They collapse to
-                      nothing on mobile because of `display: contents`-like
-                      stacking via grid-cols-1. */}
-                  <div className="hidden sm:block" />
-                  {renderCard('Wildcards', 0.36)}
-                  <div className="hidden sm:block" />
-                </div>
-              </>
-            );
-          })()}
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="font-sans text-center"
-            style={{ color: textMuted, fontSize: '0.9rem', fontStyle: 'italic' }}
-          >
-            The truth is usually one question away.
-          </motion.p>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════
-          EPISODES — Tavern-style featured + grid
-      ═══════════════════════════════════════════ */}
-      {(() => {
-        /* Section-local theme tokens — mirrors the hero "tavern" mood
-           in dark mode (warm wood + gold) and softens to a parchment
-           cream in light mode so cards stay readable. */
-        const epHeading    = isDark ? '#f5ead8' : '#3d2510';
-        const epMuted      = isDark ? '#a08060' : 'rgba(61,37,16,0.62)';
-        const epGold       = isDark ? '#c8922a' : '#b8854a';
-        const epGoldLight  = isDark ? '#e8b84b' : '#c49a3a';
-        const epRed        = '#9b2020';
-        const epRedHover   = '#b52a2a';
-        const epCardBg     = isDark ? 'rgba(44,26,8,0.85)' : 'rgba(255,253,247,0.96)';
-        const epCardBorder = isDark ? 'rgba(200,146,42,0.20)' : 'rgba(184,133,74,0.25)';
-        const epCardHoverB = isDark ? 'rgba(200,146,42,0.55)' : 'rgba(184,133,74,0.6)';
-        const epDivider    = isDark ? 'rgba(200,146,42,0.12)' : 'rgba(184,133,74,0.18)';
-        const sectionBg    = isDark
-          ? `repeating-linear-gradient(88deg, transparent, transparent 2px, rgba(255,200,100,0.014) 2px, rgba(255,200,100,0.014) 4px),
-             repeating-linear-gradient(92deg, transparent, transparent 60px, rgba(0,0,0,0.06) 60px, rgba(0,0,0,0.06) 62px),
-             linear-gradient(180deg, #2c1a08 0%, #3d2510 40%, #2c1a08 100%)`
-          : `radial-gradient(ellipse at 50% 0%, rgba(184,133,74,0.10) 0%, transparent 60%),
-             linear-gradient(180deg, #f5ead8 0%, #ede0c5 100%)`;
-        const sectionEdge  = isDark ? 'rgba(255,200,100,0.08)' : 'rgba(184,133,74,0.18)';
-
-        return (
-      <section id="episodes" style={{
-        position: 'relative',
-        background: isDark ? '#1a1108' : '#f5ead8',
-        backgroundImage: sectionBg,
-        borderTop: `1px solid ${sectionEdge}`,
-        borderBottom: `1px solid ${sectionEdge}`,
-        padding: '78px 24px 92px',
-      }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-
-          {/* ── Header ── */}
-          <motion.p
-            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.6 }}
-            className="font-sans"
-            style={{
-              textAlign: 'center', fontStyle: 'italic',
-              fontSize: '0.95rem', color: epGold, letterSpacing: '0.12em',
-              textTransform: 'uppercase', marginBottom: '14px',
-            }}
-          >
-            Pull a question. Start talking.
-          </motion.p>
-          <motion.h2
-            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.08 }}
-            className="font-serif font-bold"
-            style={{
-              textAlign: 'center',
-              fontSize: 'clamp(2rem, 5vw, 3rem)',
-              color: epHeading, lineHeight: 1.15, marginBottom: '14px',
-            }}
-          >
-            Latest Episodes
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.16 }}
-            className="font-sans"
-            style={{
-              textAlign: 'center', fontSize: '1rem', color: epMuted,
-              maxWidth: '520px', margin: '0 auto 40px', lineHeight: 1.7,
-              fontStyle: 'italic',
-            }}
-          >
-            Every episode is unrehearsed. Someone reaches into the bowl — and wherever it goes, it goes.
-          </motion.p>
-
-          {/* ── Triple-diamond divider ── */}
-          <motion.div
-            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
-            viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.22 }}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: '14px', marginBottom: '52px',
-            }}
-            aria-hidden="true"
-          >
-            <span style={{
-              flex: 1, height: '1px', maxWidth: '180px',
-              background: `linear-gradient(90deg, transparent, ${epGold}, transparent)`,
-            }} />
-            {[0, 1, 2].map(i => (
-              <span key={i} style={{
-                width: '8px', height: '8px', background: epGold, transform: 'rotate(45deg)',
-              }} />
-            ))}
-            <span style={{
-              flex: 1, height: '1px', maxWidth: '180px',
-              background: `linear-gradient(90deg, transparent, ${epGold}, transparent)`,
-            }} />
-          </motion.div>
-
-          {/* ── Loading / error / empty ── */}
-          {episodesLoading && (
-            <div className="font-sans" style={{
-              padding: '40px 20px', textAlign: 'center', color: epMuted, fontSize: '0.95rem',
-            }}>
-              Loading episodes…
-            </div>
-          )}
-
-          {!episodesLoading && episodesError && episodes.length === 0 && (
-            <div className="font-sans" style={{
-              padding: '32px 20px', textAlign: 'center', color: epMuted, fontSize: '0.95rem',
-            }}>
-              Couldn't load the episode list right now.{' '}
-              <a
-                href="https://fishbowlroulettepodcast.podbean.com/"
-                target="_blank" rel="noopener noreferrer"
-                style={{ color: epGold, textDecoration: 'underline' }}
-              >
-                Browse on Podbean
-              </a>
-            </div>
-          )}
-
-          {/* ── Featured + grid ── */}
-          {!episodesLoading && episodes.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-
-              {/* ─── FEATURED (latest) ─── */}
-              {(() => {
-                const ep = episodes[0];
-                const cat = inferCategory(ep);
-                const meta = CATEGORY_META[cat];
-                const isActive = activeEpisodeGuid === ep.guid;
-                const numLabel = ep.episodeNumber
-                  ? `EP. ${String(ep.episodeNumber).padStart(2, '0')}`
-                  : 'LATEST';
-                const durStr = formatDuration(ep.durationSeconds);
-                return (
-                  <motion.article
-                    initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }} transition={{ duration: 0.55, delay: 0.28 }}
-                    style={{
-                      position: 'relative',
-                      background: epCardBg,
-                      border: `1px solid ${epCardBorder}`,
-                      borderRadius: '6px',
-                      overflow: 'hidden',
-                      display: 'flex',
-                      boxShadow: isDark
-                        ? '0 18px 45px rgba(0,0,0,0.45)'
-                        : '0 12px 32px rgba(120,80,30,0.10)',
-                    }}
-                  >
-                    {/* Left gold accent bar */}
-                    <div style={{ width: '4px', flexShrink: 0, background: epGoldLight }} />
-
-                    {/* Body — wraps on narrow */}
-                    <div style={{
-                      flex: 1, padding: '26px 28px',
-                      display: 'flex', flexWrap: 'wrap', gap: '28px', alignItems: 'center',
-                    }}>
-                      {/* "✦ Latest Episode" tag */}
-                      <span className="font-serif" style={{
-                        position: 'absolute', top: '12px', right: '18px',
-                        fontStyle: 'italic', fontSize: '0.75rem',
-                        color: epGoldLight, letterSpacing: '0.08em',
-                      }}>
-                        ✦ Latest Episode
-                      </span>
-
-                      {/* Content */}
-                      <div style={{
-                        flex: '1 1 280px', minWidth: 0,
-                        display: 'flex', flexDirection: 'column', gap: '10px',
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <span className="font-serif" style={{
-                            fontSize: '0.72rem', color: epMuted, letterSpacing: '0.1em',
-                          }}>
-                            {numLabel}
-                          </span>
-                          <span className="font-sans" style={{
-                            fontSize: '0.62rem', fontStyle: 'italic',
-                            textTransform: 'uppercase', letterSpacing: '0.1em',
-                            padding: '3px 9px', borderRadius: '2px',
-                            color: meta.textColor, background: meta.color,
-                          }}>
-                            {meta.label}
-                          </span>
-                        </div>
-                        <h3 className="font-serif font-bold" style={{
-                          fontSize: '1.25rem', color: epHeading, lineHeight: 1.3, margin: 0,
-                        }}>
-                          {ep.title}
-                        </h3>
-                        {ep.description && (
-                          <p className="font-sans" style={{
-                            fontSize: '0.92rem', color: epMuted, lineHeight: 1.6, margin: 0,
-                            display: '-webkit-box',
-                            WebkitLineClamp: 3,
-                            WebkitBoxOrient: 'vertical' as const,
-                            overflow: 'hidden',
-                          }}>
-                            {ep.description}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Right action area */}
-                      <div style={{
-                        display: 'flex', flexDirection: 'column', gap: '14px',
-                        alignItems: 'flex-start',
-                      }}>
-                        <Waveform color={epGold} />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                          <button
-                            type="button"
-                            onClick={() => setActiveEpisodeGuid(isActive ? null : ep.guid)}
-                            aria-expanded={isActive}
-                            aria-label={`${isActive ? 'Hide' : 'Play'} latest episode: ${ep.title}`}
-                            style={{
-                              display: 'inline-flex', alignItems: 'center', gap: '8px',
-                              background: epRed, color: '#f5ead8', border: 'none',
-                              borderRadius: '4px', padding: '10px 20px',
-                              fontFamily: 'var(--font-sans)', fontWeight: 600,
-                              fontSize: '0.86rem', letterSpacing: '0.04em',
-                              cursor: 'pointer',
-                              transition: 'background 0.2s, transform 0.15s',
-                            }}
-                            onMouseEnter={e => {
-                              e.currentTarget.style.background = epRedHover;
-                              e.currentTarget.style.transform = 'scale(1.04)';
-                            }}
-                            onMouseLeave={e => {
-                              e.currentTarget.style.background = epRed;
-                              e.currentTarget.style.transform = 'scale(1)';
-                            }}
-                          >
-                            <PlayIcon /> {isActive ? 'Now Playing' : 'Listen Now'}
-                          </button>
-                          {durStr && (
-                            <span className="font-sans" style={{
-                              fontSize: '0.82rem', color: epMuted, fontStyle: 'italic',
-                            }}>
-                              {durStr}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Inline audio player when this card is active */}
-                      {isActive && ep.audioUrl && (
-                        <div style={{ flexBasis: '100%', marginTop: '4px' }}>
-                          <audio
-                            key={ep.guid} controls autoPlay preload="metadata" src={ep.audioUrl}
-                            style={{ width: '100%', borderRadius: '6px' }}
-                          >
-                            Your browser doesn't support the audio element.{' '}
-                            <a href={ep.audioUrl} style={{ color: epGold }}>Download MP3</a>
-                          </audio>
-                          {ep.episodeUrl && (
-                            <div style={{ marginTop: '8px', fontSize: '0.78rem' }}>
-                              <a
-                                href={ep.episodeUrl} target="_blank" rel="noopener noreferrer"
-                                style={{ color: epGold, textDecoration: 'underline' }}
-                              >
-                                View episode page on Podbean ↗
-                              </a>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </motion.article>
-                );
-              })()}
-
-              {/* ─── GRID of remaining episodes ─── */}
-              {episodes.length > 1 && (
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(310px, 100%), 1fr))',
-                  gap: '24px',
-                }}>
-                  {episodes.slice(1).map((ep, i) => {
-                    const cat = inferCategory(ep);
-                    const meta = CATEGORY_META[cat];
-                    const isActive = activeEpisodeGuid === ep.guid;
-                    const numLabel = ep.episodeNumber
-                      ? `EP. ${String(ep.episodeNumber).padStart(2, '0')}`
-                      : '—';
-                    const durStr = formatDuration(ep.durationSeconds);
-                    return (
-                      <motion.article
-                        key={ep.guid}
-                        initial={{ opacity: 0, y: 18 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: '-50px' }}
-                        transition={{ duration: 0.5, delay: 0.04 + (i % 6) * 0.06 }}
-                        whileHover={{ y: -5 }}
-                        style={{
-                          background: epCardBg,
-                          border: `1px solid ${epCardBorder}`,
-                          borderRadius: '6px',
-                          overflow: 'hidden',
-                          display: 'flex', flexDirection: 'column',
-                          boxShadow: isDark
-                            ? '0 8px 22px rgba(0,0,0,0.35)'
-                            : '0 6px 18px rgba(120,80,30,0.08)',
-                          transition: 'border-color 0.25s, box-shadow 0.25s',
-                        }}
-                        onMouseEnter={e => {
-                          e.currentTarget.style.borderColor = epCardHoverB;
-                        }}
-                        onMouseLeave={e => {
-                          e.currentTarget.style.borderColor = epCardBorder;
-                        }}
-                      >
-                        {/* Top accent bar — category-colored */}
-                        <div style={{ height: '3px', background: meta.color }} />
-
-                        {/* Body */}
-                        <div style={{
-                          padding: '22px 22px 14px', flex: 1,
-                          display: 'flex', flexDirection: 'column', gap: '10px',
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span className="font-serif" style={{
-                              fontSize: '0.72rem', color: epMuted, letterSpacing: '0.1em',
-                            }}>
-                              {numLabel}
-                            </span>
-                            <span className="font-sans" style={{
-                              fontSize: '0.62rem', fontStyle: 'italic',
-                              textTransform: 'uppercase', letterSpacing: '0.1em',
-                              padding: '3px 9px', borderRadius: '2px',
-                              color: meta.textColor, background: meta.color,
-                            }}>
-                              {meta.label}
-                            </span>
-                          </div>
-                          <h3 className="font-serif font-bold" style={{
-                            fontSize: '1.08rem', color: epHeading, lineHeight: 1.35, margin: 0,
-                          }}>
-                            {ep.title}
-                          </h3>
-                          {ep.description && (
-                            <p className="font-sans" style={{
-                              fontSize: '0.88rem', color: epMuted, lineHeight: 1.6,
-                              margin: 0, flex: 1,
-                              display: '-webkit-box',
-                              WebkitLineClamp: 3,
-                              WebkitBoxOrient: 'vertical' as const,
-                              overflow: 'hidden',
-                            }}>
-                              {ep.description}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Footer */}
-                        <div style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          padding: '12px 22px 18px',
-                          borderTop: `1px solid ${epDivider}`, marginTop: 'auto',
-                        }}>
-                          <span className="font-sans" style={{
-                            fontSize: '0.82rem', color: epMuted, fontStyle: 'italic',
-                          }}>
-                            {durStr || '—'}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setActiveEpisodeGuid(isActive ? null : ep.guid)}
-                            aria-expanded={isActive}
-                            aria-label={`${isActive ? 'Hide' : 'Play'} episode: ${ep.title}`}
-                            style={{
-                              display: 'inline-flex', alignItems: 'center', gap: '7px',
-                              background: epRed, color: '#f5ead8', border: 'none',
-                              borderRadius: '4px', padding: '7px 14px',
-                              fontFamily: 'var(--font-sans)', fontWeight: 600,
-                              fontSize: '0.8rem', letterSpacing: '0.04em',
-                              cursor: 'pointer',
-                              transition: 'background 0.2s, transform 0.15s',
-                            }}
-                            onMouseEnter={e => {
-                              e.currentTarget.style.background = epRedHover;
-                              e.currentTarget.style.transform = 'scale(1.04)';
-                            }}
-                            onMouseLeave={e => {
-                              e.currentTarget.style.background = epRed;
-                              e.currentTarget.style.transform = 'scale(1)';
-                            }}
-                          >
-                            <PlayIcon /> {isActive ? 'Playing' : 'Play'}
-                          </button>
-                        </div>
-
-                        {/* Inline audio player when active */}
-                        {isActive && ep.audioUrl && (
-                          <div style={{ padding: '0 22px 18px' }}>
-                            <audio
-                              key={ep.guid} controls autoPlay preload="metadata" src={ep.audioUrl}
-                              style={{ width: '100%', borderRadius: '6px' }}
-                            >
-                              Your browser doesn't support the audio element.{' '}
-                              <a href={ep.audioUrl} style={{ color: epGold }}>Download MP3</a>
-                            </audio>
-                          </div>
-                        )}
-                      </motion.article>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* ─── Browse all button ─── */}
-              <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <a
-                  href="https://fishbowlroulettepodcast.podbean.com/"
-                  target="_blank" rel="noopener noreferrer"
-                  className="font-sans"
-                  style={{
-                    display: 'inline-block', background: 'transparent',
-                    border: `1px solid ${epGold}`, color: epGold,
-                    fontStyle: 'italic', fontSize: '0.95rem', letterSpacing: '0.08em',
-                    padding: '14px 42px', borderRadius: '4px', textDecoration: 'none',
-                    transition: 'background 0.25s, color 0.25s',
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = epGold;
-                    e.currentTarget.style.color = isDark ? '#1a1108' : '#fffaf0';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = epGold;
-                  }}
-                >
-                  Browse All Episodes ↗
-                </a>
-              </div>
-            </div>
-          )}
-
-          {/* ── Subscribe row — preserved ── */}
-          <div style={{ marginTop: '52px', textAlign: 'center' }}>
-            <p className="font-sans" style={{
-              fontSize: '0.92rem', color: epMuted,
-              marginBottom: '16px', lineHeight: 1.6,
-            }}>
-              Subscribe on your favourite platform to get every new episode automatically.
-            </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <SubscribePill
-                name="Spotify"
-                icon={<SpotifyIcon />}
-                href="https://open.spotify.com/search/Fishbowl%20Roulette/shows"
-                color="#1DB954"
-                isDark={isDark}
-                border={epCardBorder}
-                text={epHeading}
-              />
-              <SubscribePill
-                name="Apple Podcasts"
-                icon={<AppleIcon />}
-                href="https://podcasts.apple.com/us/podcast/fishbowl-roulette/id1885180650"
-                color={isDark ? '#c49a6c' : '#7E57C2'}
-                isDark={isDark}
-                border={epCardBorder}
-                text={epHeading}
-              />
-              <SubscribePill
-                name="RSS Feed"
-                icon={<RssIcon />}
-                href="https://feed.podbean.com/fishbowlroulettepodcast/feed.xml"
-                color={isDark ? '#d9c2ad' : '#E36A5D'}
-                isDark={isDark}
-                border={epCardBorder}
-                text={epHeading}
-              />
-            </div>
-          </div>
-
-        </div>
-      </section>
-        );
-      })()}
 
       {/* ═══════════════════════════════════════════
           EMAIL CAPTURE
