@@ -100,6 +100,10 @@ const Home = () => {
   const [episodesLoading, setEpisodesLoading] = useState(true);
   const [episodesError, setEpisodesError] = useState<string | null>(null);
   const [activeEpisodeGuid, setActiveEpisodeGuid] = useState<string | null>(null);
+  /* If the user clicks "Start Listening" / "Listen Now" before the episodes
+     fetch resolves, remember the intent and auto-start the latest episode
+     as soon as the list arrives. */
+  const [pendingAutoPlay, setPendingAutoPlay] = useState(false);
 
   const isDark = theme === 'dark';
 
@@ -113,13 +117,26 @@ const Home = () => {
    *  episode if nothing is currently playing. Wired to the hero
    *  "Start Listening" CTA and the nav "Listen Now" / "Episodes" links. */
   const openPlayerAndScroll = () => {
-    if (!activeEpisodeGuid && episodes[0]?.guid) {
-      setActiveEpisodeGuid(episodes[0].guid);
+    if (!activeEpisodeGuid) {
+      if (episodes[0]?.guid) {
+        setActiveEpisodeGuid(episodes[0].guid);
+      } else {
+        /* Episodes haven't loaded yet — defer auto-start until they do. */
+        setPendingAutoPlay(true);
+      }
     }
     setTimeout(() => {
       document.getElementById('episodes')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 60);
   };
+
+  /* Honor a deferred auto-play once episodes finish loading. */
+  useEffect(() => {
+    if (pendingAutoPlay && !activeEpisodeGuid && episodes[0]?.guid) {
+      setActiveEpisodeGuid(episodes[0].guid);
+      setPendingAutoPlay(false);
+    }
+  }, [pendingAutoPlay, activeEpisodeGuid, episodes]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 40);
@@ -711,6 +728,7 @@ const Home = () => {
             style={{
               textAlign: 'center', fontSize: '1rem', color: epMuted,
               maxWidth: '520px', margin: '0 auto 40px', lineHeight: 1.7,
+              fontStyle: 'italic',
             }}
           >
             Every episode is unrehearsed. Someone reaches into the bowl — and wherever it goes, it goes.
@@ -923,7 +941,7 @@ const Home = () => {
               {episodes.length > 1 && (
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(310px, 100%), 1fr))',
                   gap: '24px',
                 }}>
                   {episodes.slice(1).map((ep, i) => {
