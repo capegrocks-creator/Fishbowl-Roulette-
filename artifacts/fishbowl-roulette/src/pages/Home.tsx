@@ -25,6 +25,14 @@ const Home = () => {
   const [wineErr, setWineErr] = useState(false);
   const [playerOpen, setPlayerOpen] = useState(false);
 
+  /* Podbean Player V2 source — defaults to the most recent known episode,
+     then auto-updates from the RSS feed every Wednesday when a new episode
+     drops. The `playlist=true` flag makes the widget show the full episode
+     list with the latest one cued up. */
+  const FALLBACK_PLAYER_SRC =
+    'https://www.podbean.com/player-v2/?i=bgrsm-1aade04&playlist=true&square=1&share=1&download=1&skin=1';
+  const [playerSrc, setPlayerSrc] = useState<string>(FALLBACK_PLAYER_SRC);
+
   const isDark = theme === 'dark';
 
   const toggleTheme = () => {
@@ -45,6 +53,24 @@ const Home = () => {
     const handleScroll = () => setIsScrolled(window.scrollY > 40);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  /* Auto-update the player to the latest episode every Wednesday.
+     The /api/podcast/latest-player endpoint resolves the newest episode
+     server-side (RSS feed → episode page → Podbean Player V2 ID) and is
+     cached for 30 minutes. If the request fails for any reason, we keep
+     the FALLBACK_PLAYER_SRC so the player still works. */
+  useEffect(() => {
+    let cancelled = false;
+    const apiBase = `${import.meta.env.BASE_URL}api`.replace(/\/+/g, '/');
+    fetch(`${apiBase}/podcast/latest-player`)
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error(`status ${r.status}`))))
+      .then((data: { playerSrc?: string }) => {
+        if (cancelled || !data?.playerSrc) return;
+        setPlayerSrc(data.playerSrc);
+      })
+      .catch(() => {/* keep fallback */});
+    return () => { cancelled = true; };
   }, []);
 
   const handleJoinList = (e: React.FormEvent) => {
@@ -479,7 +505,7 @@ const Home = () => {
             </p>
           </motion.div>
 
-          {/* Choose Your Episode card */}
+          {/* Choose Your Episode card — horizontal layout */}
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -489,113 +515,179 @@ const Home = () => {
               background: isDark ? 'rgba(196,154,108,0.06)' : '#fff',
               border: `1px solid ${border}`,
               borderRadius: '14px',
-              padding: '28px 24px',
+              padding: '22px 24px',
               boxShadow: isDark
                 ? '0 4px 22px rgba(0,0,0,0.35)'
                 : '0 4px 22px rgba(43,43,43,0.06)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '18px',
+              textAlign: 'left',
+              flexWrap: 'wrap',
             }}
           >
-            <h3 className="font-serif font-bold" style={{
-              fontSize: 'clamp(1.15rem, 2.4vw, 1.45rem)',
-              color: text, marginBottom: '6px',
+            {/* Play-icon avatar */}
+            <div style={{
+              flexShrink: 0,
+              width: '52px', height: '52px',
+              borderRadius: '50%',
+              border: `1.5px solid ${isDark ? 'rgba(196,154,108,0.45)' : 'rgba(43,43,43,0.18)'}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: textMuted,
             }}>
-              Choose Your Episode
-            </h3>
-            <p className="font-sans" style={{
-              fontSize: '0.92rem', color: textMuted,
-              lineHeight: 1.6, marginBottom: '20px',
-            }}>
-              Open the player to browse every Fishbowl Roulette episode and start listening.
-            </p>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <circle cx="12" cy="12" r="10" />
+                <polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none" />
+              </svg>
+            </div>
 
-            <div className="flex flex-wrap justify-center gap-3">
-              <button
-                onClick={() => setPlayerOpen(o => !o)}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
-                  padding: '12px 24px', borderRadius: '8px',
-                  background: accent, color: '#fff', border: 'none',
-                  fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.9rem',
-                  cursor: 'pointer', transition: 'background 0.2s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = isDark ? '#a63a34' : '#D05A4D')}
-                onMouseLeave={e => (e.currentTarget.style.background = accent)}
-              >
-                {playerOpen ? '▶ Now Playing' : '🎧 Open Player'}
-              </button>
-              {playerOpen && (
+            {/* Title + description */}
+            <div style={{ flex: '1 1 240px', minWidth: 0 }}>
+              <h3 className="font-serif font-bold" style={{
+                fontSize: 'clamp(1.1rem, 2.2vw, 1.35rem)',
+                color: text, marginBottom: '4px', lineHeight: 1.25,
+              }}>
+                Choose Your Episode
+              </h3>
+              <p className="font-sans" style={{
+                fontSize: '0.9rem', color: textMuted,
+                lineHeight: 1.55, margin: 0,
+              }}>
+                Open the player to browse every Fishbowl Roulette episode and start listening.
+              </p>
+            </div>
+
+            {/* Open Player button (right side) */}
+            <button
+              onClick={() => setPlayerOpen(o => !o)}
+              style={{
+                flexShrink: 0,
+                display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
+                padding: '11px 22px', borderRadius: '999px',
+                background: isDark ? '#3a1a14' : '#2B2B2B',
+                color: '#fff', border: 'none',
+                fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.88rem',
+                cursor: 'pointer', transition: 'background 0.2s, opacity 0.2s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
+              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+            >
+              {playerOpen ? <>⏸ Now Playing</> : <>▶ Open Player</>}
+            </button>
+          </motion.div>
+
+          {/* ── Embedded Podbean player (expandable) ── */}
+          {playerOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              transition={{ duration: 0.4 }}
+              style={{
+                marginTop: '18px',
+                overflow: 'hidden',
+                background: isDark ? 'rgba(196,154,108,0.04)' : '#fff',
+                border: `1px solid ${border}`,
+                borderRadius: '14px',
+                textAlign: 'left',
+              }}
+            >
+              {/* Now Playing header bar */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '12px 18px',
+                borderBottom: `1px solid ${border}`,
+              }}>
+                <div className="font-sans" style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '8px',
+                  fontSize: '0.7rem', letterSpacing: '0.16em', textTransform: 'uppercase',
+                  color: textMuted, fontWeight: 700,
+                }}>
+                  <span style={{
+                    width: '7px', height: '7px', borderRadius: '50%', background: accent,
+                  }} />
+                  Now Playing
+                </div>
                 <button
                   onClick={() => setPlayerOpen(false)}
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
-                    padding: '12px 22px', borderRadius: '8px',
-                    background: 'transparent',
-                    border: `1.5px solid ${isDark ? 'rgba(217,194,173,0.35)' : 'rgba(43,43,43,0.2)'}`,
-                    color: text,
-                    fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '0.9rem',
-                    cursor: 'pointer',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: textMuted, fontFamily: 'var(--font-sans)',
+                    fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '4px',
                   }}
+                  aria-label="Close player"
                 >
-                  Close
+                  ✕ Close
                 </button>
-              )}
-            </div>
+              </div>
 
-            {/* ── Embedded Podbean player ── */}
-            {/* TODO: confirm this is the correct Podbean show URL — best guess based on brand name. */}
-            {playerOpen && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                transition={{ duration: 0.4 }}
-                style={{ marginTop: '24px', overflow: 'hidden' }}
-              >
-                <iframe
-                  title="Fishbowl Roulette podcast — all episodes"
-                  src="https://fishbowlroulette.podbean.com/"
-                  width="100%"
-                  height="600"
-                  style={{
-                    border: `1px solid ${border}`,
-                    borderRadius: '10px',
-                    background: isDark ? '#0e0805' : '#fff',
-                    display: 'block',
-                  }}
-                  loading="lazy"
-                  allow="autoplay; clipboard-write; encrypted-media"
-                />
-                <p className="font-sans" style={{
-                  fontSize: '0.78rem', color: textMuted,
-                  marginTop: '12px', textAlign: 'center',
-                }}>
-                  Trouble loading?{' '}
-                  <a
-                    href="https://fishbowlroulette.podbean.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: gold, textDecoration: 'underline' }}
-                  >
-                    Open on Podbean ↗
-                  </a>
-                </p>
-              </motion.div>
-            )}
-          </motion.div>
+              <iframe
+                title="Fishbowl Roulette podcast — all episodes"
+                src={playerSrc}
+                width="100%"
+                height="600"
+                style={{
+                  border: 'none',
+                  background: isDark ? '#0e0805' : '#fff',
+                  display: 'block',
+                  borderBottomLeftRadius: '14px',
+                  borderBottomRightRadius: '14px',
+                }}
+                loading="lazy"
+                allow="autoplay; clipboard-write; encrypted-media"
+              />
+              <p className="font-sans" style={{
+                fontSize: '0.78rem', color: textMuted,
+                padding: '10px 18px 14px', textAlign: 'center', margin: 0,
+              }}>
+                Player not loading?{' '}
+                <a
+                  href="https://fishbowlroulettepodcast.podbean.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: gold, textDecoration: 'underline' }}
+                >
+                  Open on Podbean
+                </a>
+              </p>
+            </motion.div>
+          )}
 
-          {/* Subscribe row — relocated platform links */}
-          <div style={{ marginTop: '36px', paddingTop: '24px', borderTop: `1px solid ${border}` }}>
+          {/* Subscribe row — pill-style podcast subscription links */}
+          <div style={{ marginTop: '36px' }}>
             <p className="font-sans" style={{
-              fontSize: '0.7rem', letterSpacing: '0.14em', textTransform: 'uppercase',
-              color: textMuted, fontWeight: 600, marginBottom: '14px',
+              fontSize: '0.92rem', color: textMuted,
+              marginBottom: '16px', lineHeight: 1.6,
             }}>
-              Or subscribe / follow
+              Subscribe on your favourite platform to get every new episode automatically.
             </p>
-            <div className="flex flex-wrap justify-center gap-5 md:gap-7">
-              <PlatformBtn name="Spotify"        icon={<SpotifyIcon />}  href="#" color="#1DB954" />
-              <PlatformBtn name="Apple Podcasts" icon={<AppleIcon />}    href="#" color={isDark ? '#c49a6c' : '#B8854A'} />
-              <PlatformBtn name="YouTube"        icon={<YoutubeIcon />}  href="#" color="#FF4444" />
-              <PlatformBtn name="TikTok"         icon={<TikTokIcon />}   href="https://www.tiktok.com/@fishbowl1560?_r=1&_t=ZT-961qb2BbDQ5" color={isDark ? '#d9c2ad' : '#2B2B2B'} />
-              <PlatformBtn name="Facebook"       icon={<FacebookIcon />} href="https://www.facebook.com/share/1G8o4HmC9M/?mibextid=wwXIfr" color="#1877F2" />
+            <div className="flex flex-wrap justify-center gap-3">
+              <SubscribePill
+                name="Spotify"
+                icon={<SpotifyIcon />}
+                href="https://open.spotify.com/search/Fishbowl%20Roulette/shows"
+                color="#1DB954"
+                isDark={isDark}
+                border={border}
+                text={text}
+              />
+              <SubscribePill
+                name="Apple Podcasts"
+                icon={<AppleIcon />}
+                href="https://podcasts.apple.com/us/podcast/fishbowl-roulette/id1885180650"
+                color={isDark ? '#c49a6c' : '#7E57C2'}
+                isDark={isDark}
+                border={border}
+                text={text}
+              />
+              <SubscribePill
+                name="RSS Feed"
+                icon={<RssIcon />}
+                href="https://feed.podbean.com/fishbowlroulettepodcast/feed.xml"
+                color={isDark ? '#d9c2ad' : '#E36A5D'}
+                isDark={isDark}
+                border={border}
+                text={text}
+              />
             </div>
           </div>
 
@@ -701,6 +793,30 @@ const Home = () => {
               {emailSubmitted ? "You're on the list!" : 'Join the List'}
             </button>
           </form>
+
+          {/* Follow on social — TikTok + Facebook */}
+          <div style={{ marginTop: '28px' }}>
+            <p className="font-sans" style={{
+              fontSize: '0.7rem', letterSpacing: '0.14em', textTransform: 'uppercase',
+              color: textMuted, fontWeight: 600, marginBottom: '12px',
+            }}>
+              Follow Fishbowl Roulette
+            </p>
+            <div className="flex flex-wrap justify-center gap-5">
+              <PlatformBtn
+                name="TikTok"
+                icon={<TikTokIcon />}
+                href="https://www.tiktok.com/@fishbowl1560?_r=1&_t=ZT-961qb2BbDQ5"
+                color={isDark ? '#d9c2ad' : '#2B2B2B'}
+              />
+              <PlatformBtn
+                name="Facebook"
+                icon={<FacebookIcon />}
+                href="https://www.facebook.com/share/1G8o4HmC9M/?mibextid=wwXIfr"
+                color="#1877F2"
+              />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -770,6 +886,49 @@ const PlatformBtn = ({ name, icon, href, color }: { name: string; icon: React.Re
     {icon}
     {name}
   </a>
+);
+
+/* ─── Subscribe pill (Spotify / Apple Podcasts / RSS) ─── */
+const SubscribePill = ({
+  name, icon, href, color, isDark, border, text,
+}: {
+  name: string; icon: React.ReactNode; href: string; color: string;
+  isDark: boolean; border: string; text: string;
+}) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{
+      display: 'inline-flex', alignItems: 'center', gap: '0.55rem',
+      padding: '10px 20px',
+      borderRadius: '999px',
+      border: `1px solid ${border}`,
+      background: isDark ? 'rgba(196,154,108,0.05)' : '#fff',
+      color: text,
+      fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.88rem',
+      textDecoration: 'none',
+      transition: 'background 0.2s, transform 0.2s, border-color 0.2s',
+    }}
+    onMouseEnter={e => {
+      e.currentTarget.style.background = isDark ? 'rgba(196,154,108,0.1)' : '#fafafa';
+      e.currentTarget.style.borderColor = color;
+    }}
+    onMouseLeave={e => {
+      e.currentTarget.style.background = isDark ? 'rgba(196,154,108,0.05)' : '#fff';
+      e.currentTarget.style.borderColor = border;
+    }}
+  >
+    <span style={{ color, display: 'inline-flex' }}>{icon}</span>
+    {name}
+  </a>
+);
+
+/* ─── RSS icon ─── */
+const RssIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20A2.18 2.18 0 0 1 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/>
+  </svg>
 );
 
 /* ─── Card Icons ─── */
