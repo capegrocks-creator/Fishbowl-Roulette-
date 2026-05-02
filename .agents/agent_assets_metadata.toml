@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "b2hulDaoOY01EhiV_Bwgc"
+uri = "file://artifacts/fishbowl-roulette/public/images/tavern-bg.png"
+type = "image"
+title = "tavern bokeh background"

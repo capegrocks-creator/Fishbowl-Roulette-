@@ -5,7 +5,7 @@ import { RouletteWheel } from '../components/RouletteWheel';
 const BASE = import.meta.env.BASE_URL;
 const sandraImg = `${BASE}images/sandra.jpg`;
 const fishbowlQuestionsImg = `${BASE}images/fishbowl-questions.png`;
-const textureBg = `${BASE}images/dark-texture.png`;
+const tavernBg = `${BASE}images/tavern-bg.png`;
 
 /* ─── Episode category inference (client-side, visual flavor only) ───
    The Podbean RSS feed doesn't ship a taxonomy, so we infer one of three
@@ -74,10 +74,6 @@ const Home = () => {
      at once but does NOT start playback — listeners use the native HTML5
      play button on whichever episode they choose. */
   const [expandedGuids, setExpandedGuids] = useState<Set<string>>(() => new Set());
-  /* If the hero "Listen Now" CTA is clicked before the episodes fetch
-     resolves, remember the intent and expand all cards as soon as the
-     list arrives. */
-  const [pendingExpandAll, setPendingExpandAll] = useState(false);
 
   const isDark = theme === 'dark';
 
@@ -106,27 +102,11 @@ const Home = () => {
     setExpandedGuids(expand ? new Set(episodes.map(e => e.guid)) : new Set());
   };
 
-  /** Expand all episode cards and smooth-scroll to the Episodes section.
-   *  Does not start audio playback. */
+  /** Smooth-scroll to the Episodes section. Cards stay in their current
+   *  state — listeners expand the one they want via its own header. */
   const openPlayerAndScroll = () => {
-    if (episodes.length > 0) {
-      setAllExpanded(true);
-    } else {
-      /* Episodes haven't loaded yet — defer expand until they do. */
-      setPendingExpandAll(true);
-    }
-    setTimeout(() => {
-      document.getElementById('episodes')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 60);
+    document.getElementById('episodes')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
-
-  /* Honor a deferred expand-all once episodes finish loading. */
-  useEffect(() => {
-    if (pendingExpandAll && episodes.length > 0) {
-      setExpandedGuids(new Set(episodes.map(e => e.guid)));
-      setPendingExpandAll(false);
-    }
-  }, [pendingExpandAll, episodes]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 40);
@@ -309,26 +289,16 @@ const Home = () => {
       ═══════════════════════════════════════════════════ */}
       <section
         style={{
-          /* Dark mode: deep brown tavern with soft warm bokeh orbs.
-             Light mode: warm cream parchment with a subtle amber wash
-             so the tavern mood reads in both themes. */
-          background: isDark
-            ? `radial-gradient(circle 140px at 18% 28%, rgba(255,180,90,0.22) 0%, transparent 70%),
-               radial-gradient(circle 110px at 82% 22%, rgba(255,150,70,0.18) 0%, transparent 70%),
-               radial-gradient(circle 170px at 72% 78%, rgba(255,170,80,0.16) 0%, transparent 72%),
-               radial-gradient(circle 90px at 28% 82%, rgba(255,200,120,0.14) 0%, transparent 70%),
-               radial-gradient(circle 60px at 50% 50%, rgba(255,200,120,0.10) 0%, transparent 70%),
-               radial-gradient(ellipse 110% 100% at 50% 50%, transparent 35%, rgba(8,4,2,0.55) 100%),
-               url(${textureBg}) center/cover no-repeat,
-               #16100a`
-            : `radial-gradient(circle 200px at 22% 30%, rgba(196,154,108,0.22) 0%, transparent 70%),
-               radial-gradient(circle 160px at 80% 78%, rgba(196,154,108,0.18) 0%, transparent 72%),
-               radial-gradient(ellipse 110% 100% at 50% 50%, rgba(245,234,216,0.4) 0%, transparent 80%),
-               linear-gradient(180deg, #f7f0e2 0%, #f1e6d0 100%)`,
+          /* Cinematic tavern hero — same dark, warm, bokeh-lit photo
+             in both themes so the brand mood reads consistently. */
+          background: `linear-gradient(180deg, rgba(12,7,4,0.55) 0%, rgba(12,7,4,0.35) 45%, rgba(12,7,4,0.65) 100%),
+                       url(${tavernBg}) center/cover no-repeat,
+                       #16100a`,
           minHeight: '100svh',
           display: 'flex',
           alignItems: 'center',
           paddingTop: '72px',
+          color: '#f1e3d3',
         }}
       >
         <div className="w-full max-w-6xl mx-auto px-6 sm:px-10 md:px-14 py-10 md:py-16">
@@ -353,21 +323,23 @@ const Home = () => {
 
               <h1 className="font-serif font-bold" style={{
                 fontSize: 'clamp(2.2rem, 5vw, 3.7rem)',
-                color: text, lineHeight: 1.08,
+                color: '#f5ead8', lineHeight: 1.08,
                 letterSpacing: '-0.01em',
+                textShadow: '0 2px 18px rgba(0,0,0,0.55)',
               }}>
                 You never know<br />
                 what question is<br />
-                coming <span style={{ fontStyle: 'italic', color: accent }}>next.</span>
+                coming <span style={{ fontStyle: 'italic', color: '#f17a6f' }}>next.</span>
               </h1>
 
               <div className="font-sans" style={{
                 fontSize: 'clamp(0.95rem, 1.35vw, 1.08rem)',
-                color: textMuted, lineHeight: 1.7, maxWidth: '38ch',
+                color: 'rgba(241,227,211,0.82)', lineHeight: 1.7, maxWidth: '38ch',
+                textShadow: '0 1px 12px rgba(0,0,0,0.5)',
               }}>
                 <p>
                   Real conversations.{' '}
-                  <strong style={{ color: text, fontWeight: 700 }}>
+                  <strong style={{ color: '#f5ead8', fontWeight: 700 }}>
                     No script. No warning.
                   </strong>
                 </p>
@@ -377,7 +349,7 @@ const Home = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                {/* Red Listen Now — expands all episode cards (no auto-play) */}
+                {/* Red Listen Now — smooth-scrolls to the Episodes section */}
                 <a
                   href="#episodes"
                   onClick={(e) => { e.preventDefault(); openPlayerAndScroll(); }}
@@ -429,25 +401,17 @@ const Home = () => {
               </div>
             </motion.div>
 
-            {/* ── RIGHT: fishbowl image ── */}
+            {/* ── RIGHT: animated roulette wheel ── */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.95, ease: 'easeOut', delay: 0.18 }}
               className="flex justify-center md:justify-end"
             >
-              <img
-                src={fishbowlQuestionsImg}
-                alt="A glass fishbowl filled with rolled-up question slips labeled Relationships, Beliefs and Wildcards"
-                style={{
-                  width: '100%',
-                  maxWidth: 'min(440px, 82vw)',
-                  height: 'auto',
-                  display: 'block',
-                  filter: isDark
-                    ? 'drop-shadow(0 24px 48px rgba(0,0,0,0.7)) drop-shadow(0 0 32px rgba(255,170,80,0.18))'
-                    : 'drop-shadow(0 18px 36px rgba(43,43,43,0.22))',
-                }}
+              <RouletteWheel
+                size="min(440px, 82vw)"
+                isDark={isDark}
+                spinSeconds={18}
               />
             </motion.div>
 
