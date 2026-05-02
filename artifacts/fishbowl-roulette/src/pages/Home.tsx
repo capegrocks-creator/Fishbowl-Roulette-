@@ -276,7 +276,6 @@ const Home = () => {
   const navLinks = [
     { label: 'Listen to All Episodes', href: '#episodes' },
     { label: 'About', href: '#about' },
-    { label: 'Episodes', href: '#episodes' },
     { label: 'Follow', href: '#join' },
   ];
 
@@ -318,52 +317,78 @@ const Home = () => {
             Fishbowl<em> Roulette</em>
           </div>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-7">
-            {navLinks.map(l => (
-              <a key={l.label} href={l.href}
-                onClick={l.label === 'Listen to All Episodes' ? (e) => { e.preventDefault(); openPlayerAndScroll(); } : undefined}
-                className="font-sans text-sm tracking-widest uppercase transition-colors duration-200"
-                style={{ color: isDark ? '#d9c2ad' : '#444', textDecoration: 'none' }}
-                onMouseEnter={e => (e.currentTarget.style.color = gold)}
-                onMouseLeave={e => (e.currentTarget.style.color = isDark ? '#d9c2ad' : '#444')}
-              >
-                {l.label}
-              </a>
-            ))}
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              style={{
-                background: 'transparent',
-                border: `1.5px solid ${isDark ? 'rgba(196,154,108,0.35)' : 'rgba(43,43,43,0.18)'}`,
-                borderRadius: '20px', padding: '5px 13px',
-                cursor: 'pointer', color: isDark ? '#c49a6c' : '#555',
-                fontSize: '0.75rem', letterSpacing: '0.06em',
-                display: 'flex', alignItems: 'center', gap: '5px',
-                transition: 'all 0.2s',
-              }}
-            >
-              {isDark ? '☀ Light' : '☾ Dark'}
-            </button>
-          </nav>
+          {/* Desktop nav.
+              Color logic: while the header is unscrolled (transparent),
+              it sits over the always-dark tavern hero — so the link text
+              must be cream-on-dark in BOTH themes. Once scrolled, the
+              header has a themed background, so we revert to the normal
+              theme-aware text colors. */}
+          {(() => {
+            const navIdle    = isScrolled ? (isDark ? '#d9c2ad' : '#3a2a1e') : '#f1e3d3';
+            const toggleText = isScrolled ? (isDark ? '#c49a6c' : '#3a2a1e') : '#f1e3d3';
+            const toggleBorder = isScrolled
+              ? (isDark ? 'rgba(196,154,108,0.35)' : 'rgba(43,43,43,0.22)')
+              : 'rgba(241,227,211,0.45)';
+            return (
+              <nav className="hidden md:flex items-center gap-7">
+                {navLinks.map(l => (
+                  <a key={l.label} href={l.href}
+                    onClick={l.label === 'Listen to All Episodes' ? (e) => { e.preventDefault(); openPlayerAndScroll(); } : undefined}
+                    className="font-sans text-sm tracking-widest uppercase transition-colors duration-200"
+                    style={{
+                      color: navIdle,
+                      textDecoration: 'none',
+                      textShadow: isScrolled ? 'none' : '0 1px 6px rgba(0,0,0,0.5)',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.color = gold)}
+                    onMouseLeave={e => (e.currentTarget.style.color = navIdle)}
+                  >
+                    {l.label}
+                  </a>
+                ))}
+                {/* Theme toggle */}
+                <button
+                  onClick={toggleTheme}
+                  aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                  style={{
+                    background: 'transparent',
+                    border: `1.5px solid ${toggleBorder}`,
+                    borderRadius: '20px', padding: '5px 13px',
+                    cursor: 'pointer', color: toggleText,
+                    fontSize: '0.75rem', letterSpacing: '0.06em',
+                    display: 'flex', alignItems: 'center', gap: '5px',
+                    transition: 'all 0.2s',
+                    textShadow: isScrolled ? 'none' : '0 1px 6px rgba(0,0,0,0.5)',
+                  }}
+                >
+                  {isDark ? '☀ Light' : '☾ Dark'}
+                </button>
+              </nav>
+            );
+          })()}
 
-          {/* Mobile controls */}
-          <div className="md:hidden flex items-center gap-3">
-            <button onClick={toggleTheme} aria-label="Toggle theme"
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1rem', color: text }}
-            >
-              {isDark ? '☀' : '☾'}
-            </button>
-            <button className="flex flex-col gap-1.5 p-1"
-              onClick={() => setMenuOpen(v => !v)} aria-label="Toggle menu"
-            >
-              <span className={`block w-6 h-0.5 transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} style={{ background: text }} />
-              <span className={`block w-6 h-0.5 transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} style={{ background: text }} />
-              <span className={`block w-6 h-0.5 transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} style={{ background: text }} />
-            </button>
-          </div>
+          {/* Mobile controls — same cream-on-dark rule as desktop nav
+              while the header is unscrolled and floating over the dark
+              tavern hero. */}
+          {(() => {
+            const mobileIcon = isScrolled ? text : '#f1e3d3';
+            return (
+              <div className="md:hidden flex items-center gap-3">
+                <button onClick={toggleTheme} aria-label="Toggle theme"
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1rem', color: mobileIcon }}
+                >
+                  {isDark ? '☀' : '☾'}
+                </button>
+                <button className="flex flex-col gap-1.5 p-1"
+                  onClick={() => setMenuOpen(v => !v)} aria-label="Toggle menu"
+                >
+                  <span className={`block w-6 h-0.5 transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} style={{ background: mobileIcon }} />
+                  <span className={`block w-6 h-0.5 transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} style={{ background: mobileIcon }} />
+                  <span className={`block w-6 h-0.5 transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} style={{ background: mobileIcon }} />
+                </button>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Mobile menu */}
