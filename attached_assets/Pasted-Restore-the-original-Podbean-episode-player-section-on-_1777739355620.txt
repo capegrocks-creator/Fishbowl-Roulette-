@@ -1,0 +1,94 @@
+Restore the original Podbean episode player section on the Fishbowl Roulette landing page.
+
+IMPORTANT:
+- Do NOT rebuild the site
+- Do NOT redesign the whole page
+- Do NOT create a fake episode database
+- Do NOT hard-code Jeff Brune as latest episode
+- Do NOT remove Pull a Question, Submit a Question, Privacy, email signup, theme toggle, or footer
+- Only restore the working Podbean player/listen section that previously existed
+
+PROBLEM:
+The site previously had a working “Listen In” / “Choose Your Episode” section with an embedded Podbean player that showed all episodes.
+It included:
+- “Listen In”
+- “Choose Your Episode”
+- Open Player / Now Playing button
+- Embedded Podbean player with all episodes
+- Spotify, Apple Podcasts, and RSS Feed links
+
+That section is now gone or not connected.
+The current Listen / Start Listening buttons do nothing.
+
+TASK:
+Search the project/code history for the previous Podbean embed/player code and restore it.
+
+Restore the section with this structure:
+
+Section eyebrow:
+“EPISODES”
+
+Heading:
+“Listen In”
+
+Subtext:
+“Real conversations, ready when you are.”
+
+Player card:
+Title:
+“Choose Your Episode”
+
+Text:
+“Open the player to browse every Fishbowl Roulette episode and start listening.”
+
+Button:
+“Open Player”
+
+When clicked:
+- Expand/show the embedded Podbean player
+- Button changes to “Now Playing” if that behavior existed before
+- Include a Close option if previously used
+
+Player:
+- Restore the exact previous Podbean embed iframe/script/URL that was already working
+- Do not replace it with placeholder links
+- Do not invent new episode data
+- The embedded player should show all Podbean episodes like it did before
+
+Subscribe links below player:
+- Spotify
+- Apple Podcasts
+- RSS Feed
+- TikTok
+- Facebook
+
+Use these social links:
+Facebook:
+https://www.facebook.com/share/1G8o4HmC9M/?mibextid=wwXIfr
+
+TikTok:
+https://www.tiktok.com/@fishbowl1560?_r=1&_t=ZT-961qb2BbDQ5
+
+Do NOT add Instagram.
+
+LISTEN BUTTON BEHAVIOR:
+All Listen / Start Listening / Listen Now / Play Episode buttons should scroll to the restored Episodes / Listen In section and/or open the Podbean player.
+
+Specifically:
+- Header “Listen Now” should scroll to #episodes
+- Hero “Start Listening” should scroll to #episodes and open the player if possible
+- Latest Episode area should be renamed “Listen to the Show” unless a true latest episode is dynamically coming from Podbean
+- Latest Episode button should say “Open Player” or “Listen Here”
+
+IMPORTANT COPY FIX:
+Do not say Jeff Brune is the latest episode.
+If Jeff Brune appears, he should only be treated as Episode 1 / first guest, not the latest episode.
+
+FINAL CHECK:
+- The Podbean player is restored and visible/expandable
+- All episodes are available again through the player
+- No Listen buttons are dead
+- No fake latest episode is shown
+- Social links are correct
+- No Instagram appears
+- Existing site features still work
