@@ -1198,39 +1198,92 @@ const Home = () => {
                 >
                   {renderCard('Beliefs', 0)}
 
-                  <motion.button
-                    type="button"
-                    onClick={handlePullQuestion}
-                    aria-label="Pull a random question from the fishbowl"
-                    initial={{ opacity: 0, scale: 0.85 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.96 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.7, delay: 0.12 }}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      padding: '4px 0',
-                      background: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <img
-                      src={fishbowlQuestionsImg}
-                      alt="A glass fishbowl filled with rolled-up question slips labeled Relationships, Beliefs and Wildcards. Click to pull a question."
+                  {/* Fishbowl click target. The wrapping div is relative so
+                      we can float a gently-bouncing "Tap to pull!" badge
+                      above the bowl as an obvious affordance — without
+                      that cue, several testers missed that the bowl was
+                      interactive. The badge has pointerEvents: 'none' so
+                      the click always reaches the underlying button. */}
+                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+                    <motion.div
+                      aria-hidden="true"
+                      initial={{ opacity: 0, y: -4 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: 0.4 }}
                       style={{
-                        width: '100%',
-                        maxWidth: '260px',
-                        height: 'auto',
-                        display: 'block',
-                        filter: 'drop-shadow(0 18px 36px rgba(0,0,0,0.65))',
+                        position: 'absolute',
+                        top: '-14px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        zIndex: 2,
                         pointerEvents: 'none',
                       }}
-                    />
-                  </motion.button>
+                    >
+                      <motion.div
+                        animate={{ y: [0, -6, 0] }}
+                        transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                        style={{
+                          background: '#9b2020',
+                          color: '#f5ead8',
+                          fontFamily: 'var(--font-sans)',
+                          fontWeight: 700,
+                          fontSize: '0.72rem',
+                          letterSpacing: '0.14em',
+                          padding: '6px 14px 6px 12px',
+                          borderRadius: '999px',
+                          textTransform: 'uppercase',
+                          whiteSpace: 'nowrap',
+                          boxShadow: '0 6px 18px rgba(155,32,32,0.55), 0 0 0 3px rgba(155,32,32,0.18)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                        }}
+                      >
+                        <span aria-hidden="true">👇</span> Tap to pull!
+                      </motion.div>
+                    </motion.div>
+
+                    <motion.button
+                      type="button"
+                      onClick={handlePullQuestion}
+                      aria-label="Pull a random question from the fishbowl"
+                      initial={{ opacity: 0, scale: 0.85 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      whileHover={{ scale: 1.06 }}
+                      whileTap={{ scale: 0.94 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.7, delay: 0.12 }}
+                      title="Click to pull a random question"
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: '4px 0',
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        width: '100%',
+                      }}
+                    >
+                      {/* Continuous "breathing" wobble draws the eye and
+                          signals that the bowl is alive/interactive. */}
+                      <motion.img
+                        src={fishbowlQuestionsImg}
+                        alt="A glass fishbowl filled with rolled-up question slips. Click to pull a random question."
+                        animate={{ y: [0, -3, 0, 3, 0], rotate: [0, -1.2, 0, 1.2, 0] }}
+                        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+                        style={{
+                          width: '100%',
+                          maxWidth: '260px',
+                          height: 'auto',
+                          display: 'block',
+                          filter: 'drop-shadow(0 18px 36px rgba(0,0,0,0.65)) drop-shadow(0 0 22px rgba(196,154,108,0.18))',
+                          pointerEvents: 'none',
+                        }}
+                      />
+                    </motion.button>
+                  </div>
 
                   {renderCard('Relationships', 0.24)}
                 </div>
@@ -1250,10 +1303,11 @@ const Home = () => {
                 </div>
 
                 <p className="font-sans text-center" style={{
-                  fontSize: '0.78rem', color: 'rgba(241,227,211,0.7)',
-                  fontStyle: 'italic', marginTop: '14px',
+                  fontSize: '0.95rem', color: gold,
+                  fontWeight: 600, letterSpacing: '0.04em',
+                  marginTop: '18px',
                 }}>
-                  Tip: tap the fishbowl to pull.
+                  ☝ Click the fishbowl to pull a random question
                 </p>
               </>
             );
