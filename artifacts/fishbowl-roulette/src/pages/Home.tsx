@@ -106,9 +106,8 @@ const Home = () => {
     setExpandedGuids(expand ? new Set(episodes.map(e => e.guid)) : new Set());
   };
 
-  /** Scroll to the Episodes section and expand all cards. Wired to the
-   *  hero "Listen Now" CTA and the nav "Listen Now" / "Episodes" links.
-   *  Per spec, this never auto-plays audio. */
+  /** Expand all episode cards and smooth-scroll to the Episodes section.
+   *  Does not start audio playback. */
   const openPlayerAndScroll = () => {
     if (episodes.length > 0) {
       setAllExpanded(true);
@@ -307,8 +306,6 @@ const Home = () => {
 
       {/* ═══════════════════════════════════════════════════
           HERO — tavern bokeh, text left + fishbowl right
-          (Roulette wheel relocated to the Cards section so the
-          headline stays the focal point.)
       ═══════════════════════════════════════════════════ */}
       <section
         style={{
@@ -342,7 +339,7 @@ const Home = () => {
               initial={{ opacity: 0, y: 22 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.85, ease: 'easeOut', delay: 0.05 }}
-              className="flex flex-col gap-5 order-2 md:order-1"
+              className="flex flex-col gap-5"
             >
               {/* Wednesday badge */}
               <div style={{
@@ -430,7 +427,7 @@ const Home = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.95, ease: 'easeOut', delay: 0.18 }}
-              className="flex justify-center md:justify-end order-1 md:order-2"
+              className="flex justify-center md:justify-end"
             >
               <img
                 src={fishbowlQuestionsImg}
@@ -575,11 +572,7 @@ const Home = () => {
             </div>
           )}
 
-          {/* ── Top "Listen Now" / "Collapse All" CTA ──
-              Per spec, this expands EVERY card so listeners can scan
-              titles + descriptions and pick what they want — but it
-              does NOT auto-play. Playback is always initiated by the
-              native HTML5 <audio> control inside an expanded card. */}
+          {/* Top "Listen Now" / "Collapse All" toggle — expands or collapses every card. */}
           {!episodesLoading && episodes.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
@@ -895,8 +888,7 @@ const Home = () => {
       })()}
 
       {/* ═══════════════════════════════════════════
-          CARDS SECTION — "Pull a Question" with relocated
-          roulette wheel as a brand accent above the heading.
+          CARDS SECTION — "Pull a Question"
       ═══════════════════════════════════════════ */}
       <section id="cards" style={{
         background: bgAlt2,
@@ -904,10 +896,7 @@ const Home = () => {
         padding: '52px 0 44px',
       }}>
         <div style={{ maxWidth: '860px', margin: '0 auto', padding: '0 24px' }}>
-          {/* Roulette wheel — relocated brand accent. The animated CSS-masked
-              spinning ring component is preserved verbatim and lives here as
-              a supporting flourish so the new tavern hero can stay focused
-              on the headline + CTAs. */}
+          {/* Roulette wheel — brand accent above the cards heading. */}
           <motion.div
             initial={{ opacity: 0, scale: 0.85 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -1040,8 +1029,6 @@ const Home = () => {
 
       {/* ═══════════════════════════════════════════
           MEET SANDRA — host bio with photo
-          (Moved below Episodes per spec: episodes lead, then
-          the "Pull a question" cards, then host intro, then CTAs.)
       ═══════════════════════════════════════════ */}
       <section id="about" style={{
         background: bgAlt,
