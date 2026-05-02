@@ -5,6 +5,7 @@ import { RouletteWheel } from '../components/RouletteWheel';
 const BASE = import.meta.env.BASE_URL;
 const sandraImg = `${BASE}images/sandra.jpg`;
 const fishbowlImg = `${BASE}images/fishbowl.png`;
+const fishbowlQuestionsImg = `${BASE}images/fishbowl-questions.png`;
 const wineImg = `${BASE}images/wine-glass.png`;
 const textureBg = `${BASE}images/dark-texture.png`;
 
@@ -531,33 +532,95 @@ const Home = () => {
             <span style={{ color: accent, fontStyle: 'italic' }}>and it went there.</span>
           </motion.h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" style={{ marginBottom: '24px' }}>
-            {[
-              { title: 'Beliefs', icon: <BrainIcon />, text: "What do you believe when no one's listening?" },
-              { title: 'Relationships', icon: <HeartIcon />, text: "The stuff we think... but don't always say out loud." },
-              { title: 'Wildcards', icon: <DiceIcon />, text: 'No rules. No warning. Anything goes.' },
-            ].map((card, i) => (
-              <motion.div
-                key={card.title}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.12 }}
-                className="fr-parchment-card"
-              >
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg, rgba(255,235,200,0.18) 0%, transparent 60%)', pointerEvents: 'none' }} />
-                <div style={{ position: 'relative' }}>
-                  <div style={{ marginBottom: '10px' }}>{card.icon}</div>
-                  <h3 className="font-serif font-bold" style={{ fontSize: '1.2rem', color: '#2a1208', marginBottom: '7px' }}>
-                    {card.title}
-                  </h3>
-                  <p className="font-sans" style={{ fontSize: '0.83rem', color: 'rgba(38,15,6,0.75)', lineHeight: 1.55 }}>
-                    {card.text}
-                  </p>
+          {/* Layout:
+                Row 1: [Beliefs] [Fishbowl image] [Relationships]
+                Row 2:        [    Wildcards centered    ]
+              On mobile (1-col grid) the order is preserved vertically. */}
+          {(() => {
+            const cardData = {
+              Beliefs:       { icon: <BrainIcon />, text: "What do you believe when no one's listening?" },
+              Relationships: { icon: <HeartIcon />, text: "The stuff we think... but don't always say out loud." },
+              Wildcards:     { icon: <DiceIcon />, text: 'No rules. No warning. Anything goes.' },
+            } as const;
+            const renderCard = (title: keyof typeof cardData, delay: number) => {
+              const c = cardData[title];
+              return (
+                <motion.div
+                  key={title}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay }}
+                  className="fr-parchment-card"
+                >
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg, rgba(255,235,200,0.18) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ marginBottom: '10px' }}>{c.icon}</div>
+                    <h3 className="font-serif font-bold" style={{ fontSize: '1.2rem', color: '#2a1208', marginBottom: '7px' }}>
+                      {title}
+                    </h3>
+                    <p className="font-sans" style={{ fontSize: '0.83rem', color: 'rgba(38,15,6,0.75)', lineHeight: 1.55 }}>
+                      {c.text}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            };
+            return (
+              <>
+                {/* Row 1: card | fishbowl | card */}
+                <div
+                  className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 items-center"
+                  style={{ marginBottom: '16px' }}
+                >
+                  {renderCard('Beliefs', 0)}
+
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7, delay: 0.12 }}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      padding: '4px 0',
+                    }}
+                  >
+                    <img
+                      src={fishbowlQuestionsImg}
+                      alt="A glass fishbowl filled with rolled-up question slips labeled Relationships, Beliefs and Wildcards"
+                      style={{
+                        width: '100%',
+                        maxWidth: '260px',
+                        height: 'auto',
+                        display: 'block',
+                        filter: isDark
+                          ? 'drop-shadow(0 18px 36px rgba(0,0,0,0.65))'
+                          : 'drop-shadow(0 12px 28px rgba(43,43,43,0.22))',
+                      }}
+                    />
+                  </motion.div>
+
+                  {renderCard('Relationships', 0.24)}
                 </div>
-              </motion.div>
-            ))}
-          </div>
+
+                {/* Row 2: Wildcards card centered below the fishbowl */}
+                <div
+                  className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6"
+                  style={{ marginBottom: '24px' }}
+                >
+                  {/* Empty cells on either side keep the centered card aligned
+                      under the fishbowl on the 3-col grid. They collapse to
+                      nothing on mobile because of `display: contents`-like
+                      stacking via grid-cols-1. */}
+                  <div className="hidden sm:block" />
+                  {renderCard('Wildcards', 0.36)}
+                  <div className="hidden sm:block" />
+                </div>
+              </>
+            );
+          })()}
 
           <motion.p
             initial={{ opacity: 0 }}
@@ -944,49 +1007,6 @@ const Home = () => {
           </div>
 
         </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════
-          WEDNESDAY RITUAL
-      ═══════════════════════════════════════════ */}
-      <section style={{
-        background: bg,
-        borderTop: `1px solid ${border}`,
-        padding: '44px 24px',
-        textAlign: 'center',
-      }}>
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.65 }}
-          style={{ maxWidth: '520px', margin: '0 auto' }}
-        >
-          <h2 className="font-serif font-bold" style={{
-            fontSize: 'clamp(1.25rem, 2.6vw, 1.8rem)',
-            color: text, lineHeight: 1.25, marginBottom: '10px',
-          }}>
-            Make Wednesday your question day.
-          </h2>
-          <p className="font-sans" style={{
-            fontSize: '0.92rem', color: textMuted,
-            lineHeight: 1.65, marginBottom: '22px',
-          }}>
-            Every week, a new episode drops with one question nobody saw coming.
-          </p>
-          <a href="#join" style={{
-            display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
-            padding: '12px 24px', borderRadius: '8px',
-            background: accent, color: '#fff',
-            fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.875rem',
-            textDecoration: 'none', transition: 'background 0.2s',
-          }}
-            onMouseEnter={e => (e.currentTarget.style.background = isDark ? '#a63a34' : '#D05A4D')}
-            onMouseLeave={e => (e.currentTarget.style.background = accent)}
-          >
-            Get the Wednesday Question
-          </a>
-        </motion.div>
       </section>
 
       {/* ═══════════════════════════════════════════
