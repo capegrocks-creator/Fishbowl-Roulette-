@@ -1462,8 +1462,16 @@ const Home = () => {
           MEET SANDRA — host bio with photo
       ═══════════════════════════════════════════ */}
       <section id="about" style={{
-        background: bgAlt,
-        borderTop: `1px solid ${border}`,
+        position: 'relative',
+        background: isDark ? '#1a1108' : '#f5ead8',
+        backgroundImage: isDark
+          ? `repeating-linear-gradient(88deg, transparent, transparent 2px, rgba(255,200,100,0.014) 2px, rgba(255,200,100,0.014) 4px),
+             repeating-linear-gradient(92deg, transparent, transparent 60px, rgba(0,0,0,0.06) 60px, rgba(0,0,0,0.06) 62px),
+             linear-gradient(180deg, #2c1a08 0%, #3d2510 40%, #2c1a08 100%)`
+          : `radial-gradient(ellipse at 50% 0%, rgba(184,133,74,0.10) 0%, transparent 60%),
+             linear-gradient(180deg, #f5ead8 0%, #ede0c5 100%)`,
+        borderTop: `1px solid ${isDark ? 'rgba(255,200,100,0.08)' : 'rgba(184,133,74,0.18)'}`,
+        borderBottom: `1px solid ${isDark ? 'rgba(255,200,100,0.08)' : 'rgba(184,133,74,0.18)'}`,
         padding: '64px 24px 72px',
       }}>
         <div className="w-full max-w-5xl mx-auto">
@@ -1594,8 +1602,16 @@ const Home = () => {
           EMAIL CAPTURE
       ═══════════════════════════════════════════ */}
       <section id="join" style={{
-        background: bgAlt,
-        borderTop: `1px solid ${border}`,
+        position: 'relative',
+        background: isDark ? '#1a1108' : '#f5ead8',
+        backgroundImage: isDark
+          ? `repeating-linear-gradient(88deg, transparent, transparent 2px, rgba(255,200,100,0.014) 2px, rgba(255,200,100,0.014) 4px),
+             repeating-linear-gradient(92deg, transparent, transparent 60px, rgba(0,0,0,0.06) 60px, rgba(0,0,0,0.06) 62px),
+             linear-gradient(180deg, #2c1a08 0%, #3d2510 40%, #2c1a08 100%)`
+          : `radial-gradient(ellipse at 50% 0%, rgba(184,133,74,0.10) 0%, transparent 60%),
+             linear-gradient(180deg, #f5ead8 0%, #ede0c5 100%)`,
+        borderTop: `1px solid ${isDark ? 'rgba(255,200,100,0.08)' : 'rgba(184,133,74,0.18)'}`,
+        borderBottom: `1px solid ${isDark ? 'rgba(255,200,100,0.08)' : 'rgba(184,133,74,0.18)'}`,
         padding: '36px 24px 44px',
       }}>
         <div style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'center' }}>
