@@ -1,11 +1,94 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { RouletteWheel } from '../components/RouletteWheel';
 
 const BASE = import.meta.env.BASE_URL;
 const sandraImg = `${BASE}images/sandra.jpg`;
 const fishbowlQuestionsImg = `${BASE}images/fishbowl-questions.png`;
 const tavernBg = `${BASE}images/tavern-bg.png`;
+
+/* ─── Question pool for the "Try Your Luck" section ───
+   Five bowls, each with a small set of conversation-starter questions.
+   Clicking the fishbowl (or the Pull-a-Question CTA) randomly picks one
+   bowl, then one question from that bowl. */
+type Bowl = {
+  name: string;
+  /** Tailwind/CSS hex used for the badge background fill */
+  color: string;
+  /** Color for the badge text */
+  textColor: string;
+  questions: string[];
+};
+const QUESTION_BOWLS: Bowl[] = [
+  {
+    name: 'Beliefs', color: '#7c3aed', textColor: '#f5ead8',
+    questions: [
+      "What do you believe when no one's listening?",
+      'Have you ever defended a belief you no longer hold?',
+      'What did you stop believing the moment you became an adult?',
+      'What do you believe that almost no one around you does?',
+      "Is there something you pretend to believe so you don't have to defend it?",
+    ],
+  },
+  {
+    name: 'Hot Topics', color: '#c54a2c', textColor: '#fff5e6',
+    questions: [
+      'What conversation are people too afraid to have right now?',
+      'What opinion of yours would surprise the people closest to you?',
+      'Where do you think the line between honesty and cruelty actually sits?',
+      'What is everyone getting wrong about your generation?',
+      "What's a topic you've changed your mind about in the last year?",
+    ],
+  },
+  {
+    name: 'Relationships', color: '#b45366', textColor: '#fff0ec',
+    questions: [
+      "The stuff you think... but don't always say out loud — what's the loudest one?",
+      'Who in your life have you never properly thanked, and why?',
+      'What do you wish your parents had asked you that they never did?',
+      "What's a friendship that ended that you still think about?",
+      'When did you last tell someone the full truth?',
+    ],
+  },
+  {
+    name: 'Wildcards', color: '#2f8c7c', textColor: '#eafff8',
+    questions: [
+      'No rules. No warning. What would you confess right now if it cost you nothing?',
+      'If your future self could send you one sentence, what do you hope it says?',
+      "What's the smallest decision that ended up changing your life?",
+      'What do you do that you would be embarrassed to admit?',
+      "What's a question you've been avoiding asking yourself?",
+    ],
+  },
+  {
+    name: 'Personal', color: '#c49a6c', textColor: '#2a1208',
+    questions: [
+      "What's the one thing you've never told anyone?",
+      'What part of yourself do you hide the most?',
+      'What would you do if you were certain no one would ever find out?',
+      "What's the biggest thing you're still carrying from childhood?",
+      'When did you last surprise yourself?',
+    ],
+  },
+];
+
+type PulledQuestion = { bowl: string; color: string; textColor: string; text: string };
+const pickRandomQuestion = (previousText?: string): PulledQuestion => {
+  /* Pick any (bowl, question) pair, retrying briefly if we land on the
+     same question that's already showing. Keeps "Pull another" feeling
+     fresh without needing per-bowl history. */
+  let attempts = 0;
+  while (attempts < 8) {
+    const bowl = QUESTION_BOWLS[Math.floor(Math.random() * QUESTION_BOWLS.length)];
+    const text = bowl.questions[Math.floor(Math.random() * bowl.questions.length)];
+    if (text !== previousText) {
+      return { bowl: bowl.name, color: bowl.color, textColor: bowl.textColor, text };
+    }
+    attempts++;
+  }
+  const bowl = QUESTION_BOWLS[0];
+  return { bowl: bowl.name, color: bowl.color, textColor: bowl.textColor, text: bowl.questions[0] };
+};
 
 /* ─── Episode category inference (client-side, visual flavor only) ───
    The Podbean RSS feed doesn't ship a taxonomy, so we infer one of three
@@ -75,6 +158,23 @@ const Home = () => {
      play button on whichever episode they choose. */
   const [expandedGuids, setExpandedGuids] = useState<Set<string>>(() => new Set());
 
+  /* "Try Your Luck" — currently revealed question (or null when the
+     reveal panel is closed). Clicking the fishbowl or the Pull-a-Question
+     CTA sets this to a random pick. */
+  const [pulledQuestion, setPulledQuestion] = useState<PulledQuestion | null>(null);
+  const handlePullQuestion = () => {
+    const next = pickRandomQuestion(pulledQuestion?.text);
+    setPulledQuestion(next);
+    /* Smooth-scroll the reveal into view if the user pulled while the
+       fishbowl was off-screen (e.g. tapped the in-section button on
+       mobile). Use requestAnimationFrame so the panel exists in the DOM
+       before we try to scroll to it. */
+    requestAnimationFrame(() => {
+      document.getElementById('try-your-luck-reveal')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  };
+
   const isDark = theme === 'dark';
 
   const toggleTheme = () => {
@@ -102,9 +202,12 @@ const Home = () => {
     setExpandedGuids(expand ? new Set(episodes.map(e => e.guid)) : new Set());
   };
 
-  /** Smooth-scroll to the Episodes section. Cards stay in their current
-   *  state — listeners expand the one they want via its own header. */
+  /** Smooth-scroll to the Episodes section AND expand every card so the
+   *  user lands on a fully open list — what the "Listen to All Episodes"
+   *  CTA promises. If episodes haven't loaded yet, the in-section toggle
+   *  remains the way to expand them once they arrive. */
   const openPlayerAndScroll = () => {
+    if (episodes.length > 0) setAllExpanded(true);
     document.getElementById('episodes')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
@@ -171,7 +274,7 @@ const Home = () => {
   };
 
   const navLinks = [
-    { label: 'Listen Now', href: '#episodes' },
+    { label: 'Listen to All Episodes', href: '#episodes' },
     { label: 'About', href: '#about' },
     { label: 'Episodes', href: '#episodes' },
     { label: 'Follow', href: '#join' },
@@ -219,7 +322,7 @@ const Home = () => {
           <nav className="hidden md:flex items-center gap-7">
             {navLinks.map(l => (
               <a key={l.label} href={l.href}
-                onClick={l.label === 'Listen Now' ? (e) => { e.preventDefault(); openPlayerAndScroll(); } : undefined}
+                onClick={l.label === 'Listen to All Episodes' ? (e) => { e.preventDefault(); openPlayerAndScroll(); } : undefined}
                 className="font-sans text-sm tracking-widest uppercase transition-colors duration-200"
                 style={{ color: isDark ? '#d9c2ad' : '#444', textDecoration: 'none' }}
                 onMouseEnter={e => (e.currentTarget.style.color = gold)}
@@ -272,7 +375,7 @@ const Home = () => {
               <a key={l.label} href={l.href}
                 onClick={(e) => {
                   setMenuOpen(false);
-                  if (l.label === 'Listen Now') { e.preventDefault(); openPlayerAndScroll(); }
+                  if (l.label === 'Listen to All Episodes') { e.preventDefault(); openPlayerAndScroll(); }
                 }}
                 className="font-sans text-base tracking-widest uppercase"
                 style={{ color: text, textDecoration: 'none' }}
@@ -349,7 +452,9 @@ const Home = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                {/* Red Listen Now — smooth-scrolls to the Episodes section */}
+                {/* Red "Listen to All Episodes" — scrolls to #episodes
+                    AND expands every card so the user lands on a fully
+                    open list ready to skim and play. */}
                 <a
                   href="#episodes"
                   onClick={(e) => { e.preventDefault(); openPlayerAndScroll(); }}
@@ -373,7 +478,7 @@ const Home = () => {
                     e.currentTarget.style.transform = 'translateY(0)';
                   }}
                 >
-                  <PlayIcon /> Listen Now
+                  <PlayIcon /> Listen to All Episodes
                 </a>
                 {/* Cream Follow the Show — jumps to email + social section */}
                 <a
@@ -579,7 +684,7 @@ const Home = () => {
                   e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
-                <PlayIcon /> {allExpanded ? 'Collapse All' : 'Listen Now'}
+                <PlayIcon /> {allExpanded ? 'Collapse All' : 'Listen to All Episodes'}
               </button>
               <p className="font-sans" style={{
                 fontSize: '0.78rem', color: epMuted, fontStyle: 'italic',
@@ -860,46 +965,175 @@ const Home = () => {
       })()}
 
       {/* ═══════════════════════════════════════════
-          CARDS SECTION — "Pull a Question"
+          TRY YOUR LUCK — pull a random question from the fishbowl,
+          plus the three-step "How It Works" explainer.
       ═══════════════════════════════════════════ */}
       <section id="cards" style={{
-        background: bgAlt2,
+        background: `linear-gradient(180deg, rgba(12,7,4,0.62) 0%, rgba(12,7,4,0.45) 50%, rgba(12,7,4,0.7) 100%),
+                     url(${tavernBg}) center/cover no-repeat,
+                     #16100a`,
         borderTop: `1px solid ${border}`,
-        padding: '52px 0 44px',
+        padding: '64px 0 56px',
+        color: '#f1e3d3',
       }}>
-        <div style={{ maxWidth: '860px', margin: '0 auto', padding: '0 24px' }}>
-          {/* Roulette wheel — brand accent above the cards heading. */}
+        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 24px' }}>
+
+          {/* ── Header: eyebrow + title + subhead + two CTAs ── */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.85 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.7, ease: 'easeOut' }}
-            style={{
-              display: 'flex', justifyContent: 'center',
-              marginBottom: '24px',
-            }}
-          >
-            <RouletteWheel size="min(170px, 38vw)" isDark={isDark} spinSeconds={16} />
-          </motion.div>
-          <motion.h2
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="font-serif font-semibold text-center"
-            style={{
-              fontSize: 'clamp(1.3rem, 3.2vw, 2.1rem)',
-              color: text, marginBottom: '32px', lineHeight: 1.3,
-            }}
+            transition={{ duration: 0.7 }}
+            style={{ textAlign: 'center', marginBottom: '32px' }}
           >
-            We pulled the first question...{' '}
-            <span style={{ color: accent, fontStyle: 'italic' }}>and it went there.</span>
-          </motion.h2>
+            <div className="font-sans" style={{
+              fontSize: '0.7rem', letterSpacing: '0.28em',
+              color: gold, fontWeight: 700, marginBottom: '14px',
+            }}>
+              TRY YOUR LUCK
+            </div>
+            <h2 className="font-serif font-bold" style={{
+              fontSize: 'clamp(1.9rem, 4.4vw, 3rem)',
+              color: '#f5ead8', lineHeight: 1.1,
+              letterSpacing: '-0.01em',
+              textShadow: '0 2px 14px rgba(0,0,0,0.5)',
+              marginBottom: '14px',
+            }}>
+              Try Your Luck
+            </h2>
+            <p className="font-sans" style={{
+              fontSize: 'clamp(0.95rem, 1.3vw, 1.05rem)',
+              color: 'rgba(241,227,211,0.82)', lineHeight: 1.65,
+              maxWidth: '46ch', margin: '0 auto',
+            }}>
+              Pull a real question from the fishbowl — or send one in for a future episode.
+            </p>
+          </motion.div>
 
-          {/* Layout:
-                Row 1: [Beliefs] [Fishbowl image] [Relationships]
+          <div className="flex flex-col sm:flex-row gap-3 justify-center" style={{ marginBottom: '24px' }}>
+            <button
+              type="button"
+              onClick={handlePullQuestion}
+              style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                gap: '0.55rem', padding: '14px 28px', borderRadius: '999px',
+                background: '#9b2020', color: '#f5ead8', border: 'none',
+                fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '0.95rem',
+                letterSpacing: '0.03em', cursor: 'pointer',
+                boxShadow: '0 6px 22px rgba(155,32,32,0.42)',
+                transition: 'background 0.2s, transform 0.15s',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = '#b52a2a';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = '#9b2020';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <span aria-hidden="true">🐠</span> Pull a Question
+            </button>
+            <a
+              href="#join"
+              style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                gap: '0.55rem', padding: '14px 28px', borderRadius: '999px',
+                background: 'transparent', color: '#f5ead8',
+                fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.95rem',
+                letterSpacing: '0.03em', textDecoration: 'none',
+                border: '1.5px solid rgba(245,234,216,0.55)',
+                transition: 'background 0.2s, transform 0.15s',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(245,234,216,0.12)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <span aria-hidden="true">✍️</span> Submit a Question
+            </a>
+          </div>
+
+          {/* ── Pulled-question reveal panel (animated in/out) ── */}
+          <AnimatePresence mode="wait">
+            {pulledQuestion && (
+              <motion.div
+                key={pulledQuestion.text}
+                id="try-your-luck-reveal"
+                initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                transition={{ duration: 0.35, ease: 'easeOut' }}
+                role="status"
+                aria-live="polite"
+                style={{
+                  maxWidth: '640px', margin: '0 auto 32px',
+                  background: 'rgba(245,234,216,0.96)',
+                  color: '#2a1208',
+                  borderRadius: '14px',
+                  padding: '22px 24px 18px',
+                  boxShadow: '0 18px 44px rgba(0,0,0,0.45)',
+                  border: '1px solid rgba(196,154,108,0.35)',
+                }}
+              >
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center',
+                  background: pulledQuestion.color, color: pulledQuestion.textColor,
+                  fontFamily: 'var(--font-sans)', fontWeight: 700,
+                  fontSize: '0.7rem', letterSpacing: '0.16em',
+                  padding: '4px 12px', borderRadius: '999px',
+                  marginBottom: '12px', textTransform: 'uppercase',
+                }}>
+                  {pulledQuestion.bowl}
+                </div>
+                <p className="font-serif" style={{
+                  fontSize: 'clamp(1.1rem, 2.4vw, 1.5rem)',
+                  lineHeight: 1.35, fontWeight: 600, margin: 0,
+                }}>
+                  &ldquo;{pulledQuestion.text}&rdquo;
+                </p>
+                <div style={{
+                  display: 'flex', flexWrap: 'wrap', gap: '10px',
+                  marginTop: '18px',
+                }}>
+                  <button
+                    type="button"
+                    onClick={handlePullQuestion}
+                    style={{
+                      padding: '9px 18px', borderRadius: '999px', border: 'none',
+                      background: '#9b2020', color: '#f5ead8',
+                      fontFamily: 'var(--font-sans)', fontWeight: 700,
+                      fontSize: '0.82rem', letterSpacing: '0.04em', cursor: 'pointer',
+                    }}
+                  >
+                    Pull another
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPulledQuestion(null)}
+                    style={{
+                      padding: '9px 18px', borderRadius: '999px',
+                      background: 'transparent', color: '#5a3520',
+                      border: '1.5px solid rgba(90,53,32,0.4)',
+                      fontFamily: 'var(--font-sans)', fontWeight: 600,
+                      fontSize: '0.82rem', letterSpacing: '0.04em', cursor: 'pointer',
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ── Fishbowl + three parchment category cards ──
+                Row 1: [Beliefs] [Fishbowl (clickable)] [Relationships]
                 Row 2:        [    Wildcards centered    ]
-              On mobile (1-col grid) the order is preserved vertically. */}
+                On mobile (1-col grid) the order is preserved vertically. */}
           {(() => {
             const cardData = {
               Beliefs:       { icon: <BrainIcon />, text: "What do you believe when no one's listening?" },
@@ -939,9 +1173,14 @@ const Home = () => {
                 >
                   {renderCard('Beliefs', 0)}
 
-                  <motion.div
+                  <motion.button
+                    type="button"
+                    onClick={handlePullQuestion}
+                    aria-label="Pull a random question from the fishbowl"
                     initial={{ opacity: 0, scale: 0.85 }}
                     whileInView={{ opacity: 1, scale: 1 }}
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.96 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.7, delay: 0.12 }}
                     style={{
@@ -949,22 +1188,24 @@ const Home = () => {
                       justifyContent: 'center',
                       alignItems: 'center',
                       padding: '4px 0',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
                     }}
                   >
                     <img
                       src={fishbowlQuestionsImg}
-                      alt="A glass fishbowl filled with rolled-up question slips labeled Relationships, Beliefs and Wildcards"
+                      alt="A glass fishbowl filled with rolled-up question slips labeled Relationships, Beliefs and Wildcards. Click to pull a question."
                       style={{
                         width: '100%',
                         maxWidth: '260px',
                         height: 'auto',
                         display: 'block',
-                        filter: isDark
-                          ? 'drop-shadow(0 18px 36px rgba(0,0,0,0.65))'
-                          : 'drop-shadow(0 12px 28px rgba(43,43,43,0.22))',
+                        filter: 'drop-shadow(0 18px 36px rgba(0,0,0,0.65))',
+                        pointerEvents: 'none',
                       }}
                     />
-                  </motion.div>
+                  </motion.button>
 
                   {renderCard('Relationships', 0.24)}
                 </div>
@@ -972,7 +1213,7 @@ const Home = () => {
                 {/* Row 2: Wildcards card centered below the fishbowl */}
                 <div
                   className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6"
-                  style={{ marginBottom: '24px' }}
+                  style={{ marginBottom: '8px' }}
                 >
                   {/* Empty cells on either side keep the centered card aligned
                       under the fishbowl on the 3-col grid. They collapse to
@@ -982,20 +1223,73 @@ const Home = () => {
                   {renderCard('Wildcards', 0.36)}
                   <div className="hidden sm:block" />
                 </div>
+
+                <p className="font-sans text-center" style={{
+                  fontSize: '0.78rem', color: 'rgba(241,227,211,0.7)',
+                  fontStyle: 'italic', marginTop: '14px',
+                }}>
+                  Tip: tap the fishbowl to pull.
+                </p>
               </>
             );
           })()}
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="font-sans text-center"
-            style={{ color: textMuted, fontSize: '0.9rem', fontStyle: 'italic' }}
-          >
-            The truth is usually one question away.
-          </motion.p>
+          {/* ── HOW IT WORKS — three numbered process cards ── */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '14px',
+            margin: '40px 0 22px',
+          }}>
+            <div style={{ flex: 1, height: 1, background: 'rgba(245,234,216,0.18)' }} />
+            <div className="font-sans" style={{
+              fontSize: '0.7rem', letterSpacing: '0.28em',
+              color: gold, fontWeight: 700,
+            }}>
+              HOW IT WORKS
+            </div>
+            <div style={{ flex: 1, height: 1, background: 'rgba(245,234,216,0.18)' }} />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { n: '01', title: 'We sit down',         body: 'Two people. A conversation that could go anywhere.' },
+              { n: '02', title: 'We pull a question',  body: 'From one of five bowls — Beliefs, Hot Topics, Wildcards, and more.' },
+              { n: '03', title: 'We answer it',        body: 'Honestly. No editing. No warning.' },
+            ].map((step, i) => (
+              <motion.div
+                key={step.n}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.55, delay: 0.06 * i }}
+                style={{
+                  background: 'rgba(245,234,216,0.06)',
+                  border: '1px solid rgba(245,234,216,0.18)',
+                  borderRadius: '12px',
+                  padding: '20px 18px',
+                  backdropFilter: 'blur(6px)',
+                }}
+              >
+                <div className="font-sans" style={{
+                  fontSize: '0.72rem', letterSpacing: '0.18em',
+                  color: gold, fontWeight: 600, marginBottom: '10px',
+                }}>
+                  {step.n}
+                </div>
+                <h3 className="font-serif font-bold" style={{
+                  fontSize: '1.1rem', color: '#f5ead8',
+                  marginBottom: '6px', lineHeight: 1.3,
+                }}>
+                  {step.title}
+                </h3>
+                <p className="font-sans" style={{
+                  fontSize: '0.88rem', color: 'rgba(241,227,211,0.75)',
+                  lineHeight: 1.55, margin: 0,
+                }}>
+                  {step.body}
+                </p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
