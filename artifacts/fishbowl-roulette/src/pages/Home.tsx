@@ -471,6 +471,23 @@ const Home = () => {
             }}>
               © {new Date().getFullYear()} Fishbowl Roulette &mdash; fishbowlroulette.com
             </p>
+            <a
+              href="mailto:hello@fishbowlroulette.com"
+              className="font-sans"
+              style={{
+                display: 'inline-block',
+                marginTop: '8px',
+                fontSize: '0.72rem',
+                color: 'rgba(196,154,108,0.55)',
+                letterSpacing: '0.08em',
+                textDecoration: 'none',
+                transition: 'color 0.2s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(196,154,108,0.9)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(196,154,108,0.55)')}
+            >
+              hello@fishbowlroulette.com
+            </a>
           </div>
         </div>
       </footer>
