@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { RouletteWheel } from '../components/RouletteWheel';
 
 const BASE = import.meta.env.BASE_URL;
 const sandraImg = `${BASE}images/sandra.jpg`;
@@ -216,6 +217,17 @@ const Home = () => {
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
               className="flex flex-col gap-5"
             >
+              {/* Automated roulette wheel — fills the empty space above
+                  the Wednesday badge. Auto-spins continuously. */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.85, rotate: -25 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                transition={{ duration: 0.9, ease: 'easeOut', delay: 0.05 }}
+                style={{ alignSelf: 'flex-start', marginBottom: '4px' }}
+              >
+                <RouletteWheel size={170} isDark={isDark} spinSeconds={22} />
+              </motion.div>
+
               {/* Wednesday badge */}
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: '7px',
