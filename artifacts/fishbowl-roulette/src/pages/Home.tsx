@@ -4,9 +4,7 @@ import { RouletteWheel } from '../components/RouletteWheel';
 
 const BASE = import.meta.env.BASE_URL;
 const sandraImg = `${BASE}images/sandra.jpg`;
-const fishbowlImg = `${BASE}images/fishbowl.png`;
 const fishbowlQuestionsImg = `${BASE}images/fishbowl-questions.png`;
-const wineImg = `${BASE}images/wine-glass.png`;
 const textureBg = `${BASE}images/dark-texture.png`;
 
 /* ── Theme init: respect localStorage, default to light ── */
@@ -23,8 +21,6 @@ const Home = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [emailSubmitted, setEmailSubmitted] = useState(false);
-  const [fishbowlErr, setFishbowlErr] = useState(false);
-  const [wineErr, setWineErr] = useState(false);
   const [playerOpen, setPlayerOpen] = useState(false);
 
   /* Episode list state — fetched from /api/podcast/episodes on mount.
@@ -452,56 +448,6 @@ const Home = () => {
                 </p>
               </div>
 
-              {/* Decorative fishbowl + wine — moved here from the hero.
-                  These are purely decorative so they're hidden from screen
-                  readers (the section already has rich textual context). */}
-              <div className="flex items-end gap-4" aria-hidden="true" style={{
-                marginTop: '8px', maxWidth: '320px',
-              }}>
-                <div style={{
-                  width: 'clamp(110px, 14vw, 170px)',
-                  filter: isDark
-                    ? 'drop-shadow(0 12px 28px rgba(0,0,0,0.65))'
-                    : 'drop-shadow(0 6px 16px rgba(43,43,43,0.16))',
-                }}>
-                  {fishbowlErr ? <FishbowlSVG /> : (
-                    <img src={fishbowlImg} alt=""
-                      style={{ width: '100%', display: 'block' }}
-                      onError={() => setFishbowlErr(true)} />
-                  )}
-                </div>
-                <div style={{
-                  width: 'clamp(40px, 5vw, 60px)',
-                  filter: isDark
-                    ? 'drop-shadow(0 8px 16px rgba(0,0,0,0.65))'
-                    : 'drop-shadow(0 4px 10px rgba(43,43,43,0.13))',
-                }}>
-                  {wineErr ? <WineGlassSVG /> : (
-                    <img src={wineImg} alt=""
-                      style={{ width: '100%', display: 'block' }}
-                      onError={() => setWineErr(true)} />
-                  )}
-                </div>
-              </div>
-
-              <a
-                href="#episodes"
-                onClick={(e) => { e.preventDefault(); openPlayerAndScroll(); }}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                  color: isDark ? '#e88a82' : '#7a2520',
-                  fontFamily: 'var(--font-sans)',
-                  fontWeight: 700, fontSize: '0.95rem',
-                  letterSpacing: '0.04em',
-                  textDecoration: 'underline',
-                  textDecorationThickness: '1.5px',
-                  textUnderlineOffset: '4px',
-                  marginTop: '8px',
-                }}
-              >
-                Listen to an episode
-                <span aria-hidden="true">→</span>
-              </a>
             </motion.div>
 
           </div>
@@ -1234,67 +1180,6 @@ const DiceIcon = () => (
     <circle cx="13" cy="25" r="2.2" fill="#f1e3d3" />
     <circle cx="25" cy="25" r="2.2" fill="#f1e3d3" />
     <circle cx="19" cy="19" r="2.2" fill="#f1e3d3" />
-  </svg>
-);
-
-/* ─── Fallback SVG fishbowl ─── */
-const FishbowlSVG = () => (
-  <svg viewBox="0 0 260 280" fill="none" style={{ width: '100%', display: 'block' }}>
-    <defs>
-      <radialGradient id="bf" cx="38%" cy="32%" r="65%">
-        <stop offset="0%" stopColor="#fff" stopOpacity="0.28" />
-        <stop offset="55%" stopColor="#c4a87e" stopOpacity="0.05" />
-        <stop offset="100%" stopColor="#100a06" stopOpacity="0.5" />
-      </radialGradient>
-      <linearGradient id="bs" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#eedcc8" />
-        <stop offset="100%" stopColor="#d9b898" />
-      </linearGradient>
-    </defs>
-    <ellipse cx="130" cy="58" rx="105" ry="20" fill="none" stroke="#c9a87e" strokeWidth="2" strokeOpacity="0.5" />
-    <path d="M 30,58 Q 12,110 18,175 Q 26,235 80,260 Q 130,278 180,260 Q 234,235 242,175 Q 248,110 230,58 Z"
-      fill="url(#bf)" stroke="#c9a87e" strokeWidth="2.5" strokeOpacity="0.4" />
-    <path d="M 32,60 Q 22,115 24,175 Q 27,218 40,250" stroke="#fff" strokeWidth="9" strokeOpacity="0.16" strokeLinecap="round" fill="none" />
-    <path d="M 30,58 Q 75,44 130,40 Q 185,44 230,58" stroke="#e8d5c0" strokeWidth="2.5" strokeOpacity="0.75" fill="none" />
-    <g transform="translate(70, 115) rotate(-14)">
-      <rect x="0" y="0" width="90" height="28" rx="2" fill="url(#bs)" />
-      <text x="45" y="19" fontFamily="Georgia,serif" fontSize="11" fill="#3d2010" textAnchor="middle" fontWeight="bold">Beliefs</text>
-    </g>
-    <g transform="translate(88, 158) rotate(9)">
-      <rect x="0" y="0" width="108" height="28" rx="2" fill="url(#bs)" />
-      <text x="54" y="19" fontFamily="Georgia,serif" fontSize="11" fill="#3d2010" textAnchor="middle" fontWeight="bold">Relationships</text>
-    </g>
-    <g transform="translate(52, 200) rotate(-5)">
-      <rect x="0" y="0" width="95" height="28" rx="2" fill="url(#bs)" />
-      <text x="47" y="19" fontFamily="Georgia,serif" fontSize="11" fill="#3d2010" textAnchor="middle" fontWeight="bold">Wildcards</text>
-    </g>
-    <ellipse cx="130" cy="256" rx="95" ry="14" fill="#0e0906" opacity="0.5" />
-  </svg>
-);
-
-/* ─── Fallback SVG wine glass ─── */
-const WineGlassSVG = () => (
-  <svg viewBox="0 0 80 200" fill="none" style={{ width: '100%', display: 'block' }}>
-    <defs>
-      <linearGradient id="wine" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#e8d88a" stopOpacity="0.85" />
-        <stop offset="100%" stopColor="#c8b850" stopOpacity="0.75" />
-      </linearGradient>
-      <linearGradient id="wglass" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#fff" stopOpacity="0.22" />
-        <stop offset="40%" stopColor="#fff" stopOpacity="0.06" />
-        <stop offset="100%" stopColor="#fff" stopOpacity="0.12" />
-      </linearGradient>
-    </defs>
-    <path d="M 14,14 Q 8,55 8,75 Q 8,110 40,118 Q 72,110 72,75 Q 72,55 66,14 Z"
-      fill="url(#wglass)" stroke="#d4c8a0" strokeWidth="1.5" strokeOpacity="0.55" />
-    <path d="M 13,72 Q 11,105 40,114 Q 69,105 67,72 Z" fill="url(#wine)" opacity="0.9" />
-    <ellipse cx="40" cy="72" rx="27" ry="5.5" fill="#e8d88a" opacity="0.55" />
-    <ellipse cx="40" cy="14" rx="26" ry="5" fill="none" stroke="#e0d4b0" strokeWidth="1.5" strokeOpacity="0.6" />
-    <path d="M 18,20 Q 14,60 14,80" stroke="#fff" strokeWidth="4" strokeOpacity="0.18" strokeLinecap="round" fill="none" />
-    <line x1="40" y1="118" x2="40" y2="178" stroke="#c9b898" strokeWidth="2.5" strokeOpacity="0.7" />
-    <ellipse cx="40" cy="180" rx="28" ry="6" fill="none" stroke="#c9b898" strokeWidth="2" strokeOpacity="0.6" />
-    <ellipse cx="40" cy="180" rx="28" ry="4" fill="rgba(196,154,108,0.1)" />
   </svg>
 );
 
