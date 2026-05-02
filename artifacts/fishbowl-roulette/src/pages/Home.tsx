@@ -225,7 +225,7 @@ const Home = () => {
                 transition={{ duration: 0.9, ease: 'easeOut', delay: 0.05 }}
                 style={{ alignSelf: 'flex-start', marginBottom: '4px' }}
               >
-                <RouletteWheel size={170} isDark={isDark} spinSeconds={22} />
+                <RouletteWheel size={340} isDark={isDark} spinSeconds={14} />
               </motion.div>
 
               {/* Wednesday badge */}
