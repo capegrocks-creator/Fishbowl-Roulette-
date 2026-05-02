@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fishbowl Roulette – Episodes</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+–dark-bg:    #1a1108;
+–wood-dark:  #2c1a08;
+–wood-mid:   #3d2510;
+–wood-light: #5c3a1e;
+–gold:       #c8922a;
+–gold-light: #e8b84b;
+–cream:      #f5ead8;
+–text-muted: #a08060;
+–red:        #9b2020;
+–card-bg:    rgba(44,26,8,0.85);
+}
+
+body {
+background: var(–dark-bg);
+font-family: ‘Lora’, Georgia, serif;
+color: var(–cream);
+min-height: 100vh;
+}
+
+/* ── WOOD GRAIN TEXTURE (CSS-only) ───────────────────── */
+.wood-texture {
+position: relative;
+background:
+repeating-linear-gradient(
+88deg,
+transparent,
+transparent 2px,
+rgba(255,200,100,0.015) 2px,
+rgba(255,200,100,0.015) 4px
+),
+repeating-linear-gradient(
+92deg,
+transparent,
+transparent 60px,
+rgba(0,0,0,0.06) 60px,
+rgba(0,0,0,0.06) 62px
+),
+linear-gradient(180deg, var(–wood-dark) 0%, var(–wood-mid) 40%, var(–wood-dark) 100%);
+}
+
+/* ── SECTION HEADER ─────────────────────────────────── */
+.episodes-section {
+padding: 80px 24px 100px;
+max-width: 1100px;
+margin: 0 auto;
+}
+
+.section-eyebrow {
+text-align: center;
+font-family: ‘Lora’, serif;
+font-style: italic;
+font-size: 0.95rem;
+color: var(–gold);
+letter-spacing: 0.12em;
+text-transform: uppercase;
+margin-bottom: 14px;
+opacity: 0;
+animation: fadeUp 0.7s ease 0.1s forwards;
+}
+
+.section-title {
+text-align: center;
+font-family: ‘Playfair Display’, Georgia, serif;
+font-size: clamp(2rem, 5vw, 3rem);
+font-weight: 900;
+color: var(–cream);
+line-height: 1.15;
+margin-bottom: 14px;
+opacity: 0;
+animation: fadeUp 0.7s ease 0.2s forwards;
+}
+
+.section-sub {
+text-align: center;
+font-size: 1rem;
+color: var(–text-muted);
+max-width: 520px;
+margin: 0 auto 56px;
+line-height: 1.7;
+opacity: 0;
+animation: fadeUp 0.7s ease 0.3s forwards;
+}
+
+/* ── DIVIDER ─────────────────────────────────────────── */
+.ornament-divider {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 14px;
+margin-bottom: 56px;
+opacity: 0;
+animation: fadeUp 0.6s ease 0.35s forwards;
+}
+.ornament-divider::before,
+.ornament-divider::after {
+content: ‘’;
+flex: 1;
+height: 1px;
+background: linear-gradient(90deg, transparent, var(–gold), transparent);
+max-width: 200px;
+}
+.ornament-diamond {
+width: 8px; height: 8px;
+background: var(–gold);
+transform: rotate(45deg);
+flex-shrink: 0;
+}
+
+/* ── EPISODE CARDS ───────────────────────────────────── */
+.episodes-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+gap: 24px;
+}
+
+.ep-card {
+background: var(–card-bg);
+border: 1px solid rgba(200,146,42,0.2);
+border-radius: 4px;
+padding: 0;
+overflow: hidden;
+display: flex;
+flex-direction: column;
+cursor: pointer;
+transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+opacity: 0;
+animation: fadeUp 0.6s ease forwards;
+position: relative;
+}
+.ep-card:hover {
+transform: translateY(-5px);
+border-color: rgba(200,146,42,0.55);
+box-shadow: 0 18px 45px rgba(0,0,0,0.55), 0 0 0 1px rgba(200,146,42,0.2);
+}
+
+/* staggered animation */
+.ep-card:nth-child(1) { animation-delay: 0.4s; }
+.ep-card:nth-child(2) { animation-delay: 0.52s; }
+.ep-card:nth-child(3) { animation-delay: 0.64s; }
+.ep-card:nth-child(4) { animation-delay: 0.76s; }
+.ep-card:nth-child(5) { animation-delay: 0.88s; }
+.ep-card:nth-child(6) { animation-delay: 1.0s; }
+
+/* top color band per category */
+.ep-card::before {
+content: ‘’;
+display: block;
+height: 3px;
+width: 100%;
+background: var(–card-accent, var(–gold));
+}
+
+.ep-card[data-cat=“personal”]  { –card-accent: #c8922a; }
+.ep-card[data-cat=“beliefs”]   { –card-accent: #7a4fb5; }
+.ep-card[data-cat=“wildcard”]  { –card-accent: #2a8a6e; }
+
+.ep-body {
+padding: 22px 22px 18px;
+flex: 1;
+display: flex;
+flex-direction: column;
+gap: 10px;
+}
+
+.ep-meta {
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.ep-num {
+font-family: ‘Playfair Display’, serif;
+font-size: 0.72rem;
+color: var(–text-muted);
+letter-spacing: 0.1em;
+}
+
+.ep-badge {
+font-size: 0.65rem;
+font-family: ‘Lora’, serif;
+font-style: italic;
+text-transform: uppercase;
+letter-spacing: 0.1em;
+padding: 3px 9px;
+border-radius: 2px;
+color: var(–cream);
+background: var(–card-accent, var(–gold));
+opacity: 0.85;
+}
+
+.ep-title {
+font-family: ‘Playfair Display’, serif;
+font-size: 1.1rem;
+font-weight: 700;
+color: var(–cream);
+line-height: 1.35;
+}
+
+.ep-desc {
+font-size: 0.88rem;
+color: var(–text-muted);
+line-height: 1.65;
+flex: 1;
+}
+
+.ep-footer {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 14px 22px 18px;
+border-top: 1px solid rgba(200,146,42,0.12);
+margin-top: auto;
+}
+
+.ep-duration {
+font-size: 0.8rem;
+color: var(–text-muted);
+font-style: italic;
+}
+
+.ep-play-btn {
+display: flex;
+align-items: center;
+gap: 7px;
+background: var(–red);
+color: var(–cream);
+border: none;
+border-radius: 3px;
+padding: 8px 16px;
+font-family: ‘Lora’, serif;
+font-size: 0.82rem;
+font-weight: 600;
+cursor: pointer;
+transition: background 0.2s, transform 0.15s;
+letter-spacing: 0.04em;
+}
+.ep-play-btn:hover {
+background: #b52a2a;
+transform: scale(1.04);
+}
+.ep-play-btn svg {
+width: 13px; height: 13px; fill: var(–cream);
+}
+
+/* ── FEATURED EPISODE (wide card) ───────────────────── */
+.ep-card.featured {
+grid-column: 1 / -1;
+flex-direction: row;
+align-items: stretch;
+}
+.ep-card.featured::before {
+display: none;
+}
+.featured-left-bar {
+width: 4px;
+flex-shrink: 0;
+background: var(–gold-light);
+}
+.ep-card.featured .ep-body {
+flex-direction: row;
+align-items: center;
+gap: 28px;
+flex-wrap: wrap;
+padding: 26px 28px;
+}
+.featured-label {
+position: absolute;
+top: 14px; right: 18px;
+font-family: ‘Playfair Display’, serif;
+font-style: italic;
+font-size: 0.75rem;
+color: var(–gold-light);
+letter-spacing: 0.08em;
+}
+.featured-content {
+flex: 1;
+min-width: 220px;
+display: flex;
+flex-direction: column;
+gap: 10px;
+}
+.featured-waveform {
+display: flex;
+align-items: center;
+gap: 3px;
+height: 36px;
+}
+.waveform-bar {
+width: 3px;
+background: var(–gold);
+border-radius: 2px;
+opacity: 0.7;
+animation: wave 1.2s ease-in-out infinite alternate;
+transform-origin: bottom;
+}
+.waveform-bar:nth-child(odd) { animation-delay: 0.15s; }
+.waveform-bar:nth-child(3n) { animation-delay: 0.3s; }
+.waveform-bar:nth-child(5n) { animation-delay: 0.05s; }
+
+@keyframes wave {
+from { transform: scaleY(0.35); }
+to   { transform: scaleY(1); }
+}
+
+/* ── LOAD MORE ───────────────────────────────────────── */
+.load-more-wrap {
+text-align: center;
+margin-top: 52px;
+opacity: 0;
+animation: fadeUp 0.6s ease 1.1s forwards;
+}
+.load-more-btn {
+background: transparent;
+border: 1px solid var(–gold);
+color: var(–gold);
+font-family: ‘Lora’, serif;
+font-style: italic;
+font-size: 0.95rem;
+letter-spacing: 0.08em;
+padding: 14px 42px;
+cursor: pointer;
+border-radius: 3px;
+transition: background 0.25s, color 0.25s;
+}
+.load-more-btn:hover {
+background: var(–gold);
+color: var(–dark-bg);
+}
+
+/* ── ANIMATIONS ──────────────────────────────────────── */
+@keyframes fadeUp {
+from { opacity: 0; transform: translateY(22px); }
+to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── RESPONSIVE ──────────────────────────────────────── */
+@media (max-width: 640px) {
+.ep-card.featured { flex-direction: column; }
+.featured-left-bar { width: 100%; height: 4px; }
+.ep-card.featured .ep-body { flex-direction: column; }
+}
+</style>
+
+</head>
+<body class="wood-texture">
+
+<section class="episodes-section">
+
+  <p class="section-eyebrow">Pull a question. Start talking.</p>
+  <h2 class="section-title">Latest Episodes</h2>
+  <p class="section-sub">Every episode is unrehearsed. Someone reaches into the bowl—and wherever it goes, it goes.</p>
+
+  <div class="ornament-divider">
+    <span class="ornament-diamond"></span>
+    <span class="ornament-diamond"></span>
+    <span class="ornament-diamond"></span>
+  </div>
+
+  <div class="episodes-grid">
+
+```
+<!-- FEATURED -->
+<article class="ep-card featured" data-cat="wildcard">
+  <div class="featured-left-bar"></div>
+  <div class="ep-body">
+    <div class="featured-content">
+      <div class="ep-meta">
+        <span class="ep-num">EP. 12</span>
+        <span class="ep-badge">Wildcard</span>
+      </div>
+      <h3 class="ep-title">Would You Rather Go Back and Change It — or Let It Stay?</h3>
+      <p class="ep-desc">One question turned into forty minutes of regrets, road-not-taken moments, and one genuinely surprising answer nobody saw coming.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start;">
+      <div class="featured-waveform">
+        <!-- bars with varying heights -->
+        <div class="waveform-bar" style="height:18px"></div>
+        <div class="waveform-bar" style="height:28px"></div>
+        <div class="waveform-bar" style="height:22px"></div>
+        <div class="waveform-bar" style="height:34px"></div>
+        <div class="waveform-bar" style="height:20px"></div>
+        <div class="waveform-bar" style="height:30px"></div>
+        <div class="waveform-bar" style="height:14px"></div>
+        <div class="waveform-bar" style="height:26px"></div>
+        <div class="waveform-bar" style="height:32px"></div>
+        <div class="waveform-bar" style="height:18px"></div>
+        <div class="waveform-bar" style="height:24px"></div>
+        <div class="waveform-bar" style="height:36px"></div>
+        <div class="waveform-bar" style="height:20px"></div>
+        <div class="waveform-bar" style="height:28px"></div>
+        <div class="waveform-bar" style="height:16px"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <button class="ep-play-btn">
+          <svg viewBox="0 0 10 12"><path d="M0 0 L10 6 L0 12 Z"/></svg>
+          Listen Now
+        </button>
+        <span class="ep-duration">49:48</span>
+      </div>
+    </div>
+  </div>
+  <span class="featured-label">✦ Latest Episode</span>
+</article>
+
+<!-- CARD 1 -->
+<article class="ep-card" data-cat="personal">
+  <div class="ep-body">
+    <div class="ep-meta">
+      <span class="ep-num">EP. 11</span>
+      <span class="ep-badge">Personal</span>
+    </div>
+    <h3 class="ep-title">What's the One Thing You've Never Told Anyone?</h3>
+    <p class="ep-desc">We didn't expect the conversation to go there. It did. No edits, no cuts — exactly as it happened.</p>
+  </div>
+  <div class="ep-footer">
+    <span class="ep-duration">38:21</span>
+    <button class="ep-play-btn">
+      <svg viewBox="0 0 10 12"><path d="M0 0 L10 6 L0 12 Z"/></svg>
+      Play
+    </button>
+  </div>
+</article>
+
+<!-- CARD 2 -->
+<article class="ep-card" data-cat="beliefs">
+  <div class="ep-body">
+    <div class="ep-meta">
+      <span class="ep-num">EP. 10</span>
+      <span class="ep-badge">Beliefs</span>
+    </div>
+    <h3 class="ep-title">Do You Actually Believe What You Were Raised to Believe?</h3>
+    <p class="ep-desc">Faith, doubt, and a long silence before someone answered. The kind of episode that stays with you.</p>
+  </div>
+  <div class="ep-footer">
+    <span class="ep-duration">52:07</span>
+    <button class="ep-play-btn">
+      <svg viewBox="0 0 10 12"><path d="M0 0 L10 6 L0 12 Z"/></svg>
+      Play
+    </button>
+  </div>
+</article>
+
+<!-- CARD 3 -->
+<article class="ep-card" data-cat="wildcard">
+  <div class="ep-body">
+    <div class="ep-meta">
+      <span class="ep-num">EP. 09</span>
+      <span class="ep-badge">Wildcard</span>
+    </div>
+    <h3 class="ep-title">If You Could Send One Message to Your Younger Self, What Would It Be?</h3>
+    <p class="ep-desc">Funny, gut-punching, and oddly hopeful — all in the same episode. This one hit different.</p>
+  </div>
+  <div class="ep-footer">
+    <span class="ep-duration">44:55</span>
+    <button class="ep-play-btn">
+      <svg viewBox="0 0 10 12"><path d="M0 0 L10 6 L0 12 Z"/></svg>
+      Play
+    </button>
+  </div>
+</article>
+
+<!-- CARD 4 -->
+<article class="ep-card" data-cat="personal">
+  <div class="ep-body">
+    <div class="ep-meta">
+      <span class="ep-num">EP. 08</span>
+      <span class="ep-badge">Personal</span>
+    </div>
+    <h3 class="ep-title">What Relationship Changed You the Most — and Do They Know?</h3>
+    <p class="ep-desc">Two people. Four answers. Neither of them what the other expected to hear.</p>
+  </div>
+  <div class="ep-footer">
+    <span class="ep-duration">41:30</span>
+    <button class="ep-play-btn">
+      <svg viewBox="0 0 10 12"><path d="M0 0 L10 6 L0 12 Z"/></svg>
+      Play
+    </button>
+  </div>
+</article>
+
+<!-- CARD 5 -->
+<article class="ep-card" data-cat="beliefs">
+  <div class="ep-body">
+    <div class="ep-meta">
+      <span class="ep-num">EP. 07</span>
+      <span class="ep-badge">Beliefs</span>
+    </div>
+    <h3 class="ep-title">What's a Line You've Crossed That You'd Cross Again?</h3>
+    <p class="ep-desc">Morals, grey areas, and the moment someone laughed a little too quickly. You'll have to listen.</p>
+  </div>
+  <div class="ep-footer">
+    <span class="ep-duration">36:14</span>
+    <button class="ep-play-btn">
+      <svg viewBox="0 0 10 12"><path d="M0 0 L10 6 L0 12 Z"/></svg>
+      Play
+    </button>
+  </div>
+</article>
+```
+
+  </div><!-- /grid -->
+
+  <div class="load-more-wrap">
+    <button class="load-more-btn">Browse All Episodes</button>
+  </div>
+
+</section>
+
+</body>
+</html>
