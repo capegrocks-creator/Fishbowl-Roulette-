@@ -310,23 +310,40 @@ const Home = () => {
     return `${m}:${String(s).padStart(2, '0')}`;
   };
 
-  /* The show doesn't have a third-party email-list backend (Mailchimp,
-     ConvertKit, etc.) yet — Sandra runs everything off her Gmail
-     Workspace inbox at hello@fishbowlroulette.com. So instead of
-     silently faking a signup, we open the visitor's email client
-     pre-filled with their address in the body and a clear subject.
-     Sandra can then add them to her list manually. */
-  const handleJoinList = (e: React.FormEvent) => {
+  /* Signups POST to /api/subscribe, which stores them in Postgres
+     for viewing on the password-protected /api/admin page. If the
+     network call fails (server down, offline, etc.) we fall back to
+     opening the visitor's email client pre-filled with their address
+     so the signup never just silently disappears. */
+  const handleJoinList = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const emailInput = form.querySelector('input[type="email"]') as HTMLInputElement | null;
     const enteredEmail = emailInput?.value?.trim() ?? '';
     if (!enteredEmail) return;
-    const subject = encodeURIComponent('Add me to the Fishbowl Roulette list');
-    const body = encodeURIComponent(
-      `Hi Sandra,\n\nPlease add me to the Fishbowl Roulette mailing list.\n\nMy email: ${enteredEmail}\n\nThanks!\n`,
-    );
-    window.location.href = `mailto:hello@fishbowlroulette.com?subject=${subject}&body=${body}`;
+
+    const apiBase = `${import.meta.env.BASE_URL}api`.replace(/\/+/g, '/');
+
+    let saved = false;
+    try {
+      const resp = await fetch(`${apiBase}/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: enteredEmail, source: 'website' }),
+      });
+      saved = resp.ok;
+    } catch {
+      saved = false;
+    }
+
+    if (!saved) {
+      const subject = encodeURIComponent('Add me to the Fishbowl Roulette list');
+      const body = encodeURIComponent(
+        `Hi Sandra,\n\nPlease add me to the Fishbowl Roulette mailing list.\n\nMy email: ${enteredEmail}\n\nThanks!\n`,
+      );
+      window.location.href = `mailto:hello@fishbowlroulette.com?subject=${subject}&body=${body}`;
+    }
+
     setEmailSubmitted(true);
     setTimeout(() => setEmailSubmitted(false), 4000);
     form.reset();
