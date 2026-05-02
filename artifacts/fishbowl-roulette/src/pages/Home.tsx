@@ -158,6 +158,12 @@ const Home = () => {
      play button on whichever episode they choose. */
   const [expandedGuids, setExpandedGuids] = useState<Set<string>>(() => new Set());
 
+  /* Whether the entire episode list is currently revealed. The list now
+     lives "inside" the big LISTEN TO ALL EPISODES button — clicking
+     that button toggles this flag. Hiding everything by default keeps
+     the section visually calm and gives the CTA a clear job. */
+  const [listRevealed, setListRevealed] = useState<boolean>(false);
+
   /* "Try Your Luck" — currently revealed question (or null when the
      reveal panel is closed). Clicking the fishbowl or the Pull-a-Question
      CTA sets this to a random pick. */
@@ -202,12 +208,12 @@ const Home = () => {
     setExpandedGuids(expand ? new Set(episodes.map(e => e.guid)) : new Set());
   };
 
-  /** Smooth-scroll to the Episodes section AND expand every card so the
-   *  user lands on a fully open list — what the "Listen to All Episodes"
-   *  CTA promises. If episodes haven't loaded yet, the in-section toggle
-   *  remains the way to expand them once they arrive. */
+  /** Smooth-scroll to the Episodes section AND reveal the full episode
+   *  list. Cards remain individually collapsed so listeners can pick
+   *  one — that matches the in-section LISTEN TO ALL EPISODES button. */
   const openPlayerAndScroll = () => {
-    if (episodes.length > 0) setAllExpanded(true);
+    setListRevealed(true);
+    setExpandedGuids(new Set());
     document.getElementById('episodes')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
@@ -241,6 +247,44 @@ const Home = () => {
       });
     return () => { cancelled = true; };
   }, []);
+
+  /* Try to figure out the guest's name for an episode by, in order:
+       1. matching "...with [Title?] First Last" at the end of the title,
+       2. scanning the first ~3 sentences of the description for common
+          intros ("Sandra sits down with X", "X joins the mic"),
+       3. parsing the trailing "_-_GuestName" chunk out of the audio
+          filename (Sandra's Podbean uploads use this pattern reliably).
+     Returns null if no confident match was found, in which case the
+     card simply omits the "with X" line. */
+  const extractGuestName = (ep: FbrEpisode): string | null => {
+    const namePart = '[A-Z][a-z]+(?:\\s+[A-Z][a-z]+){0,2}';
+    const titlePat = new RegExp(`\\bwith\\s+((?:Dr\\.?|Mr\\.?|Mrs\\.?|Ms\\.?)\\s+)?(${namePart})\\s*$`, 'i');
+    const tm = ep.title.match(titlePat);
+    if (tm) return `${tm[1] ?? ''}${tm[2]}`.trim();
+
+    const head = ep.description.split(/(?<=[.!?])\s+/).slice(0, 3).join(' ');
+    const descPatterns = [
+      new RegExp(`(?:sits down with|sat down with|is joined by|joined by)\\s+((?:Dr\\.?|Mr\\.?|Mrs\\.?|Ms\\.?)\\s+)?(${namePart})`),
+      new RegExp(`(${namePart})\\s+joins\\s+(?:the mic|us|Sandra)`),
+    ];
+    for (const re of descPatterns) {
+      const m = head.match(re);
+      if (m) {
+        const name = (m[1] && m[2]) ? `${m[1]}${m[2]}` : (m[2] ?? m[1] ?? '');
+        const trimmed = name.trim();
+        if (trimmed.length >= 3) return trimmed;
+      }
+    }
+
+    const filename = ep.audioUrl.split('/').pop() ?? '';
+    const segments = filename.split(/_-_/);
+    if (segments.length >= 2) {
+      const last = segments[segments.length - 1].replace(/\.mp3$/i, '');
+      const fm = last.match(/^([A-Z][A-Za-z]+(?:_[A-Z][A-Za-z]+)*)/);
+      if (fm && fm[1].length >= 4) return fm[1].replace(/_/g, ' ');
+    }
+    return null;
+  };
 
   /* Helpers for the episode list */
   const formatPubDate = (ms: number): string => {
@@ -673,31 +717,38 @@ const Home = () => {
             </div>
           )}
 
-          {/* Top "Listen Now" / "Collapse All" toggle — expands or collapses every card. */}
+          {/* Top "LISTEN TO ALL EPISODES" toggle — reveals or hides the
+              entire list. Listeners then pick a card and use that
+              card's chevron to expand the description + audio player.
+              Animated chevron + cue copy below the button make the
+              "click me to see episodes" affordance unmistakable. */}
           {!episodesLoading && episodes.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.26 }}
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
-                gap: '8px', marginBottom: '32px',
+                gap: '10px', marginBottom: listRevealed ? '32px' : '8px',
               }}
             >
               <button
                 type="button"
-                onClick={() => setAllExpanded(!allExpanded)}
-                aria-expanded={allExpanded}
+                onClick={() => {
+                  setListRevealed(v => !v);
+                  setExpandedGuids(new Set());
+                }}
+                aria-expanded={listRevealed}
                 aria-controls="fbr-episode-list"
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '10px',
                   background: epRed, color: '#f5ead8', border: 'none',
-                  borderRadius: '6px', padding: '14px 30px',
+                  borderRadius: '6px', padding: '16px 34px',
                   fontFamily: 'var(--font-sans)', fontWeight: 700,
-                  fontSize: '0.95rem', letterSpacing: '0.05em',
+                  fontSize: '1rem', letterSpacing: '0.05em',
                   cursor: 'pointer',
                   boxShadow: isDark
-                    ? '0 6px 22px rgba(155,32,32,0.45)'
-                    : '0 6px 22px rgba(155,32,32,0.28)',
+                    ? '0 8px 26px rgba(155,32,32,0.5)'
+                    : '0 8px 26px rgba(155,32,32,0.32)',
                   transition: 'background 0.2s, transform 0.15s',
                 }}
                 onMouseEnter={e => {
@@ -709,21 +760,41 @@ const Home = () => {
                   e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
-                <PlayIcon /> {allExpanded ? 'Collapse All' : 'Listen to All Episodes'}
+                <PlayIcon /> {listRevealed ? 'Hide All Episodes' : 'Listen to All Episodes'}
+                <motion.span
+                  aria-hidden="true"
+                  animate={{ rotate: listRevealed ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
+                  style={{ display: 'inline-flex', fontSize: '0.85rem', marginLeft: '2px' }}
+                >
+                  ▾
+                </motion.span>
               </button>
-              <p className="font-sans" style={{
-                fontSize: '0.78rem', color: epMuted, fontStyle: 'italic',
-                margin: 0, textAlign: 'center',
-              }}>
-                {allExpanded
-                  ? 'All episodes open — pick one and hit play.'
-                  : 'Opens every episode. Pick one and tap play to start listening.'}
-              </p>
+              {!listRevealed ? (
+                <motion.p
+                  className="font-sans"
+                  animate={{ y: [0, -3, 0] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                  style={{
+                    fontSize: '0.92rem', color: epGold, fontWeight: 600,
+                    letterSpacing: '0.04em', margin: 0, textAlign: 'center',
+                  }}
+                >
+                  ☝ Click to see every episode and pick one to listen to
+                </motion.p>
+              ) : (
+                <p className="font-sans" style={{
+                  fontSize: '0.78rem', color: epMuted, fontStyle: 'italic',
+                  margin: 0, textAlign: 'center',
+                }}>
+                  Tap any episode below to expand the description and play it.
+                </p>
+              )}
             </motion.div>
           )}
 
-          {/* ── Collapsible episode list ── */}
-          {!episodesLoading && episodes.length > 0 && (
+          {/* ── Collapsible episode list (gated behind listRevealed) ── */}
+          {!episodesLoading && episodes.length > 0 && listRevealed && (
             <div
               id="fbr-episode-list"
               style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
@@ -737,6 +808,7 @@ const Home = () => {
                   : (i === 0 ? 'LATEST' : '—');
                 const dateStr = formatPubDate(ep.pubDateMs);
                 const durStr = formatDuration(ep.durationSeconds);
+                const guestName = extractGuestName(ep);
                 const isLatest = i === 0;
 
                 return (
@@ -818,6 +890,13 @@ const Home = () => {
                                 fontSize: '0.7rem', color: epMuted,
                               }}>
                                 {dateStr}
+                              </span>
+                            )}
+                            {guestName && (
+                              <span className="font-sans" style={{
+                                fontSize: '0.7rem', color: epMuted,
+                              }}>
+                                · with <span style={{ color: epGold, fontWeight: 600 }}>{guestName}</span>
                               </span>
                             )}
                             {durStr && (
@@ -1200,29 +1279,36 @@ const Home = () => {
 
                   {/* Fishbowl click target. The wrapping div is relative so
                       we can float a gently-bouncing "Tap to pull!" badge
-                      above the bowl as an obvious affordance — without
-                      that cue, several testers missed that the bowl was
-                      interactive. The badge has pointerEvents: 'none' so
-                      the click always reaches the underlying button. */}
+                      above the bowl as an obvious affordance.
+                      Centering note: the badge wrapper uses a full-width
+                      flex row instead of `left:50%; translateX(-50%)`
+                      because Framer Motion's animated `y`/scale on the
+                      inner motion.div would otherwise clobber the inline
+                      transform and shift the badge to the right. */}
                   <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-                    <motion.div
+                    <div
                       aria-hidden="true"
-                      initial={{ opacity: 0, y: -4 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.5, delay: 0.4 }}
                       style={{
                         position: 'absolute',
                         top: '-14px',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
+                        left: 0,
+                        right: 0,
+                        display: 'flex',
+                        justifyContent: 'center',
                         zIndex: 2,
                         pointerEvents: 'none',
                       }}
                     >
                       <motion.div
+                        initial={{ opacity: 0, scale: 0.85 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
                         animate={{ y: [0, -6, 0] }}
-                        transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                        transition={{
+                          opacity: { duration: 0.5, delay: 0.4 },
+                          scale: { duration: 0.5, delay: 0.4 },
+                          y: { duration: 1.6, repeat: Infinity, ease: 'easeInOut' },
+                        }}
                         style={{
                           background: '#9b2020',
                           color: '#f5ead8',
@@ -1242,7 +1328,7 @@ const Home = () => {
                       >
                         <span aria-hidden="true">👇</span> Tap to pull!
                       </motion.div>
-                    </motion.div>
+                    </div>
 
                     <motion.button
                       type="button"
