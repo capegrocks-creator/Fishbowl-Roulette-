@@ -310,11 +310,26 @@ const Home = () => {
     return `${m}:${String(s).padStart(2, '0')}`;
   };
 
+  /* The show doesn't have a third-party email-list backend (Mailchimp,
+     ConvertKit, etc.) yet — Sandra runs everything off her Gmail
+     Workspace inbox at hello@fishbowlroulette.com. So instead of
+     silently faking a signup, we open the visitor's email client
+     pre-filled with their address in the body and a clear subject.
+     Sandra can then add them to her list manually. */
   const handleJoinList = (e: React.FormEvent) => {
     e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const emailInput = form.querySelector('input[type="email"]') as HTMLInputElement | null;
+    const enteredEmail = emailInput?.value?.trim() ?? '';
+    if (!enteredEmail) return;
+    const subject = encodeURIComponent('Add me to the Fishbowl Roulette list');
+    const body = encodeURIComponent(
+      `Hi Sandra,\n\nPlease add me to the Fishbowl Roulette mailing list.\n\nMy email: ${enteredEmail}\n\nThanks!\n`,
+    );
+    window.location.href = `mailto:hello@fishbowlroulette.com?subject=${subject}&body=${body}`;
     setEmailSubmitted(true);
     setTimeout(() => setEmailSubmitted(false), 4000);
-    (e.target as HTMLFormElement).reset();
+    form.reset();
   };
 
   const navLinks = [
@@ -1052,9 +1067,9 @@ const Home = () => {
                 text={epHeading}
               />
               <SubscribePill
-                name="RSS Feed"
+                name="Podbean"
                 icon={<RssIcon />}
-                href="https://feed.podbean.com/fishbowlroulettepodcast/feed.xml"
+                href="https://fishbowlroulettepodcast.podbean.com/"
                 color={isDark ? '#d9c2ad' : '#E36A5D'}
                 isDark={isDark}
                 border={epCardBorder}
@@ -1139,7 +1154,7 @@ const Home = () => {
               <span aria-hidden="true">🐠</span> Pull a Question
             </button>
             <a
-              href="#join"
+              href={`mailto:hello@fishbowlroulette.com?subject=${encodeURIComponent('A question for the fishbowl')}&body=${encodeURIComponent("Hi Sandra,\n\nHere's a question I'd love to hear pulled from the bowl:\n\n[your question here]\n\n—\n")}`}
               style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 gap: '0.55rem', padding: '14px 28px', borderRadius: '999px',
@@ -1693,8 +1708,15 @@ const Home = () => {
           FOOTER
       ═══════════════════════════════════════════ */}
       <footer style={{
-        background: bgAlt2,
-        borderTop: `1px solid ${border}`,
+        position: 'relative',
+        background: isDark ? '#1a1108' : '#f5ead8',
+        backgroundImage: isDark
+          ? `repeating-linear-gradient(88deg, transparent, transparent 2px, rgba(255,200,100,0.014) 2px, rgba(255,200,100,0.014) 4px),
+             repeating-linear-gradient(92deg, transparent, transparent 60px, rgba(0,0,0,0.06) 60px, rgba(0,0,0,0.06) 62px),
+             linear-gradient(180deg, #2c1a08 0%, #3d2510 40%, #2c1a08 100%)`
+          : `radial-gradient(ellipse at 50% 0%, rgba(184,133,74,0.10) 0%, transparent 60%),
+             linear-gradient(180deg, #f5ead8 0%, #ede0c5 100%)`,
+        borderTop: `1px solid ${isDark ? 'rgba(255,200,100,0.08)' : 'rgba(184,133,74,0.18)'}`,
         padding: '44px 24px 36px',
       }}>
         <div style={{ maxWidth: '680px', margin: '0 auto', textAlign: 'center' }}>
