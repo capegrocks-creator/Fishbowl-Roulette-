@@ -1,0 +1,181 @@
+Update the Fishbowl Roulette site to make it more engaging, return-worthy, and professional.
+
+IMPORTANT:
+- Do NOT break existing functionality
+- Do NOT rebuild the app from scratch
+- Preserve current design direction: clean, light, modern, curious, slightly playful
+- Keep the interactive “Pull a Question” and “Submit a Question” features
+- Add only what is needed
+
+SITE CONTACT EMAIL:
+hello@fishbowlroulette.com
+
+--------------------------------------------------
+1. UPDATE SHOW SCHEDULE LANGUAGE
+--------------------------------------------------
+
+Replace any mention of Tuesday or generic weekly drops with Wednesday language.
+
+Use this exact top badge:
+“● New episode every Wednesday”
+
+Use this hero/support line where appropriate:
+“You never know what question is coming next. And neither do they.”
+
+Use this email CTA headline:
+“One question. Every Wednesday. In your inbox.”
+
+Footer/support copy:
+“Questions or support? Email hello@fishbowlroulette.com”
+
+--------------------------------------------------
+2. MAKE THE PAGE MORE HOOK-DRIVEN
+--------------------------------------------------
+
+Improve the landing page flow so visitors understand:
+- this is a podcast
+- every episode starts with a random question
+- they can interact by pulling or submitting a question
+- new episodes come every Wednesday
+
+Add a “Latest Episode” section near the top, before or just below the hero.
+
+Latest Episode section should include:
+- small label: “Latest Episode”
+- episode title placeholder: “First Guest in the Bowl: Jeff Brune”
+- teaser: “He thought it would be casual. It wasn’t.”
+- button: “Start Listening”
+
+Make “Start Listening” the strongest primary CTA on the page.
+
+--------------------------------------------------
+3. KEEP VISITORS COMING BACK
+--------------------------------------------------
+
+Add a small recurring ritual section or line:
+
+Headline:
+“Make Wednesday your question day.”
+
+Copy:
+“Every week, a new episode drops with one question nobody saw coming.”
+
+CTA:
+“Get the Wednesday Question”
+
+This CTA can point to the email signup section.
+
+--------------------------------------------------
+4. EMAIL SIGNUP COPY
+--------------------------------------------------
+
+Update email signup section to:
+
+Headline:
+“One question. Every Wednesday. In your inbox.”
+
+Subtext:
+“Get new episode drops, standout questions, and the occasional wildcard.”
+
+Input placeholder:
+“Enter your email”
+
+Button:
+“Join the List”
+
+Keep it simple and non-salesy.
+
+--------------------------------------------------
+5. CATEGORY CARD COPY POLISH
+--------------------------------------------------
+
+Keep the current category cards and SVG fishbowls.
+
+Use these labels and descriptions:
+
+Beliefs:
+“What do you believe when no one’s listening?”
+
+Hot Topics:
+“The conversations people avoid. We don’t.”
+
+Wildcards:
+“No rules. No warning. Anything goes.”
+
+Guest Bowl:
+“Questions guests bring to the table.”
+
+WARNING:
+“Some questions should come with a warning.”
+
+--------------------------------------------------
+6. ADD PRIVACY PAGE
+--------------------------------------------------
+
+Create a simple privacy page route:
+
+/privacy
+
+Page title:
+“Privacy Policy”
+
+Keep the content plain, simple, and appropriate for a small podcast website.
+
+Include these sections:
+
+- Information We Collect
+Explain that the site may collect email addresses if visitors join the list or submit a question.
+
+- Question Submissions
+Explain that submitted questions may be reviewed and may be used in future podcast episodes, social posts, or promotional content. Names and emails are optional.
+
+- Email Use
+Explain that emails may be used to send episode updates, questions, or show-related announcements.
+
+- Analytics
+Explain that basic website analytics may be used to understand site traffic and improve the website.
+
+- Third-Party Links
+Explain that the site may link to Spotify, Apple Podcasts, YouTube, Instagram, Facebook, or other platforms, and those platforms have their own privacy policies.
+
+- Contact
+Use:
+hello@fishbowlroulette.com
+
+Add note:
+“If you have questions about this policy, email hello@fishbowlroulette.com.”
+
+--------------------------------------------------
+7. FOOTER UPDATE
+--------------------------------------------------
+
+Add footer links:
+- Privacy Policy → /privacy
+- Contact → mailto:hello@fishbowlroulette.com
+
+Add footer text:
+“New episodes every Wednesday.”
+
+Do not make the footer crowded.
+
+--------------------------------------------------
+8. NAV UPDATE
+--------------------------------------------------
+
+If there is room in navigation, add:
+- Privacy only in footer, not top nav
+- Keep top nav simple: Listen, About, Episodes, Follow
+
+--------------------------------------------------
+9. FINAL CHECK
+--------------------------------------------------
+
+Before finishing, verify:
+- Wednesday language is used everywhere
+- No Tuesday language remains
+- hello@fishbowlroulette.com appears in footer and privacy page
+- /privacy route works
+- Pull a Question still works
+- Submit a Question still works
+- The page still feels clean, modern, and curiosity-driven
+- No dark bar/lounge aesthetic returns

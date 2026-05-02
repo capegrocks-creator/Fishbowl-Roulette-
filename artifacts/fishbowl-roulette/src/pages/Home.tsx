@@ -217,6 +217,16 @@ const Home = () => {
             transition={{ duration: 0.85, ease: 'easeOut', delay: 0.12 }}
             className="space-y-4"
           >
+            {/* Wednesday badge */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+              color: '#c49a6c', fontFamily: 'sans-serif', fontWeight: 600,
+            }}>
+              <span style={{ color: '#c49a6c', fontSize: '0.6rem' }}>●</span>
+              New episode every Wednesday
+            </div>
+
             <h1
               className="font-serif font-bold"
               style={{ fontSize: 'clamp(2rem, 4vw, 3.2rem)', color: '#f1e3d3', lineHeight: 1.12 }}
@@ -229,15 +239,15 @@ const Home = () => {
               style={{ fontSize: 'clamp(0.88rem, 1.3vw, 1rem)', color: '#d9c2ad' }}
             >
               <p>We reach into the bowl...<br />and whatever comes out—comes out of us too.</p>
-              <p style={{ marginTop: '4px' }}>No script. No warning. No hiding.</p>
+              <p style={{ marginTop: '4px' }}>You never know what question is coming next. And neither do they.</p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-1">
-              <a href="#listen" className="fr-cta-primary">
-                🎧 Drop into the conversation
+              <a href="#latest" className="fr-cta-primary">
+                🎧 Start Listening
               </a>
               <a href="#join" className="fr-cta-secondary">
-                🔔 Don't miss the next question
+                🔔 Get the Wednesday Question
               </a>
             </div>
           </motion.div>
@@ -336,6 +346,47 @@ const Home = () => {
       </section>
 
       {/* ═══════════════════════════════════════════
+          LATEST EPISODE
+      ═══════════════════════════════════════════ */}
+      <section id="latest" style={{
+        background: '#1e1009',
+        borderTop: '1px solid rgba(255,255,255,0.05)',
+        padding: '36px 24px',
+      }}>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.65 }}
+          style={{ maxWidth: '620px', margin: '0 auto' }}
+        >
+          <div style={{
+            display: 'inline-block',
+            fontSize: '0.65rem', letterSpacing: '0.14em', textTransform: 'uppercase',
+            color: '#c49a6c', fontFamily: 'sans-serif', fontWeight: 700,
+            marginBottom: '10px',
+          }}>
+            Latest Episode
+          </div>
+          <h2 className="font-serif font-bold" style={{
+            fontSize: 'clamp(1.25rem, 2.8vw, 1.9rem)',
+            color: '#f1e3d3', lineHeight: 1.2, marginBottom: '8px',
+          }}>
+            First Guest in the Bowl: Jeff Brune
+          </h2>
+          <p className="font-sans" style={{
+            fontSize: '0.95rem', color: '#d9c2ad',
+            fontStyle: 'italic', marginBottom: '18px',
+          }}>
+            He thought it would be casual. It wasn't.
+          </p>
+          <a href="#listen" className="fr-cta-primary" style={{ display: 'inline-flex' }}>
+            🎧 Start Listening
+          </a>
+        </motion.div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
           CARDS SECTION
       ═══════════════════════════════════════════ */}
       <section id="cards" style={{ background: '#231410', padding: '52px 0 44px' }}>
@@ -362,7 +413,7 @@ const Home = () => {
             {[
               { title: 'Beliefs', icon: <BrainIcon />, text: "What do you believe when no one's listening?" },
               { title: 'Relationships', icon: <HeartIcon />, text: "The stuff we think... but don't always say out loud." },
-              { title: 'Wildcards', icon: <DiceIcon />, text: 'No rules. No warning.' },
+              { title: 'Wildcards', icon: <DiceIcon />, text: 'No rules. No warning. Anything goes.' },
             ].map((card, i) => (
               <motion.div
                 key={card.title}
@@ -423,14 +474,67 @@ const Home = () => {
       </section>
 
       {/* ═══════════════════════════════════════════
+          WEDNESDAY RITUAL
+      ═══════════════════════════════════════════ */}
+      <section style={{
+        background: '#1a1008',
+        borderTop: '1px solid rgba(255,255,255,0.05)',
+        padding: '40px 24px',
+        textAlign: 'center',
+      }}>
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.65 }}
+          style={{ maxWidth: '520px', margin: '0 auto' }}
+        >
+          <h2 className="font-serif font-bold" style={{
+            fontSize: 'clamp(1.2rem, 2.6vw, 1.75rem)',
+            color: '#f1e3d3', lineHeight: 1.25, marginBottom: '10px',
+          }}>
+            Make Wednesday your question day.
+          </h2>
+          <p className="font-sans" style={{
+            fontSize: '0.92rem', color: 'rgba(217,194,173,0.7)',
+            lineHeight: 1.6, marginBottom: '20px',
+          }}>
+            Every week, a new episode drops with one question nobody saw coming.
+          </p>
+          <a href="#join" className="fr-cta-primary" style={{ display: 'inline-flex' }}>
+            Get the Wednesday Question
+          </a>
+        </motion.div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
           EMAIL CAPTURE
       ═══════════════════════════════════════════ */}
       <section id="join" style={{
         background: '#1e1009',
         borderTop: '1px solid rgba(255,255,255,0.05)',
-        padding: '32px 24px 36px',
+        padding: '36px 24px 40px',
       }}>
-        <div style={{ maxWidth: '500px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'center' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="font-serif font-bold" style={{
+              fontSize: 'clamp(1.1rem, 2.4vw, 1.55rem)',
+              color: '#f1e3d3', lineHeight: 1.3, marginBottom: '8px',
+            }}>
+              One question. Every Wednesday. In your inbox.
+            </h2>
+            <p className="font-sans" style={{
+              fontSize: '0.85rem', color: 'rgba(217,194,173,0.6)',
+              marginBottom: '20px', lineHeight: 1.55,
+            }}>
+              Get new episode drops, standout questions, and the occasional wildcard.
+            </p>
+          </motion.div>
           <form onSubmit={handleJoinList} className="flex flex-col sm:flex-row gap-3 items-stretch">
             <input
               type="email"
@@ -464,30 +568,45 @@ const Home = () => {
           <p className="font-serif" style={{ fontSize: 'clamp(1rem, 2.2vw, 1.5rem)', color: '#d9c2ad', marginTop: '8px' }}>
             You never know what question is coming next.
           </p>
-          <div style={{ marginTop: '26px', paddingTop: '18px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <p className="font-sans" style={{
+            fontSize: '0.8rem', color: 'rgba(196,154,108,0.55)',
+            marginTop: '10px', letterSpacing: '0.04em',
+          }}>
+            New episodes every Wednesday.
+          </p>
+          <div style={{ marginTop: '22px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <div className="flex flex-wrap justify-center gap-x-5 gap-y-2" style={{ marginBottom: '10px' }}>
+              <a
+                href="/privacy"
+                className="font-sans"
+                style={{
+                  fontSize: '0.7rem', color: 'rgba(196,154,108,0.5)',
+                  letterSpacing: '0.08em', textDecoration: 'none', transition: 'color 0.2s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'rgba(196,154,108,0.9)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(196,154,108,0.5)')}
+              >
+                Privacy Policy
+              </a>
+              <a
+                href="mailto:hello@fishbowlroulette.com"
+                className="font-sans"
+                style={{
+                  fontSize: '0.7rem', color: 'rgba(196,154,108,0.5)',
+                  letterSpacing: '0.08em', textDecoration: 'none', transition: 'color 0.2s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'rgba(196,154,108,0.9)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(196,154,108,0.5)')}
+              >
+                Contact
+              </a>
+            </div>
             <p className="font-sans" style={{
-              fontSize: '0.7rem', color: 'rgba(217,194,173,0.28)',
+              fontSize: '0.68rem', color: 'rgba(217,194,173,0.25)',
               letterSpacing: '0.12em', textTransform: 'uppercase',
             }}>
               © {new Date().getFullYear()} Fishbowl Roulette &mdash; fishbowlroulette.com
             </p>
-            <a
-              href="mailto:hello@fishbowlroulette.com"
-              className="font-sans"
-              style={{
-                display: 'inline-block',
-                marginTop: '8px',
-                fontSize: '0.72rem',
-                color: 'rgba(196,154,108,0.55)',
-                letterSpacing: '0.08em',
-                textDecoration: 'none',
-                transition: 'color 0.2s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(196,154,108,0.9)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(196,154,108,0.55)')}
-            >
-              hello@fishbowlroulette.com
-            </a>
           </div>
         </div>
       </footer>
