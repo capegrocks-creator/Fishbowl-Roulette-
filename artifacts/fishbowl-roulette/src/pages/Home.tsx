@@ -1028,17 +1028,34 @@ const Home = () => {
                 );
               })}
 
-              {/* ─── Browse all button ─── */}
+              {/* ─── Close episodes button ───
+                    Sits at the very end of the expanded list so a
+                    listener who has scrolled to the bottom can collapse
+                    the list back down without scrolling all the way up
+                    to the top "Hide All Episodes" toggle. We also
+                    smoothly scroll the page back up to the section
+                    heading so they don't end up stranded in dead space
+                    where the list used to be. */}
               <div style={{ textAlign: 'center', marginTop: '28px' }}>
-                <a
-                  href="https://fishbowlroulettepodcast.podbean.com/"
-                  target="_blank" rel="noopener noreferrer"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setListRevealed(false);
+                    setExpandedGuids(new Set());
+                    requestAnimationFrame(() => {
+                      document.getElementById('episodes')?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start',
+                      });
+                    });
+                  }}
                   className="font-sans"
                   style={{
                     display: 'inline-block', background: 'transparent',
                     border: `1px solid ${epGold}`, color: epGold,
                     fontStyle: 'italic', fontSize: '0.95rem', letterSpacing: '0.08em',
-                    padding: '14px 42px', borderRadius: '4px', textDecoration: 'none',
+                    padding: '14px 42px', borderRadius: '4px',
+                    cursor: 'pointer',
                     transition: 'background 0.25s, color 0.25s',
                   }}
                   onMouseEnter={e => {
@@ -1050,8 +1067,8 @@ const Home = () => {
                     e.currentTarget.style.color = epGold;
                   }}
                 >
-                  Browse All Episodes ↗
-                </a>
+                  Close Episodes ↑
+                </button>
               </div>
             </div>
           )}
