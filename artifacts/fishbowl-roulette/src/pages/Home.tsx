@@ -1503,8 +1503,15 @@ const Home = () => {
 
             return (
               <>
-                {/* ─── MOBILE: compact numbered list (no boxes) ── */}
-                <ol className="sm:hidden" style={{
+                {/* ─── MOBILE: compact numbered list (no boxes) ───
+                    NOTE: the wrapping div carries `sm:hidden`, not the
+                    <ol> itself. Inline `display: flex` on the <ol>
+                    would otherwise override Tailwind's `display: none`
+                    from `sm:hidden` (inline styles win over classes),
+                    causing BOTH the mobile list and the desktop cards
+                    to render on desktop. */}
+                <div className="sm:hidden">
+                <ol style={{
                   listStyle: 'none', margin: 0, padding: 0,
                   display: 'flex', flexDirection: 'column', gap: '14px',
                 }}>
@@ -1550,6 +1557,7 @@ const Home = () => {
                     </motion.li>
                   ))}
                 </ol>
+                </div>
 
                 {/* ─── DESKTOP: 3-col cards ────────────────────── */}
                 <div className="hidden sm:grid sm:grid-cols-3 gap-4">
