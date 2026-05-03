@@ -15,3 +15,27 @@ BASE_PATH = "/__mockup"
 
 [services.development]
 run = "pnpm --filter @workspace/mockup-sandbox run dev"
+
+# The mockup-sandbox is a dev-only design surface, but it is registered in
+# `.replit` `[[artifacts]]` so autoscale deployments require *some* valid
+# production config (otherwise: "No run command is configured"). Build the
+# Vite app to static files and serve them from its `/__mockup` prefix —
+# nothing user-facing depends on it in production, but this satisfies the
+# deploy and keeps the page reachable for internal preview if ever needed.
+[services.production]
+publicDir = "artifacts/mockup-sandbox/dist"
+serve = "static"
+
+[services.production.build]
+args = [ "pnpm", "--filter", "@workspace/mockup-sandbox", "run", "build" ]
+
+# Vite's config reads PORT and BASE_PATH at build time (not just at dev
+# server start), so they must be present during the production build too.
+[services.production.build.env]
+PORT = "8081"
+BASE_PATH = "/__mockup"
+NODE_ENV = "production"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
